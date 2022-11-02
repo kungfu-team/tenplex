@@ -6,6 +6,7 @@ import numpy as np
 import requests
 
 _dtypes = {
+    'f16': np.float16,
     'f32': np.float32,
     'f64': np.float64,
     #

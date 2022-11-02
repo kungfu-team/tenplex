@@ -75,7 +75,7 @@ def traverse_ckpt(value, keys=None):
 
         for i, val in enumerate(value):
             new_keys = copy.deepcopy(keys)
-            new_keys.append(f'list{i:04d}')
+            new_keys.append(f'{i}')
             traverse_ckpt(val, new_keys)
         return
 

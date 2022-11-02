@@ -77,7 +77,7 @@ def traverse_ckpt(base_path: str, value, keys=None):
 
         for i, val in enumerate(value):
             new_keys = copy.deepcopy(keys)
-            new_keys.append(f'list{i:04d}')
+            new_keys.append(f'{i}')
             traverse_ckpt(base_path, val, new_keys)
         return
 
@@ -108,6 +108,7 @@ def traverse_ckpt(base_path: str, value, keys=None):
 def write_ckpt(args):
     size = args.size
     step = args.step
+    timestamp = args.timestamp
     # Megatron-LM
     for i in range(size):
         base_path = os.path.join(args.ckpt_path, f'{i}/ckpt/iter_{step:07d}')
@@ -118,7 +119,7 @@ def write_ckpt(args):
                         ckpt = torch.load(sub_entry.path, map_location='cpu')
                         #  ckpt_base_path = os.path.join(args.mlfs_path,
                         #                                f'{i}/{entry.name}')
-                        ckpt_base_path = f'{i}/{entry.name}'
+                        ckpt_base_path = f'{timestamp}/{i}/{entry.name}'
                         traverse_ckpt(ckpt_base_path, ckpt)
 
 
@@ -128,6 +129,7 @@ def main():
     parser.add_argument('--ckpt-path', type=str)
     parser.add_argument('--size', type=int)
     parser.add_argument('--step', type=int)
+    parser.add_argument('--timestamp', type=str)
     args = parser.parse_args()
 
     write_ckpt(args)

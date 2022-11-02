@@ -23,7 +23,7 @@ def construct_ckpt(path: str):
 
             lis = []
             for i in range(length):
-                file_list = glob.glob(os.path.join(path, f'list{i:04d}*'))
+                file_list = glob.glob(os.path.join(path, f'{i}*'))
                 file_list.sort()  # needs sorting for ndarray files
                 file_path = file_list[0]
                 ele = construct_ckpt(file_path)
