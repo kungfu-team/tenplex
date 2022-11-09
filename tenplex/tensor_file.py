@@ -51,7 +51,7 @@ def _fmt_range(r):
 def query_tensor_file(path, rng):
     """"Read tensor slice into a numpy array from MLFS."""
     print(rng)
-    host = '127.0.0.1'
+    host = '10.10.10.1'
     ctrl_port = 20010
     ranges = ','.join([_fmt_range(r) for r in rng])
     endpoint = 'http://{}:{}/query?path={}&range={}'.format(
@@ -75,7 +75,7 @@ def upload_tensor(path, t):
     headers = {
         'Content-type': 'x-tensor',
     }
-    host = '127.0.0.1'
+    host = '10.10.10.1'
     ctrl_port = 20010
 
     dims = [str(int(d)) for d in t.shape]
