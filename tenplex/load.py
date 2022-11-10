@@ -33,8 +33,15 @@ def load_traverse(path: str):
 
         ckpt = {}
         for entry in os.scandir(path):
-            name_split = entry.name.split('.', 1)
-            name = name_split[0]
+            if entry.name.endswith('.meta'):
+                continue
+            elif entry.name.endswith('.numpy.ndarray'):
+                name_split = entry.name.split('.')
+                name = '.'.join(name_split[0:-2])
+            else:
+                name_split = entry.name.split('.', 1)
+                name = name_split[0]
+
             try:
                 int_key = int(name)
                 ckpt[int_key] = load_traverse(entry.path)
@@ -77,10 +84,10 @@ def load(device_rank: int):
 
 def main():
     parser = argparse.ArgumentParser(description='Write checkpoint')
-    parser.add_argument('--mlfs-path', type=str)
+    parser.add_argument('--device-rank', type=int)
     args = parser.parse_args()
 
-    ckpt = load(args.mlfs_path)
+    ckpt = load(args.device_rank)
 
     import pprint
     pprint.pprint(ckpt)
