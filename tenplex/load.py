@@ -26,6 +26,8 @@ def load_traverse(path: str):
                 file_list = glob.glob(os.path.join(path, f'{i}*'))
                 file_list.sort()  # needs sorting for ndarray files
                 file_path = file_list[0]
+                if file_path.endswith('.meta'):
+                    continue
                 ele = load_traverse(file_path)
                 lis.append(ele)
 
@@ -35,7 +37,8 @@ def load_traverse(path: str):
         for entry in os.scandir(path):
             if entry.name.endswith('.meta'):
                 continue
-            elif entry.name.endswith('.numpy.ndarray'):
+
+            if entry.name.endswith('.numpy.ndarray'):
                 name_split = entry.name.split('.')
                 name = '.'.join(name_split[0:-2])
             else:
@@ -53,22 +56,22 @@ def load_traverse(path: str):
     if os.path.isfile(path):
         name = os.path.basename(path)
         if name == 't0.txt':
-            return
-        if name.endswith('.meta'):
-            return
+            return None
 
         if name.endswith('.numpy.ndarray'):
             tensor = read_tensor_file(path)
-            if 'np_rng_state' not in path:  # needs to stay numpy array
-                torch_tensor = torch.from_numpy(tensor)
-                return torch_tensor
+            if 'np_rng_state' in path:  # needs to stay numpy array
+                return tensor
 
-            return tensor
+            torch_tensor = torch.from_numpy(tensor)
+            return torch_tensor
 
-        with open(path, 'rb') as fil:
-            byts = fil.read()
+        try:
+            with open(path, 'rb') as fil:
+                value = pickle.load(fil)
+        except:
+            print(f'pickle failed {path}')
 
-        value = pickle.loads(byts)
         if value == 'None':
             value = None
         return value
@@ -78,6 +81,12 @@ def load(device_rank: int):
     with open("/data/mlfs/iter", "r") as iter_file:
         step = int(iter_file.read().strip())
     ckpt = load_traverse(f"/data/mlfs/load{step}/{device_rank}")
+
+    # Megatron-LM
+    ckpt['rng_state'][0]['random_rng_state'][1] = tuple(
+        ckpt['rng_state'][0]['random_rng_state'][1])
+    ckpt['rng_state'][0]['random_rng_state'] = tuple(
+        ckpt['rng_state'][0]['random_rng_state'])
 
     return ckpt, step
 
