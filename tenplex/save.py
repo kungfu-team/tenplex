@@ -105,9 +105,12 @@ def save_traverse(value, base_path: str, keys=None):
     upload_object(keys_path, value)
 
 
-def save(ckpt: dict, step: int, device_rank: int):
-    save_traverse(ckpt, os.path.join(f"save{step}", str(device_rank)))
-    upload_txt("iter", str(step))
+def save(ckpt: dict, jobID: str, step: int, device_rank: int):
+    save_traverse(
+        ckpt,
+        os.path.join(f"job/{jobID}",
+                     os.path.join(f"save{step}", str(device_rank))))
+    upload_txt(f"job/{jobID}/iter", str(step))
 
 
 def main():
