@@ -17,7 +17,7 @@ def get_type(obj):
 
 
 def upload_txt(path, txt):
-    host = '10.10.10.1'
+    host = 'localhost'
     ctrl_port = 20010
 
     data = bytes(txt, 'utf-8')
@@ -31,7 +31,7 @@ def upload_txt(path, txt):
 
 
 def upload_object(path, obj, typ=None):
-    host = '10.10.10.1'
+    host = 'localhost'
     ctrl_port = 20010
 
     if typ is None:
