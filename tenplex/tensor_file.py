@@ -71,16 +71,15 @@ def query_tensor_file(path, rng):
     return np.frombuffer(data, dtype=dtype).reshape(shape)
 
 
-def upload_tensor(path, t):
+def upload_tensor(path, t, ip):
     headers = {
         'Content-type': 'x-tensor',
     }
-    host = '10.10.10.1'
     ctrl_port = 20010
 
     dims = [str(int(d)) for d in t.shape]
     endpoint = 'http://{}:{}/upload?dtype={}&dims={}&path={}'.format(
-        host,
+        ip,
         ctrl_port,
         t.dtype,
         ','.join(dims),

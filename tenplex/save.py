@@ -16,22 +16,21 @@ def get_type(obj):
     return mat.group(1)
 
 
-def upload_txt(path, txt):
-    host = 'localhost'
+def upload_txt(path, txt, ip):
     ctrl_port = 20010
 
     data = bytes(txt, 'utf-8')
 
     headers = {
         'Content-type': 'text/plain',
+        'x-replace': 'true',
     }
-    endpoint = f'http://{host}:{ctrl_port}/upload?path={path}'
+    endpoint = f'http://{ip}:{ctrl_port}/upload?path={path}'
     r = requests.post(endpoint, headers=headers, data=data)
     assert (r.status_code == 200)
 
 
-def upload_object(path, obj, typ=None):
-    host = 'localhost'
+def upload_object(path, obj, ip, typ=None):
     ctrl_port = 20010
 
     if typ is None:
@@ -42,7 +41,7 @@ def upload_object(path, obj, typ=None):
     headers = {
         'Content-type': typ,
     }
-    endpoint = f'http://{host}:{ctrl_port}/upload?path={path}'
+    endpoint = f'http://{ip}:{ctrl_port}/upload?path={path}'
     r = requests.post(endpoint, headers=headers, data=data)
     assert (r.status_code == 200)
 
@@ -55,7 +54,7 @@ def add_values(vals, new_vals):
     return vals
 
 
-def save_traverse(value, base_path: str, keys=None):
+def save_traverse(value, base_path: str, ip: str, keys=None):
     if keys is None:
         keys = []
 
@@ -63,7 +62,7 @@ def save_traverse(value, base_path: str, keys=None):
         for key, val in value.items():
             new_keys = copy.deepcopy(keys)
             new_keys.append(key)
-            save_traverse(val, base_path, new_keys)
+            save_traverse(val, base_path, ip, new_keys)
         return
     if isinstance(value, (list, set, tuple)):
         length = len(value)
@@ -73,12 +72,12 @@ def save_traverse(value, base_path: str, keys=None):
         keys_path = '/'.join(str_keys)
         txt_path = os.path.join(base_path, keys_path)
         txt_path = txt_path + '.meta'
-        upload_txt(txt_path, metadata)
+        upload_txt(txt_path, metadata, ip)
 
         for i, val in enumerate(value):
             new_keys = copy.deepcopy(keys)
             new_keys.append(f'{i}')
-            save_traverse(val, base_path, new_keys)
+            save_traverse(val, base_path, ip, new_keys)
         return
 
     str_keys = [str(k) for k in keys]
@@ -88,29 +87,29 @@ def save_traverse(value, base_path: str, keys=None):
         tensor = value.detach().cpu().numpy()
         typ = get_type(tensor)
         tensor_path = keys_path + f'.{typ}'
-        upload_tensor(tensor_path, tensor)
+        upload_tensor(tensor_path, tensor, ip)
         return
     if isinstance(value, np.ndarray):
         print(f'{keys} is np.ndarray')
         typ = get_type(value)
         tensor_path = keys_path + f'.{typ}'
-        upload_tensor(tensor_path, value)
+        upload_tensor(tensor_path, value, ip)
         return
 
     if value is None:
         value = 'None'
-        upload_object(keys_path, value, 'none')
+        upload_object(keys_path, value, ip, 'none')
         return
 
-    upload_object(keys_path, value)
+    upload_object(keys_path, value, ip)
 
 
-def save(ckpt: dict, jobID: str, step: int, device_rank: int):
+def save(ckpt: dict, jobID: str, step: int, device_rank: int, ip: str):
     save_traverse(
         ckpt,
         os.path.join(f"job/{jobID}",
-                     os.path.join(f"save{step}", str(device_rank))))
-    upload_txt(f"job/{jobID}/iter", str(step))
+                     os.path.join(f"save{step}", str(device_rank))), ip)
+    upload_txt(f"job/{jobID}/iter", str(step), ip)
 
 
 def main():
@@ -121,7 +120,7 @@ def main():
     args = parser.parse_args()
 
     ckpt = torch.load(args.ckpt_path, map_location='cpu')
-    save(ckpt, args.step, args.device_rank)
+    save(ckpt, '0', args.step, args.device_rank, 'localhost')
 
 
 if __name__ == '__main__':
