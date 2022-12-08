@@ -1,7 +1,6 @@
 import argparse
 import copy
 import os
-import pickle
 import re
 
 import numpy as np
@@ -36,7 +35,20 @@ def upload_object(path, obj, ip, typ=None):
     if typ is None:
         typ = get_type(obj)
     path = path + f'.{typ}'
-    data = pickle.dumps(obj)
+
+    if typ == "none":
+        data = "None"
+    elif typ == "str":
+        data = obj
+    elif typ == "int":
+        data = str(obj)
+    elif typ == "float":
+        data = str(obj)
+    elif typ == "bool":
+        data = str(obj)
+    else:
+        print("ERROR: type {typ} not supported for upload object")
+        return
 
     headers = {
         'Content-type': typ,

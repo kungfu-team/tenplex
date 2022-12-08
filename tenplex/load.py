@@ -1,12 +1,28 @@
 import argparse
 import glob
 import os
-import pickle
 
 import numpy as np
 import torch
 
 from .tensor_file import query_tensor_file, read_tensor_file, upload_tensor
+
+
+def parse_value(value_str: str, name: str):
+    file_ext = name.split(".")[-1]
+    if file_ext == "none":
+        return None
+    if file_ext == "str":
+        return value_str
+    if file_ext == "int":
+        return int(value_str)
+    if file_ext == "float":
+        return float(value_str)
+    if file_ext == "bool":
+        return bool(value_str)
+
+    print("ERROR: type {file_ext} not supported in parse value")
+    return
 
 
 def load_traverse(path: str):
@@ -66,14 +82,10 @@ def load_traverse(path: str):
             torch_tensor = torch.from_numpy(tensor)
             return torch_tensor
 
-        try:
-            with open(path, 'rb') as fil:
-                value = pickle.load(fil)
-        except:
-            print(f'pickle failed {path}')
+        with open(path, "r") as fil:
+            payload = fil.read()
 
-        if value == 'None':
-            value = None
+        value = parse_value(payload, name)
         return value
 
 
