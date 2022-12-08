@@ -61,10 +61,8 @@ def query_tensor_file(path, rng):
         ranges,
     )
     r = requests.get(endpoint)
-    # print(r)
     if r.status_code != 200:
-        print(r.reason)
-    assert (r.status_code == 200)
+        r.raise_for_status()
     dtype = _dtypes[r.headers['x-tensor-dtype']]
     data = r.content
     shape = [int(d) for d in r.headers['x-tensor-dims'].split(',')]
@@ -86,5 +84,5 @@ def upload_tensor(path, t, ip):
         path,
     )
     r = requests.post(endpoint, headers=headers, data=t.tobytes())
-    # print(r)
-    assert (r.status_code == 200)
+    if r.status_code != 200:
+        r.raise_for_status()
