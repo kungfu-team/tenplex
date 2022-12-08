@@ -39,8 +39,12 @@ def load_traverse(path: str):
 
             lis = []
             for i in range(length):
-                file_list = glob.glob(os.path.join(path, f'{i}*'))
+                glob_path = os.path.join(path, f'{i}*')
+                file_list = glob.glob(glob_path)
                 file_list.sort()  # needs sorting for ndarray files
+                if len(file_list) == 0:
+                    raise ValueError(
+                        f"ERROR: glob list is empty for {glob_path}")
                 file_path = file_list[0]
                 if file_path.endswith('.meta'):
                     continue
