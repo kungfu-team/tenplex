@@ -27,8 +27,9 @@ def upload_txt(path, txt, ip):
     }
     endpoint = f'http://{ip}:{ctrl_port}/upload?path={path}'
     r = requests.post(endpoint, headers=headers, data=data)
-    if r.status_code == 200:
-        raise AssertionError(f"ERROR upload_txt reason {r.reason} path {path}")
+    if r.status_code != 200:
+        r.raise_for_status()
+        #  raise AssertionError(f"ERROR upload_txt reason {r.reason} path {path}")
 
 
 def upload_object(path, obj, ip, typ=None):
@@ -58,8 +59,9 @@ def upload_object(path, obj, ip, typ=None):
     }
     endpoint = f'http://{ip}:{ctrl_port}/upload?path={path}'
     r = requests.post(endpoint, headers=headers, data=data)
-    if r.status_code == 200:
-        raise AssertionError(f"ERROR upload_txt reason {r.reason} path {path}")
+    if r.status_code != 200:
+        r.raise_for_status()
+        #  raise AssertionError(f"ERROR upload_txt reason {r.reason} path {path}")
 
 
 def add_values(vals, new_vals):
