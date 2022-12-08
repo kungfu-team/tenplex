@@ -1,6 +1,7 @@
 import argparse
 import copy
 import os
+import pickle
 import re
 
 import numpy as np
@@ -46,9 +47,10 @@ def upload_object(path, obj, ip, typ=None):
         data = str(obj)
     elif typ == "bool":
         data = str(obj)
+    elif typ == "argparse.Namespace":
+        data = pickle.dumps(obj)
     else:
-        print("ERROR: type {typ} not supported for upload object")
-        return
+        raise ValueError(f"ERROR: type {typ} not supported for upload object")
 
     headers = {
         'Content-type': typ,

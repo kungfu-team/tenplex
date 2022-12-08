@@ -1,6 +1,7 @@
 import argparse
 import glob
 import os
+import pickle
 
 import numpy as np
 import torch
@@ -21,8 +22,7 @@ def parse_value(value_str: str, name: str):
     if file_ext == "bool":
         return bool(value_str)
 
-    print("ERROR: type {file_ext} not supported in parse value")
-    return
+    raise ValueError(f"ERROR: type {file_ext} not supported in parse value")
 
 
 def load_traverse(path: str):
@@ -82,11 +82,13 @@ def load_traverse(path: str):
             torch_tensor = torch.from_numpy(tensor)
             return torch_tensor
 
+        if name.endswith(".argparse.Namespace"):
+            with open(path, "rb") as fil:
+                return pickle.load(fil)
+
         with open(path, "r") as fil:
             payload = fil.read()
-
-        value = parse_value(payload, name)
-        return value
+        return parse_value(payload, name)
 
 
 def load(device_rank: int):
