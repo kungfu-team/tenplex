@@ -29,7 +29,6 @@ def upload_txt(path, txt, ip):
     r = requests.post(endpoint, headers=headers, data=data)
     if r.status_code != 200:
         r.raise_for_status()
-        #  raise AssertionError(f"ERROR upload_txt reason {r.reason} path {path}")
 
 
 def upload_object(path, obj, ip, typ=None):
@@ -61,7 +60,6 @@ def upload_object(path, obj, ip, typ=None):
     r = requests.post(endpoint, headers=headers, data=data)
     if r.status_code != 200:
         r.raise_for_status()
-        #  raise AssertionError(f"ERROR upload_txt reason {r.reason} path {path}")
 
 
 def add_values(vals, new_vals):
@@ -70,6 +68,17 @@ def add_values(vals, new_vals):
     if isinstance(new_vals, tuple):
         vals.append(new_vals)
     return vals
+
+
+def upload_dir_meta(value, keys, base_path, ip):
+    length = len(value)
+    metadata = f'list\n{length}'
+    str_keys = [str(k) for k in keys]
+    str_keys.append('dir')
+    keys_path = '/'.join(str_keys)
+    txt_path = os.path.join(base_path, keys_path)
+    txt_path = txt_path + '.meta'
+    upload_txt(txt_path, metadata, ip)
 
 
 def save_traverse(value, base_path: str, ip: str, keys=None):
@@ -83,14 +92,7 @@ def save_traverse(value, base_path: str, ip: str, keys=None):
             save_traverse(val, base_path, ip, new_keys)
         return
     if isinstance(value, (list, set, tuple)):
-        length = len(value)
-        metadata = f'list\n{length}'
-        str_keys = [str(k) for k in keys]
-        str_keys.append('dir')
-        keys_path = '/'.join(str_keys)
-        txt_path = os.path.join(base_path, keys_path)
-        txt_path = txt_path + '.meta'
-        upload_txt(txt_path, metadata, ip)
+        upload_dir_meta(value, keys, base_path, ip)
 
         for i, val in enumerate(value):
             new_keys = copy.deepcopy(keys)
