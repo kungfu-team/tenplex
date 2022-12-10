@@ -6,7 +6,7 @@ import pickle
 import numpy as np
 import torch
 
-from .tensor_file import query_tensor_file, read_tensor_file, upload_tensor
+from .tensor_file import read_tensor_file
 
 
 def parse_value(value_str: str, name: str):

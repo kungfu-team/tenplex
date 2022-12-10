@@ -23,7 +23,9 @@ _dtypes = {
 
 
 def _read_meta_file(name):
-    lines = [line.strip() for line in open(name)]
+    with open(name, 'r') as f:
+        lines = f.readlines()
+    lines = [line.strip() for line in lines]
     dt = _dtypes[lines[0]]
     rank = int(lines[2])
     dims = [int(d) for d in lines[2:2 + rank]]
@@ -31,7 +33,8 @@ def _read_meta_file(name):
 
 
 def _read_data_file(name):
-    return open(name, 'rb').read()
+    with open(name, 'rb') as f:
+        return f.read()
 
 
 def read_tensor_file(name):
@@ -48,41 +51,49 @@ def _fmt_range(r):
     return f(r.start) + ':' + f(r.stop)
 
 
-def query_tensor_file(path, rng):
-    """"Read tensor slice into a numpy array from MLFS."""
-    print(rng)
-    host = '10.10.10.1'
-    ctrl_port = 20010
-    ranges = ','.join([_fmt_range(r) for r in rng])
-    endpoint = 'http://{}:{}/query?path={}&range={}'.format(
-        host,
-        ctrl_port,
-        path,
-        ranges,
-    )
-    r = requests.get(endpoint)
-    if r.status_code != 200:
-        r.raise_for_status()
-    dtype = _dtypes[r.headers['x-tensor-dtype']]
-    data = r.content
-    shape = [int(d) for d in r.headers['x-tensor-dims'].split(',')]
-    return np.frombuffer(data, dtype=dtype).reshape(shape)
+class TensorRequester:
 
+    def __init__(self, ctrl_port, req_ip):
+        self.ctrl_port = ctrl_port
+        self.req_ip = req_ip
 
-def upload_tensor(path, t, ip):
-    headers = {
-        'Content-type': 'x-tensor',
-    }
-    ctrl_port = 20010
+        # DEBUG
+        #  self.total_upload = 0
+        #  self.failed_upload = []
 
-    dims = [str(int(d)) for d in t.shape]
-    endpoint = 'http://{}:{}/upload?dtype={}&dims={}&path={}'.format(
-        ip,
-        ctrl_port,
-        t.dtype,
-        ','.join(dims),
-        path,
-    )
-    r = requests.post(endpoint, headers=headers, data=t.tobytes())
-    if r.status_code != 200:
-        r.raise_for_status()
+    def query_tensor_file(self, path, rang):
+        """"Read tensor slice into a numpy array from MLFS."""
+        ranges = ','.join([_fmt_range(r) for r in rang])
+        endpoint = 'http://{}:{}/query?path={}&range={}'.format(
+            self.req_ip,
+            self.ctrl_port,
+            path,
+            ranges,
+        )
+        r = requests.get(endpoint)
+        if r.status_code != 200:
+            r.raise_for_status()
+        dtype = _dtypes[r.headers['x-tensor-dtype']]
+        data = r.content
+        shape = [int(d) for d in r.headers['x-tensor-dims'].split(',')]
+        return np.frombuffer(data, dtype=dtype).reshape(shape)
+
+    def upload_tensor(self, path, t):
+        headers = {
+            'Content-type': 'x-tensor',
+        }
+
+        dims = [str(int(d)) for d in t.shape]
+        endpoint = 'http://{}:{}/upload?dtype={}&dims={}&path={}'.format(
+            self.req_ip,
+            self.ctrl_port,
+            t.dtype,
+            ','.join(dims),
+            path,
+        )
+        r = requests.post(endpoint, headers=headers, data=t.tobytes())
+        if r.status_code != 200:
+            r.raise_for_status()
+            #  self.failed_upload.append(path)
+
+        #  self.total_upload += 1
