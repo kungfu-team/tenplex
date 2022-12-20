@@ -13,7 +13,7 @@ from .tensor_file import TensorRequester
 
 class MLFSClient:
 
-    def __init__(self, ctrl_port, req_ip):
+    def __init__(self, req_ip: str, ctrl_port: int):
         self.ctrl_port = ctrl_port
         self.req_ip = req_ip
         self.ten_requester = TensorRequester(ctrl_port, req_ip)
@@ -26,7 +26,9 @@ class MLFSClient:
 
     def get_type(self, obj):
         mat = re.match(r'<class \'(.*)\'>', str(type(obj)))
-        return mat.group(1)
+        if mat is not None:
+            return mat.group(1)
+        raise ValueError("mat is None")
 
     def upload_txt(self, path, txt):
 
@@ -136,19 +138,19 @@ class MLFSClient:
         self.upload_object(keys_path, value)
 
 
-def save(ckpt: dict, job_id: str, step: int, device_rank: int, ip: str):
+def save(ckpt: dict, job_id: str, step: int, device_rank: int, mlfs_path: str,
+         ip: str, port: int):
     # DEBUG
     #  print("PRINT STACK")
     #  traceback.print_stack(file=sys.stdout)
     #  print("PRINT STACK finished")
 
-    mlfs_path = "/data/mlfs"  # TODO: make an argument
     save_path = os.path.join(mlfs_path, f"save{step}")
     if os.path.exists(save_path):
         print("SAVER save directory already exists")
         return
 
-    client = MLFSClient(20010, ip)
+    client = MLFSClient(ip, port)
     client.save_traverse(
         ckpt,
         os.path.join(f"job/{job_id}",
@@ -173,12 +175,17 @@ def save(ckpt: dict, job_id: str, step: int, device_rank: int, ip: str):
 def main():
     parser = argparse.ArgumentParser(description='Write checkpoint')
     parser.add_argument('--ckpt-path', type=str)
+    parser.add_argument('--job-id', type=str)
     parser.add_argument('--step', type=str)
     parser.add_argument('--device-rank', type=int)
+    parser.add_argument('--mlfs-path', type=str)
+    parser.add_argument('--ip', type=str)
+    parser.add_argument('--port', type=int)
     args = parser.parse_args()
 
     ckpt = torch.load(args.ckpt_path, map_location='cpu')
-    save(ckpt, '0', args.step, args.device_rank, 'localhost')
+    save(ckpt, args.ckpt_path, args.step, args.device_rank, args.mlfs_path,
+         args.ip, args.port)
 
 
 if __name__ == '__main__':
