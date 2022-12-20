@@ -3,7 +3,6 @@ import glob
 import os
 import pickle
 
-import numpy as np
 import torch
 
 from .tensor_file import read_tensor_file
@@ -95,10 +94,12 @@ def load_traverse(path: str):
         return parse_value(payload, name)
 
 
-def load(device_rank: int):
-    with open("/data/mlfs/iter", "r") as iter_file:
+def load(device_rank: int, mlfs_path: str):
+    pa = os.path.join(mlfs_path, "iter")
+    with open(pa, "r") as iter_file:
         step = int(iter_file.read().strip())
-    ckpt = load_traverse(f"/data/mlfs/load{step}/{device_rank}")
+    pa = os.path.join(mlfs_path, f"load{step}/{device_rank}")
+    ckpt = load_traverse(pa)
 
     # Megatron-LM
     ckpt['rng_state'][0]['random_rng_state'][1] = tuple(
@@ -112,12 +113,10 @@ def load(device_rank: int):
 def main():
     parser = argparse.ArgumentParser(description='Write checkpoint')
     parser.add_argument('--device-rank', type=int)
+    parser.add_argument('--mlfs-path', type=str)
     args = parser.parse_args()
 
-    ckpt = load(args.device_rank)
-
-    import pprint
-    pprint.pprint(ckpt)
+    load(args.device_rank, args.mlfs_path)
 
 
 if __name__ == '__main__':
