@@ -93,16 +93,20 @@ def load_traverse(path: str):
             payload = fil.read()
         return parse_value(payload, name)
 
+    print(f"path {path} is not a directory nor a file")
+
 
 def load(device_rank: int, mlfs_path: str):
     pa = os.path.join(mlfs_path, "iter")
     with open(pa, "r") as iter_file:
         step = int(iter_file.read().strip())
     pa = os.path.join(mlfs_path, f"load{step}/{device_rank}")
-    print("load checkpoint from {pa} at step {step}")
+    print(f"load checkpoint from {pa} at step {step}")
     ckpt = load_traverse(pa)
     if ckpt is None:
         raise ValueError("checkpoint is None")
+    else:
+        print(f"checkpoint keys {ckpt.keys()}")
 
     # Megatron-LM
     ckpt['rng_state'][0]['random_rng_state'][1] = tuple(
