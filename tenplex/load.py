@@ -99,7 +99,10 @@ def load(device_rank: int, mlfs_path: str):
     with open(pa, "r") as iter_file:
         step = int(iter_file.read().strip())
     pa = os.path.join(mlfs_path, f"load{step}/{device_rank}")
+    print("load checkpoint from {pa} at step {step}")
     ckpt = load_traverse(pa)
+    if ckpt is None:
+        raise ValueError("checkpoint is None")
 
     # Megatron-LM
     ckpt['rng_state'][0]['random_rng_state'][1] = tuple(
