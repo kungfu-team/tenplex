@@ -1,7 +1,11 @@
 Python library for Tenplex
 
-TODO:
+
 
 pip install
 
+    pip3 install tenplex -i https://pkgs.dev.azure.com/gli7/releases/_packaging/nightly/pypi/simple -U
 
+Releases
+
+    https://dev.azure.com/gli7/releases/_artifacts/feed/nightly
