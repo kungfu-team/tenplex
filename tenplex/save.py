@@ -147,7 +147,7 @@ def save(ckpt: dict, job_id: str, step: int, device_rank: int, mlfs_path: str,
 
     save_path = os.path.join(mlfs_path, f"save{step}")
     if os.path.exists(save_path):
-        print("SAVER save directory already exists")
+        print(f"SAVER save directory {save_path} already exists")
         return
 
     client = MLFSClient(ip, port)
