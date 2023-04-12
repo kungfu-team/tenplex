@@ -140,11 +140,6 @@ class MLFSClient:
 
 def save(ckpt: dict, job_id: str, step: int, device_rank: int, mlfs_path: str,
          ip: str, port: int):
-    # DEBUG
-    #  print("PRINT STACK")
-    #  traceback.print_stack(file=sys.stdout)
-    #  print("PRINT STACK finished")
-
     save_path = os.path.join(mlfs_path, f"save{step}")
     if os.path.exists(save_path):
         print(f"SAVER save directory {save_path} already exists")
@@ -157,19 +152,7 @@ def save(ckpt: dict, job_id: str, step: int, device_rank: int, mlfs_path: str,
                      os.path.join(f"save{step}", str(device_rank))))
     client.upload_txt(f"job/{job_id}/iter", str(step))
 
-    # DEBUG
-    #  print(f"SAVER object total {client.total_object},"
-    #        f" failed {len(client.failed_object)}")
-    #  for fail in client.failed_object:
-    #      print(f"SAVER object failed {fail}")
-    #  print(f"SAVER txt total {client.total_txt},"
-    #        f" failed {len(client.failed_txt)}")
-    #  for fail in client.failed_txt:
-    #      print(f"SAVER txt failed {fail}")
-    #  print(f"SAVER tensor total {client.ten_requester.total_upload},"
-    #        f"failed {len(client.ten_requester.failed_upload)}")
-    #  for fail in client.ten_requester.failed_upload:
-    #      print(f"SAVER tensor failed {fail}")
+    print(f"saved checkpoint at {save_path}")
 
 
 def main():
