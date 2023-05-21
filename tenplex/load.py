@@ -198,4 +198,10 @@ def load_http(job_id: str, device_rank: int, ip: str, port: int):
     dir_meta = [os.path.relpath(x, base_path) for x in dir_meta]
     ckpt = dicts_to_lists(ckpt, dir_meta)
 
+    # Megatron-LM
+    ckpt['rng_state'][0]['random_rng_state'][1] = tuple(
+        ckpt['rng_state'][0]['random_rng_state'][1])
+    ckpt['rng_state'][0]['random_rng_state'] = tuple(
+        ckpt['rng_state'][0]['random_rng_state'])
+
     return ckpt, step
