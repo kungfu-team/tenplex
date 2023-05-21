@@ -1,5 +1,5 @@
 """
 """
 
-from .load import load
+from .load import load, load_http
 from .save import save
