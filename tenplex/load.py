@@ -1,11 +1,13 @@
-import argparse
 import glob
 import os
 import pickle
 
+import numpy as np
 import torch
 
-from .tensor_file import read_tensor_file
+import tenplex
+from tenplex.mlfs_client import MLFSClient
+from tenplex.tensor_file import read_tensor_file
 
 
 def parse_value(value_str: str, name: str):
@@ -117,14 +119,83 @@ def load(device_rank: int, mlfs_path: str):
     return ckpt, step
 
 
-def main():
-    parser = argparse.ArgumentParser(description='Write checkpoint')
-    parser.add_argument('--device-rank', type=int)
-    parser.add_argument('--mlfs-path', type=str)
-    args = parser.parse_args()
+def set_value(ckpt, keys, name, value):
+    ele = ckpt
+    for key in keys:
+        if key not in ele:
+            ele[key] = {}
+        ele = ele[key]
+    ele[name] = value
+    return ckpt
 
-    load(args.device_rank, args.mlfs_path)
+
+def get_value(ckpt, keys):
+    ele = ckpt
+    for key in keys:
+        ele = ele[key]
+    return ele
 
 
-if __name__ == '__main__':
-    main()
+def dict_to_list(dic):
+    lis = []
+    for i in range(len(dic.keys())):
+        lis.append(dic[str(i)])
+    return lis
+
+
+def dicts_to_lists(ckpt, dir_metas):
+    for met in dir_metas:
+        keys = met.split("/")
+        keys = keys[:len(keys) - 1]
+        last_key = keys[-1]
+        parent_val = get_value(ckpt, keys[:len(keys) - 1])
+        parent_val[last_key] = dict_to_list(parent_val[last_key])
+
+    return ckpt
+
+
+def load_http(job_id: str, device_rank: int, ip: str, port: int):
+    client = MLFSClient(ip, port)
+    step = client.get_text(f"/job/{job_id}/iter")
+    base_path = f"/job/{job_id}/save{step}/{device_rank}"
+    struct = client.get_dir(base_path)
+    struct_no_meta = list(filter(lambda x: not x.endswith(".meta"), struct))
+    dir_meta = list(filter(lambda x: x.endswith("dir.meta"), struct))
+    dir_meta.sort()
+
+    ckpt = {}
+    for ele in struct_no_meta:
+        rel_path = os.path.relpath(ele, base_path)
+        keys = rel_path.split("/")
+        file_name = keys[-1]
+        keys = keys[:len(keys) - 1]
+        name = file_name.split(".")[0]
+        path_no_ext = ele.split(".")[0]
+
+        if file_name.endswith('.numpy.ndarray'):
+            tensor_data, dtype, dims = client.get_tensor(ele)
+            typ = tenplex.tensor_file._dtypes[dtype]
+            np_tensor = np.frombuffer(tensor_data, dtype=typ).reshape(dims)
+            if 'np_rng_state' in ele:  # needs to stay numpy array
+                ckpt = set_value(ckpt, keys, name, np_tensor)
+                continue
+
+            torch_tensor = torch.from_numpy(np_tensor)
+            ckpt = set_value(ckpt, keys, name, torch_tensor)
+            continue
+
+        if file_name.endswith(".argparse.Namespace"):
+            continue  # TODO remove after finished
+            fil = client.get_file(path_no_ext)
+            obj = pickle.loads(fil)
+            ckpt = set_value(ckpt, keys, name, obj)
+            continue
+
+        fil = client.get_file(path_no_ext)
+        val = parse_value(fil, file_name)
+        ckpt = set_value(ckpt, keys, name, val)
+
+    dir_meta = [os.path.relpath(x, base_path) for x in dir_meta]
+    ckpt = dicts_to_lists(ckpt, dir_meta)
+
+    return ckpt, step
