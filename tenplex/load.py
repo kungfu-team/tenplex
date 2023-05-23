@@ -156,7 +156,7 @@ def dicts_to_lists(ckpt, dir_metas):
 
 def load_http(job_id: str, device_rank: int, ip: str, port: int):
     client = MLFSClient(ip, port)
-    step = client.get_text(f"/job/{job_id}/iter")
+    step = int(client.get_text(f"/job/{job_id}/iter"))
     base_path = f"/job/{job_id}/load{step}/{device_rank}"
     struct = client.get_dir(base_path)
     struct_no_meta = list(filter(lambda x: not x.endswith(".meta"), struct))
