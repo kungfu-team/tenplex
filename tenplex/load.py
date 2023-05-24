@@ -15,6 +15,8 @@ def parse_value(value_str: str, name: str):
     if file_ext == "none":
         return None
     if file_ext == "str":
+        if isinstance(value_str, bytes):
+            return value_str.decode("utf-8")
         return value_str
     if file_ext == "int":
         return int(value_str)
@@ -206,5 +208,7 @@ def load_http(job_id: str, device_rank: int, ip: str, port: int):
         ckpt['rng_state'][0]['random_rng_state'][1])
     ckpt['rng_state'][0]['random_rng_state'] = tuple(
         ckpt['rng_state'][0]['random_rng_state'])
+
+    # np_rng_state
 
     return ckpt, step
