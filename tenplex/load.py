@@ -169,10 +169,10 @@ def load_http(job_id: str, device_rank: int, ip: str, port: int):
         keys = rel_path.split("/")
         file_name = keys[-1]
         keys = keys[:len(keys) - 1]
-        name = file_name.split(".")[0]
-        path_no_ext = ele.split(".")[0]
 
         if file_name.endswith('.numpy.ndarray'):
+            name_split = file_name.split(".")
+            name = '.'.join(name_split[0:-2])
             tensor_data, dtype, dims = client.get_tensor(ele)
             typ = tenplex.tensor_file._dtypes[dtype]
             np_tensor = np.frombuffer(tensor_data, dtype=typ).reshape(dims)
@@ -183,6 +183,9 @@ def load_http(job_id: str, device_rank: int, ip: str, port: int):
             torch_tensor = torch.from_numpy(np_tensor)
             ckpt = set_value(ckpt, keys, name, torch_tensor)
             continue
+
+        path_no_ext = ele.split(".")[0]
+        name = file_name.split(".")[0]
 
         if file_name.endswith(".argparse.Namespace"):
             continue  # TODO remove after finished

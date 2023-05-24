@@ -9,7 +9,7 @@ def main():
     #  parser.add_argument('--mlfs-path', type=str)
     #  args = parser.parse_args()
 
-    job_id = "961a644ab0"
+    job_id = "8efccbf723"
     device_rank = 0
     #  ip = "155.198.152.18"
     ip = "localhost"
@@ -18,6 +18,8 @@ def main():
     ckpt, step = load_http(job_id, device_rank, ip, port)
     print(f"ckpt {ckpt.keys()}")
     print(f"step {step}")
+
+    print(ckpt["model"]["language_model"]["encoder"].keys())
 
 
 if __name__ == '__main__':
