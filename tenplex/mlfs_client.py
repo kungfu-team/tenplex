@@ -23,6 +23,7 @@ class MLFSClient:
         #  self.failed_txt = []
         #  self.total_object = 0
         #  self.failed_object = []
+        #  self.tensor_paths = []
 
     def get_type(self, obj):
         mat = re.match(r'<class \'(.*)\'>', str(type(obj)))
@@ -121,12 +122,18 @@ class MLFSClient:
             tensor = value.detach().cpu().numpy()
             typ = self.get_type(tensor)
             tensor_path = keys_path + f'.{typ}'
+            #  if tensor_path in self.tensor_paths:
+            #      print(f"torch {tensor_path} already uploaded")
+            #  self.tensor_paths.append(tensor_path)
             self.ten_requester.upload_tensor(tensor_path, tensor)
             return
         if isinstance(value, np.ndarray):
             print(f'{keys} is np.ndarray')
             typ = self.get_type(value)
             tensor_path = keys_path + f'.{typ}'
+            #  if tensor_path in self.tensor_paths:
+            #      print(f"np {tensor_path} already uploaded")
+            #  self.tensor_paths.append(tensor_path)
             self.ten_requester.upload_tensor(tensor_path, value)
             return
 

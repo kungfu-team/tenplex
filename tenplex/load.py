@@ -1,3 +1,4 @@
+import copy
 import glob
 import os
 import pickle
@@ -121,27 +122,45 @@ def load(device_rank: int, mlfs_path: str):
     return ckpt, step
 
 
+def try_int(dic, key, val):
+    try:
+        dic[int(key)] = val
+    except ValueError:
+        dic[key] = val
+    return dic
+
+
 def set_value(ckpt, keys, name, value):
     ele = ckpt
+
     for key in keys:
         if key not in ele:
-            ele[key] = {}
-        ele = ele[key]
-    ele[name] = value
+            try_int(ele, key, {})
+
+        try:
+            ele = ele[int(key)]
+        except ValueError:
+            ele = ele[key]
+
+    try_int(ele, name, value)
+
     return ckpt
 
 
 def get_value(ckpt, keys):
     ele = ckpt
     for key in keys:
-        ele = ele[key]
+        try:
+            ele = ele[int(key)]
+        except ValueError:
+            ele = ele[key]
     return ele
 
 
 def dict_to_list(dic):
     lis = []
     for i in range(len(dic.keys())):
-        lis.append(dic[str(i)])
+        lis.append(dic[i])
     return lis
 
 
@@ -149,9 +168,17 @@ def dicts_to_lists(ckpt, dir_metas):
     for met in dir_metas:
         keys = met.split("/")
         keys = keys[:len(keys) - 1]
-        last_key = keys[-1]
+        try:
+            last_key = int(keys[-1])
+        except ValueError:
+            last_key = keys[-1]
         parent_val = get_value(ckpt, keys[:len(keys) - 1])
-        parent_val[last_key] = dict_to_list(parent_val[last_key])
+        try:
+            parent_val[last_key] = dict_to_list(parent_val[last_key])
+        except:
+            print(
+                f"ERROR dict_to_list failed for {keys} {last_key} {parent_val.keys()}"
+            )
 
     return ckpt
 
@@ -190,7 +217,6 @@ def load_http(job_id: str, device_rank: int, ip: str, port: int):
         name = file_name.split(".")[0]
 
         if file_name.endswith(".argparse.Namespace"):
-            continue  # TODO remove after finished
             fil = client.get_file(path_no_ext)
             obj = pickle.loads(fil)
             ckpt = set_value(ckpt, keys, name, obj)
@@ -201,6 +227,7 @@ def load_http(job_id: str, device_rank: int, ip: str, port: int):
         ckpt = set_value(ckpt, keys, name, val)
 
     dir_meta = [os.path.relpath(x, base_path) for x in dir_meta]
+    dir_meta.sort()
     ckpt = dicts_to_lists(ckpt, dir_meta)
 
     # Megatron-LM
