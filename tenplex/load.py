@@ -130,7 +130,7 @@ def try_int(dic, key, val):
     return dic
 
 
-def set_value(ckpt, keys, name, value):
+def set_value_try(ckpt, keys, name, value):
     ele = ckpt
 
     for key in keys:
@@ -147,13 +147,23 @@ def set_value(ckpt, keys, name, value):
     return ckpt
 
 
+def set_value(ckpt, keys, name, value):
+    ele = ckpt
+
+    for key in keys:
+        if key not in ele:
+            ele[key] = {}
+        ele = ele[key]
+
+    ele[name] = value
+
+    return ckpt
+
+
 def get_value(ckpt, keys):
     ele = ckpt
     for key in keys:
-        try:
-            ele = ele[int(key)]
-        except ValueError:
-            ele = ele[key]
+        ele = ele[key]
     return ele
 
 
@@ -167,20 +177,38 @@ def dict_to_list(dic):
 def dicts_to_lists(ckpt, dir_metas):
     for met in dir_metas:
         keys = met.split("/")
+        keys = keys_to_int(keys)
         keys = keys[:len(keys) - 1]
         try:
             last_key = int(keys[-1])
         except ValueError:
             last_key = keys[-1]
         parent_val = get_value(ckpt, keys[:len(keys) - 1])
+        #  parent_val[last_key] = dict_to_list(parent_val[last_key])
         try:
+            print(f"keys {parent_val[last_key].keys()}")
             parent_val[last_key] = dict_to_list(parent_val[last_key])
         except:
-            print(
-                f"ERROR dict_to_list failed for {keys} {last_key} {parent_val.keys()}"
-            )
+            print(f"ERROR dict_to_list failed for {keys} {last_key}")
 
     return ckpt
+
+
+def keys_to_int(keys):
+    new_keys = keys
+    for i, k in enumerate(keys):
+        try:
+            new_keys[i] = int(k)
+        except ValueError:
+            pass
+    return new_keys
+
+
+def to_int(val):
+    try:
+        return int(val)
+    except ValueError:
+        return val
 
 
 def load_http(job_id: str, device_rank: int, ip: str, port: int):
@@ -196,12 +224,14 @@ def load_http(job_id: str, device_rank: int, ip: str, port: int):
     for ele in struct_no_meta:
         rel_path = os.path.relpath(ele, base_path)
         keys = rel_path.split("/")
+        keys = keys_to_int(keys)
         file_name = keys[-1]
         keys = keys[:len(keys) - 1]
 
         if file_name.endswith('.numpy.ndarray'):
             name_split = file_name.split(".")
             name = '.'.join(name_split[0:-2])
+            name = to_int(name)
             tensor_data, dtype, dims = client.get_tensor(ele)
             typ = tenplex.tensor_file._dtypes[dtype]
             np_tensor = np.frombuffer(tensor_data, dtype=typ).reshape(dims)
@@ -215,6 +245,7 @@ def load_http(job_id: str, device_rank: int, ip: str, port: int):
 
         path_no_ext = ele.split(".")[0]
         name = file_name.split(".")[0]
+        name = to_int(name)
 
         if file_name.endswith(".argparse.Namespace"):
             fil = client.get_file(path_no_ext)
@@ -235,7 +266,5 @@ def load_http(job_id: str, device_rank: int, ip: str, port: int):
         ckpt['rng_state'][0]['random_rng_state'][1])
     ckpt['rng_state'][0]['random_rng_state'] = tuple(
         ckpt['rng_state'][0]['random_rng_state'])
-
-    # np_rng_state
 
     return ckpt, step
