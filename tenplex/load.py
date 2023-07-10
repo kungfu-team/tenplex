@@ -184,9 +184,7 @@ def dicts_to_lists(ckpt, dir_metas):
         except ValueError:
             last_key = keys[-1]
         parent_val = get_value(ckpt, keys[:len(keys) - 1])
-        #  parent_val[last_key] = dict_to_list(parent_val[last_key])
         try:
-            print(f"keys {parent_val[last_key].keys()}")
             parent_val[last_key] = dict_to_list(parent_val[last_key])
         except:
             print(f"ERROR dict_to_list failed for {keys} {last_key}")
