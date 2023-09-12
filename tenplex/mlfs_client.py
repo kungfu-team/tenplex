@@ -41,9 +41,7 @@ class MLFSClient:
         }
         endpoint = f'http://{self.req_ip}:{self.ctrl_port}/upload?path={path}'
         r = requests.post(endpoint, headers=headers, data=data)
-        if r.status_code != 200:
-            r.raise_for_status()
-            #  self.failed_txt.append(path)
+        r.raise_for_status()
 
         #  self.total_txt += 1
 
@@ -174,3 +172,12 @@ class MLFSClient:
     def get_file(self, path):
         res = self.get(path, "x-file")
         return res.content
+
+    def delete(self, path: str) -> (int, int):
+        endpoint = f"http://{self.req_ip}:{self.ctrl_port}/delete"
+        params = {"path": path}
+        r = requests.post(endpoint, params=params)
+        r.raise_for_status()
+        vals = r.content.decode("utf-8").strip().split(" ")
+        num_files, num_dir = vals
+        return int(num_files), int(num_dir)

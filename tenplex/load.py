@@ -105,7 +105,7 @@ def load(device_rank: int, mlfs_path: str):
     pa = os.path.join(mlfs_path, "iter")
     with open(pa, "r") as iter_file:
         step = int(iter_file.read().strip())
-    pa = os.path.join(mlfs_path, f"load{step}/{device_rank}")
+    pa = os.path.join(mlfs_path, f"load/{device_rank}")
     print(f"load checkpoint from {pa} at step {step}")
     ckpt = load_traverse(pa)
     if ckpt is None:
@@ -212,7 +212,7 @@ def to_int(val):
 def load_http(job_id: str, device_rank: int, ip: str, port: int):
     client = MLFSClient(ip, port)
     step = int(client.get_text(f"/job/{job_id}/iter"))
-    base_path = f"/job/{job_id}/load{step}/{device_rank}"
+    base_path = f"/job/{job_id}/load/{device_rank}"
     struct = client.get_dir(base_path)
     struct_no_meta = list(filter(lambda x: not x.endswith(".meta"), struct))
     dir_meta = list(filter(lambda x: x.endswith("dir.meta"), struct))
@@ -221,10 +221,15 @@ def load_http(job_id: str, device_rank: int, ip: str, port: int):
     ckpt = {}
     for ele in struct_no_meta:
         rel_path = os.path.relpath(ele, base_path)
-        keys = rel_path.split("/")
-        keys = keys_to_int(keys)
-        file_name = keys[-1]
-        keys = keys[:len(keys) - 1]
+        all_keys = rel_path.split("/")
+        all_keys = keys_to_int(all_keys)
+        file_name = all_keys[-1]
+        keys = all_keys[:len(all_keys) - 1]
+
+        try:
+            file_name.endswith('.numpy.ndarray')
+        except:
+            print(f"endswith failed for {ele} and keys {keys}")
 
         if file_name.endswith('.numpy.ndarray'):
             name_split = file_name.split(".")
