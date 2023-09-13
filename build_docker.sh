@@ -3,4 +3,4 @@ set -e
 
 ./Dockerfile
 
-docker push kungfu.azurecr.io/mw-pytorch1-tenplex:latest
+docker push kungfu.azurecr.io/mw-megatron-lm-tenplex:latest
