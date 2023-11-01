@@ -1,7 +1,7 @@
-import copy
 import glob
 import os
 import pickle
+import time
 
 import numpy as np
 import torch
@@ -102,22 +102,26 @@ def load_traverse(path: str):
 
 
 def load(device_rank: int, mlfs_path: str):
+    load_start = time.time()
     pa = os.path.join(mlfs_path, "iter")
     with open(pa, "r") as iter_file:
         step = int(iter_file.read().strip())
     pa = os.path.join(mlfs_path, f"load/{device_rank}")
     print(f"load checkpoint from {pa} at step {step}")
+
+    start_load_trav = time.time()
     ckpt = load_traverse(pa)
-    if ckpt is None:
-        raise ValueError("checkpoint is None")
-    else:
-        print(f"checkpoint keys {ckpt.keys()}")
+    load_trav_dura = time.time() - start_load_trav
+    print(f"load traverse took {load_trav_dura}")
 
     # Megatron-LM
     ckpt['rng_state'][0]['random_rng_state'][1] = tuple(
         ckpt['rng_state'][0]['random_rng_state'][1])
     ckpt['rng_state'][0]['random_rng_state'] = tuple(
         ckpt['rng_state'][0]['random_rng_state'])
+
+    print(
+        f"loaded checkpoint from {pa} and it took {time.time() - load_start}")
 
     return ckpt, step
 

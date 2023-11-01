@@ -12,7 +12,6 @@ from .tensor_file import TensorRequester
 
 
 class MLFSClient:
-
     def __init__(self, req_ip: str, ctrl_port: int):
         self.ctrl_port = ctrl_port
         self.req_ip = req_ip
@@ -26,20 +25,19 @@ class MLFSClient:
         #  self.tensor_paths = []
 
     def get_type(self, obj):
-        mat = re.match(r'<class \'(.*)\'>', str(type(obj)))
+        mat = re.match(r"<class \'(.*)\'>", str(type(obj)))
         if mat is not None:
             return mat.group(1)
         raise ValueError("mat is None")
 
     def upload_txt(self, path, txt):
-
-        data = bytes(txt, 'utf-8')
+        data = bytes(txt, "utf-8")
 
         headers = {
-            'Content-type': 'text/plain',
-            'x-replace': 'true',
+            "Content-type": "text/plain",
+            "x-replace": "true",
         }
-        endpoint = f'http://{self.req_ip}:{self.ctrl_port}/upload?path={path}'
+        endpoint = f"http://{self.req_ip}:{self.ctrl_port}/upload?path={path}"
         r = requests.post(endpoint, headers=headers, data=data)
         r.raise_for_status()
 
@@ -48,7 +46,7 @@ class MLFSClient:
     def upload_object(self, path, obj, typ=None):
         if typ is None:
             typ = self.get_type(obj)
-        path = path + f'.{typ}'
+        path = path + f".{typ}"
 
         if typ == "none":
             data = "None"
@@ -63,13 +61,12 @@ class MLFSClient:
         elif typ == "argparse.Namespace":
             data = pickle.dumps(obj)
         else:
-            raise ValueError(
-                f"ERROR: type {typ} not supported for upload object")
+            raise ValueError(f"ERROR: type {typ} not supported for upload object")
 
         headers = {
-            'Content-type': typ,
+            "Content-type": typ,
         }
-        endpoint = f'http://{self.req_ip}:{self.ctrl_port}/upload?path={path}'
+        endpoint = f"http://{self.req_ip}:{self.ctrl_port}/upload?path={path}"
         r = requests.post(endpoint, headers=headers, data=data)
         if r.status_code != 200:
             r.raise_for_status()
@@ -86,12 +83,12 @@ class MLFSClient:
 
     def upload_dir_meta(self, value, keys, base_path):
         length = len(value)
-        metadata = f'list\n{length}'
+        metadata = f"list\n{length}"
         str_keys = [str(k) for k in keys]
-        str_keys.append('dir')
-        keys_path = '/'.join(str_keys)
+        str_keys.append("dir")
+        keys_path = "/".join(str_keys)
         txt_path = os.path.join(base_path, keys_path)
-        txt_path = txt_path + '.meta'
+        txt_path = txt_path + ".meta"
         self.upload_txt(txt_path, metadata)
 
     def save_traverse(self, value, base_path: str, keys=None):
@@ -109,26 +106,26 @@ class MLFSClient:
 
             for i, val in enumerate(value):
                 new_keys = copy.deepcopy(keys)
-                new_keys.append(f'{i}')
+                new_keys.append(f"{i}")
                 self.save_traverse(val, base_path, new_keys)
             return
 
         str_keys = [str(k) for k in keys]
-        keys_path = '/'.join(str_keys)
+        keys_path = "/".join(str_keys)
         keys_path = os.path.join(base_path, keys_path)
         if isinstance(value, torch.Tensor):
             tensor = value.detach().cpu().numpy()
             typ = self.get_type(tensor)
-            tensor_path = keys_path + f'.{typ}'
+            tensor_path = keys_path + f".{typ}"
             #  if tensor_path in self.tensor_paths:
             #      print(f"torch {tensor_path} already uploaded")
             #  self.tensor_paths.append(tensor_path)
             self.ten_requester.upload_tensor(tensor_path, tensor)
             return
         if isinstance(value, np.ndarray):
-            print(f'{keys} is np.ndarray')
+            print(f"{keys} is np.ndarray")
             typ = self.get_type(value)
-            tensor_path = keys_path + f'.{typ}'
+            tensor_path = keys_path + f".{typ}"
             #  if tensor_path in self.tensor_paths:
             #      print(f"np {tensor_path} already uploaded")
             #  self.tensor_paths.append(tensor_path)
@@ -136,17 +133,15 @@ class MLFSClient:
             return
 
         if value is None:
-            value = 'None'
-            self.upload_object(keys_path, value, 'none')
+            value = "None"
+            self.upload_object(keys_path, value, "none")
             return
 
         self.upload_object(keys_path, value)
 
     def get(self, path, ctype):
-        url = f'http://{self.req_ip}:{self.ctrl_port}/query'
-        res = requests.get(url,
-                           headers={"Content-Type": ctype},
-                           params={"path": path})
+        url = f"http://{self.req_ip}:{self.ctrl_port}/query"
+        res = requests.get(url, headers={"Content-Type": ctype}, params={"path": path})
         res.raise_for_status()
         return res
 
@@ -176,8 +171,5 @@ class MLFSClient:
     def delete(self, path: str) -> (int, int):
         endpoint = f"http://{self.req_ip}:{self.ctrl_port}/delete"
         params = {"path": path}
-        r = requests.post(endpoint, params=params)
+        r = requests.delete(endpoint, params=params)
         r.raise_for_status()
-        vals = r.content.decode("utf-8").strip().split(" ")
-        num_files, num_dir = vals
-        return int(num_files), int(num_dir)
