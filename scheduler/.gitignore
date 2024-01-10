@@ -1,0 +1,9 @@
+*.html
+*.log
+*.pdf
+*.ps
+/build
+/logs
+/transformer-checkpoint
+bin
+run-id.txt

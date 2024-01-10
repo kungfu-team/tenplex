@@ -1,0 +1,4 @@
+tenplex scheduler
+
+Run local
+mlfs serve -index-url /data/megatron-lm/bert/openwebtext/npzs_seq1024/indices.txt -self 155.198.152.18
