@@ -4,7 +4,8 @@ DEFAULT_GO := $(if $(WHICH_GO),$(WHICH_GO),$(HOME)/local/go/bin/go)
 GO := $(if $(GO),$(GO),$(DEFAULT_GO))
 CUDA := $(if $(CUDA),$(CUDA),$(shell [ -c /dev/nvidia0 ] && echo cuda))
 TAGS := $(if $(TAGS),$(TAGS),)
-BIN_DIR := $(if $(BIN_DIR),$(BIN_DIR),$(HOME)/.work/bin)
+# BIN_DIR := $(if $(BIN_DIR),$(BIN_DIR),$(HOME)/.tenplex/bin)
+BIN_DIR := $(CURDIR)/bin
 
 default: binaries test
 
@@ -40,6 +41,4 @@ t: test
 
 
 bin:
-	mkdir -p $(BIN_DIR) 
-	 ln -s $(BIN_DIR) bin
-
+	mkdir -p $(BIN_DIR)
