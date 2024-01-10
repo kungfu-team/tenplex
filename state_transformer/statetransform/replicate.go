@@ -5,8 +5,8 @@ import (
 	"log"
 	"strings"
 
-	"github.com/kungfu-team/tenplex/state_transformer/go/client"
-	"github.com/kungfu-team/tenplex/state_transformer/go/meta"
+	"github.com/kungfu-team/tenplex/state_transformer/client"
+	"github.com/kungfu-team/tenplex/state_transformer/meta"
 )
 
 func replicateTensor(conf *meta.Config, ckptCl *client.CheckpointClient, sourceKey, targetKey []string, sourceMDPRank, targetMDPRank *meta.MDPRank) error {

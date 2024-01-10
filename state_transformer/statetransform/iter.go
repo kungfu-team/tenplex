@@ -3,8 +3,8 @@ package statetransform
 import (
 	"strconv"
 
-	"github.com/kungfu-team/tenplex/state_transformer/go/client"
-	"github.com/kungfu-team/tenplex/state_transformer/go/meta"
+	"github.com/kungfu-team/tenplex/state_transformer/client"
+	"github.com/kungfu-team/tenplex/state_transformer/meta"
 )
 
 func setIter(conf *meta.Config, targetDevice int, cl client.CheckpointClient) error {

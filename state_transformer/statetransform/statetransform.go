@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kungfu-team/tenplex/state_transformer/go/client"
-	"github.com/kungfu-team/tenplex/state_transformer/go/lib"
-	"github.com/kungfu-team/tenplex/state_transformer/go/megatronlm"
-	"github.com/kungfu-team/tenplex/state_transformer/go/meta"
-	"github.com/kungfu-team/tenplex/state_transformer/go/search"
+	"github.com/kungfu-team/tenplex/state_transformer/client"
+	"github.com/kungfu-team/tenplex/state_transformer/lib"
+	"github.com/kungfu-team/tenplex/state_transformer/megatronlm"
+	"github.com/kungfu-team/tenplex/state_transformer/meta"
+	"github.com/kungfu-team/tenplex/state_transformer/search"
 	"golang.org/x/sync/errgroup"
 )
 

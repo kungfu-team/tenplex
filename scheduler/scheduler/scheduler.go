@@ -10,10 +10,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/kungfu-team/mlfs/mlfs"
-	"github.com/kungfu-team/scheduler/deviceallocation"
-	"github.com/kungfu-team/scheduler/job"
-	"github.com/kungfu-team/tenplex-run/cluster"
+	"github.com/kungfu-team/tenplex/mlfs/mlfs"
+	"github.com/kungfu-team/tenplex/scheduler/deviceallocation"
+	"github.com/kungfu-team/tenplex/scheduler/job"
+	"github.com/kungfu-team/tenplex/tenplex-run/cluster"
 )
 
 var (

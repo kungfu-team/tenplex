@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kungfu-team/tenplex/state_transformer/go/lib"
-	"github.com/kungfu-team/tenplex/state_transformer/go/meta"
+	"github.com/kungfu-team/tenplex/state_transformer/lib"
+	"github.com/kungfu-team/tenplex/state_transformer/meta"
 )
 
 func layerInKeys(sl []string) (bool, string) {

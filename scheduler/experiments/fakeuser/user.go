@@ -15,12 +15,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/kungfu-team/mlfs/ds"
-	"github.com/kungfu-team/scheduler/job"
-	"github.com/kungfu-team/scheduler/scalepoint"
-	"github.com/kungfu-team/scheduler/scheduler"
-	"github.com/kungfu-team/scheduler/stringlist"
-	"github.com/kungfu-team/tenplex-run/cluster"
+	"github.com/kungfu-team/tenplex/mlfs/ds"
+	"github.com/kungfu-team/tenplex/scheduler/job"
+	"github.com/kungfu-team/tenplex/scheduler/scalepoint"
+	"github.com/kungfu-team/tenplex/scheduler/scheduler"
+	"github.com/kungfu-team/tenplex/scheduler/stringlist"
+	"github.com/kungfu-team/tenplex/tenplex-run/cluster"
 )
 
 var openwebtext = ds.Dataset{
@@ -28,10 +28,10 @@ var openwebtext = ds.Dataset{
 	Name:     `openwebtext`,
 }
 
-// var enwiki = ds.Dataset{
-//         IndexURL: `https://tenplex.blob.core.windows.net/tenplexcontainer/gpt_enwiki_indices.txt`,
-//         Name:     `enwiki`,
-// }
+//	var enwiki = ds.Dataset{
+//	        IndexURL: `https://tenplex.blob.core.windows.net/tenplexcontainer/gpt_enwiki_indices.txt`,
+//	        Name:     `enwiki`,
+//	}
 var enwiki = ds.Dataset{
 	IndexURL: `/data/megatron-lm/gpt-2/enwiki/npzs_seq1024/indices.txt`,
 	Name:     `enwiki`,
@@ -95,6 +95,13 @@ func (u User) NewJob(jobID string, pj PlannedJob) job.Job {
 	return u.NewSingleJob(jobID, pj.Dataset, pj.Steps)
 }
 
+func bool2int(x bool) int {
+	if x {
+		return 1
+	}
+	return 0
+}
+
 func (u User) NewSingleJob(jobID string, dataset *ds.Dataset, steps int) job.Job {
 	log.Printf("new job %s for %d steps", jobID, steps)
 	job := job.Job{
@@ -111,9 +118,8 @@ func (u User) NewSingleJob(jobID string, dataset *ds.Dataset, steps int) job.Job
 		ModelSize:      "xl",
 		NumLayers:      24,
 		VocabSize:      30524,
-		Failure:        u.SimulateFailure,
+		Failure:        bool2int(u.SimulateFailure),
 	}
-
 	return job
 }
 
@@ -127,7 +133,7 @@ type User struct {
 	Image           string
 	PlansFile       string
 	SingleTimedJob  bool
-	SimulateFailure bool
+	SimulateFailure bool // FIXME: change it to int
 
 	// old flags
 	AddJobB bool

@@ -6,7 +6,7 @@ import (
 	"os"
 	"sort"
 
-	"github.com/kungfu-team/tenplex-run/job"
+	"github.com/kungfu-team/tenplex/tenplex-run/job"
 )
 
 type DeviceAllocations = map[int]job.ParallelismConfig

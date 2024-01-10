@@ -9,7 +9,7 @@ import (
 	"os"
 	"os/user"
 
-	"github.com/kungfu-team/scheduler/deviceallocation"
+	"github.com/kungfu-team/tenplex/scheduler/deviceallocation"
 )
 
 type Daemon struct {

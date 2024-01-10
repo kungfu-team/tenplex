@@ -12,9 +12,9 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"github.com/kungfu-team/scheduler/experiments"
-	"github.com/kungfu-team/scheduler/job"
-	"github.com/kungfu-team/tenplex-run/cluster"
+	"github.com/kungfu-team/tenplex/scheduler/experiments"
+	"github.com/kungfu-team/tenplex/scheduler/job"
+	"github.com/kungfu-team/tenplex/tenplex-run/cluster"
 	"github.com/lgarithm/proc"
 	"github.com/lgarithm/proc/experimental"
 	"github.com/lgarithm/proc/iostream"

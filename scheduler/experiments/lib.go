@@ -3,7 +3,7 @@ package experiments
 import (
 	"strings"
 
-	"github.com/kungfu-team/scheduler/azcli"
+	"github.com/kungfu-team/tenplex/scheduler/azcli"
 	"github.com/lgarithm/proc"
 )
 

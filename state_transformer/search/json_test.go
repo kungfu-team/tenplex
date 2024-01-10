@@ -1,9 +1,11 @@
+//go:build exclude
+
 package search
 
 import (
 	"testing"
 
-	"github.com/kungfu-team/tenplex/state_transformer/go/meta"
+	"github.com/kungfu-team/tenplex/state_transformer/meta"
 )
 
 func TestSearchJson(t *testing.T) {

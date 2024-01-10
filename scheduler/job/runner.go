@@ -12,11 +12,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/kungfu-team/mlfs/mlfs"
-	"github.com/kungfu-team/state-migrator/go/meta"
-	"github.com/kungfu-team/tenplex-run/cluster"
-	"github.com/kungfu-team/tenplex-run/job"
-	"github.com/kungfu-team/tenplex-run/runop"
+	"github.com/kungfu-team/tenplex/mlfs/mlfs"
+	"github.com/kungfu-team/tenplex/state_transformer/meta"
+	"github.com/kungfu-team/tenplex/tenplex-run/cluster"
+	"github.com/kungfu-team/tenplex/tenplex-run/job"
+	"github.com/kungfu-team/tenplex/tenplex-run/runop"
 	"github.com/lgarithm/proc"
 )
 
@@ -117,7 +117,7 @@ func (ru *Runner) RunTraining(wg *sync.WaitGroup, ch *chan string, schedulerAddr
 				log.Panicf("recovered from RunTraining: %v", err)
 			}
 		}()
-		err := runop.RunTraining(ru.JobConfig, ru.ParaConfig, progress, ru.Job.Steps, ru.Job.ID)
+		err := runop.RunTraining(ru.JobConfig, ru.ParaConfig, progress, ru.Job.Steps, ru.Job.ID, ru.Cluster.Hosts)
 		if err != nil {
 			log.Panicf("Run training failed. %v", err)
 		}

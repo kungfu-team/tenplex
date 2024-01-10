@@ -9,8 +9,8 @@ import (
 	"path"
 	"time"
 
-	"github.com/kungfu-team/scheduler/logging"
-	"github.com/kungfu-team/scheduler/scheduler"
+	"github.com/kungfu-team/tenplex/scheduler/logging"
+	"github.com/kungfu-team/tenplex/scheduler/scheduler"
 	"github.com/lgarithm/go/tr"
 )
 

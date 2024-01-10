@@ -3,8 +3,8 @@ package job
 import (
 	"strings"
 
-	"github.com/kungfu-team/mlfs/ds"
-	"github.com/kungfu-team/scheduler/scalepoint"
+	"github.com/kungfu-team/tenplex/mlfs/ds"
+	"github.com/kungfu-team/tenplex/scheduler/scalepoint"
 )
 
 type Job struct {
@@ -21,7 +21,7 @@ type Job struct {
 	ModelSize      string
 	NumLayers      int
 	VocabSize      int
-	Failure        bool
+	Failure        int
 }
 
 func ShowJobIds(jss ...[]Job) string {
