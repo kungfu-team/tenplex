@@ -9,11 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kungfu-team/mlfs/ds"
-	"github.com/kungfu-team/tenplex-run/cluster"
-	"github.com/kungfu-team/tenplex-run/job"
-	"github.com/kungfu-team/tenplex-run/listflag"
-	"github.com/kungfu-team/tenplex-run/runop"
+	"github.com/kungfu-team/tenplex/mlfs/ds"
+	"github.com/kungfu-team/tenplex/tenplex-run/cluster"
+	"github.com/kungfu-team/tenplex/tenplex-run/job"
+	"github.com/kungfu-team/tenplex/tenplex-run/listflag"
+	"github.com/kungfu-team/tenplex/tenplex-run/runop"
 )
 
 type MDPConfig = job.ParallelismConfig

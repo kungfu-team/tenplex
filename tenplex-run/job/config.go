@@ -3,8 +3,8 @@ package job
 import (
 	"flag"
 
-	"github.com/kungfu-team/mlfs/ds"
-	"github.com/kungfu-team/tenplex-run/cluster"
+	"github.com/kungfu-team/tenplex/mlfs/ds"
+	"github.com/kungfu-team/tenplex/tenplex-run/cluster"
 )
 
 type JobConfig struct {

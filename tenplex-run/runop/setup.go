@@ -6,8 +6,8 @@ import (
 	"path"
 	"time"
 
-	"github.com/kungfu-team/tenplex-run/docker"
-	"github.com/kungfu-team/tenplex-run/job"
+	"github.com/kungfu-team/tenplex/tenplex-run/docker"
+	"github.com/kungfu-team/tenplex/tenplex-run/job"
 	"github.com/lgarithm/proc"
 	"github.com/lgarithm/proc/experimental"
 )

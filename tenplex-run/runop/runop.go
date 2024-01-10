@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kungfu-team/tenplex-run/counter"
-	"github.com/kungfu-team/tenplex-run/job"
+	"github.com/kungfu-team/tenplex/tenplex-run/counter"
+	"github.com/kungfu-team/tenplex/tenplex-run/job"
 	"github.com/lgarithm/proc"
 )
 

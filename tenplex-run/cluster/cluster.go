@@ -3,7 +3,7 @@ package cluster
 import (
 	"flag"
 
-	"github.com/kungfu-team/tenplex-run/listflag"
+	"github.com/kungfu-team/tenplex/tenplex-run/listflag"
 )
 
 type Cluster struct {

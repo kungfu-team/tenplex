@@ -9,7 +9,7 @@ import (
 	"path"
 	"time"
 
-	"github.com/kungfu-team/tenplex-run/job"
+	"github.com/kungfu-team/tenplex/tenplex-run/job"
 )
 
 var client = http.Client{Timeout: 3 * time.Second}

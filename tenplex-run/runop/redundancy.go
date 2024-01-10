@@ -3,9 +3,9 @@ package runop
 import (
 	"fmt"
 
-	"github.com/kungfu-team/mlfs/mlfs"
-	"github.com/kungfu-team/mlfs/pid"
-	"github.com/kungfu-team/tenplex-run/job"
+	"github.com/kungfu-team/tenplex/mlfs/mlfs"
+	"github.com/kungfu-team/tenplex/mlfs/pid"
+	"github.com/kungfu-team/tenplex/tenplex-run/job"
 )
 
 func setRedundancy(jobConf *job.JobConfig) error {

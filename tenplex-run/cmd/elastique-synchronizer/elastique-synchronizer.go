@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kungfu-team/tenplex-run/mp"
+	"github.com/kungfu-team/tenplex/tenplex-run/mp"
 )
 
 var (

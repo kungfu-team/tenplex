@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/kungfu-team/mlfs/ds"
-	"github.com/kungfu-team/mlfs/mlfs"
-	"github.com/kungfu-team/tenplex-run/job"
+	"github.com/kungfu-team/tenplex/mlfs/ds"
+	"github.com/kungfu-team/tenplex/mlfs/mlfs"
+	"github.com/kungfu-team/tenplex/tenplex-run/job"
 )
 
 func mount(cli *mlfs.Client, ds ds.Dataset, jobID string, batchSize, progress, dpSize, seed int) error {
