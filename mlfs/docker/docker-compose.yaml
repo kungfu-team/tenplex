@@ -1,0 +1,15 @@
+#!/usr/bin/env -S sh -c 'docker compose -f $0 up'
+
+services:
+  mlfs:
+    # build: .
+    image: kungfu.azurecr.io/mlfs:snapshot
+    command: /sbin/init
+    privileged: true
+    deploy:
+      replicas: 4
+
+networks:
+  default:
+    name: mlfs
+    # external: true

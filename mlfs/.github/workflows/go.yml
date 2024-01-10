@@ -1,0 +1,85 @@
+---
+name: Go
+'on':
+- push
+- pull_request
+- workflow_dispatch
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions/setup-go@v2
+      with:
+        go-version: '1.18'
+
+    - run: sudo apt install -y openssh-client # for ssh-keygen
+    - run: mkdir -p $HOME/.ssh
+    - run: echo "${KUNGFU_RSA}" > $HOME/.ssh/id_rsa
+      env:
+        KUNGFU_RSA: ${{ secrets.KUNGFU_RSA }}
+    - run: chmod 0600 $HOME/.ssh/id_rsa
+    - run: ssh-keygen -y -f $HOME/.ssh/id_rsa > $HOME/.ssh/id_rsa.pub
+
+    - run: git config --global url."git@github.com:".insteadOf "https://github.com/"
+    - run: go env -w GOPRIVATE=*
+
+    - run: go test ./...
+    - run: make
+    - run: ./scripts/pack.sh
+    - run: sudo dpkg -i ./build/*.deb
+
+    - run: echo "${MINDDATA_SAS}" | sudo tee /etc/mlfs/minddata.sas
+      env:
+        MINDDATA_SAS: ${{ secrets.MINDDATA_SAS }}
+
+    - run: sudo systemctl daemon-reload
+    - run: sudo systemctl start mlfs
+    - run: systemctl status mlfs
+
+    - run: ./bin/mlfs mount -global-batch-size 23 -dp-size 4 -idx-name squad1 -index-url https://minddata.blob.core.windows.net/data/squad1/squad1.idx.txt
+    - run: ./bin/mlfs fetch -file 'https://minddata.blob.core.windows.net/data/squad1/train.tf_record' -md5 67eb6da21920dda01ec75cd6e1a5b8d7
+    # - run: ./bin/mlfs bench -port 19999
+    - run: ./bin/mlfs bench -mnt /mnt/mlfs
+
+    - run: tree /mnt/mlfs/
+
+    - run: sudo systemctl stop mlfs
+
+    - run: mkdir -p deb
+    - run: cp ./build/*.deb deb/
+
+    - run: dpkg-scanpackages --multiversion . | tee Packages
+      working-directory: deb
+    - run: apt-ftparchive release . | tee ../Release
+      working-directory: deb
+    - run: mv ../Release .
+      working-directory: deb
+
+    - run: echo "${GPG}" | gpg --import
+      env:
+        GPG: ${{ secrets.TENPLEX_GPG }}
+
+    - run: gpg --default-key "${EMAIL}" --clearsign -o - Release | tee InRelease
+      working-directory: deb
+      env:
+        EMAIL: lg4869@outlook.com
+
+    - run: |
+        branch=$(git rev-parse --abbrev-ref HEAD)
+        if [ "$branch" = "main" ]; then
+          PREFIX=public/deb
+        else
+          PREFIX=public/deb-snapshot
+        fi
+
+        ContentType=text/plain ../scripts/upload.sh Packages $PREFIX/Packages
+        ContentType=text/plain ../scripts/upload.sh Release $PREFIX/Release
+        ContentType=text/plain ../scripts/upload.sh InRelease $PREFIX/InRelease
+
+        filename=$(ls *.deb)
+        ../scripts/upload.sh $filename $PREFIX/$filename
+      working-directory: deb
+      env:
+        SAS: ${{ secrets.TENPLEX_PUBLIC_WRITE_SAS }}

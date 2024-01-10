@@ -1,0 +1,4 @@
+{
+    "name": "imagenet",
+    "index-url": "https://tenplex.blob.core.windows.net/data/imagenet.idx.txt"
+}
