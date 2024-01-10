@@ -1,0 +1,28 @@
+name: Go
+
+on:
+- push
+
+jobs:
+  linux:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions/setup-go@v2
+      with:
+        go-version: '1.18'
+
+    - run: sudo apt install -y openssh-client # for ssh-keygen
+    - run: mkdir -p $HOME/.ssh
+    - run: echo "${KUNGFU_RSA}" > $HOME/.ssh/id_rsa
+      env:
+        KUNGFU_RSA: ${{ secrets.KUNGFU_RSA }}
+    - run: chmod 0600 $HOME/.ssh/id_rsa
+    - run: ssh-keygen -y -f $HOME/.ssh/id_rsa > $HOME/.ssh/id_rsa.pub
+
+    - run: git config --global url."git@github.com:".insteadOf "https://github.com/"
+    - run: go env -w GOPRIVATE=*
+
+    - run: GO=$(which go) make

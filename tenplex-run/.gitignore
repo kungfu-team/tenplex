@@ -1,0 +1,6 @@
+hostfile.txt
+bin
+*.log
+.mypy_cache
+*.tar
+*.bz2
