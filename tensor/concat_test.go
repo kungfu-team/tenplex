@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/kungfu-team/tensor"
+	"github.com/kungfu-team/tenplex/tensor"
 )
 
 func TestConcat(test *testing.T) {

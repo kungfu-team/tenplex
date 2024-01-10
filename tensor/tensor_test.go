@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/kungfu-team/tensor"
+	"github.com/kungfu-team/tenplex/tensor"
 )
 
 func Test_1(t *testing.T) {
