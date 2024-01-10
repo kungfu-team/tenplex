@@ -23,6 +23,6 @@ jobs:
     # - run: pip install -r tests/requirements.txt
     # - run: pip install torch==1.5
 
-    - run: pip install --no-index .
+    # - run: pip install --no-index .
 
     # TODO: run tests
