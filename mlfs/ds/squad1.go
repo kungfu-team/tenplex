@@ -1,6 +1,6 @@
 package ds
 
-import "github.com/kungfu-team/mlfs/hash"
+import "github.com/kungfu-team/tenplex/mlfs/hash"
 
 // https://minddata.blob.core.windows.net/data/squad1/squad1.md5.txt
 

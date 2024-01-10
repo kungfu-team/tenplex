@@ -14,7 +14,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/kungfu-team/mlfs/pid"
+	"github.com/kungfu-team/tenplex/mlfs/pid"
 )
 
 type Client struct {

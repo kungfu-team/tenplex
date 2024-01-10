@@ -9,12 +9,12 @@ import (
 	"path"
 	"strings"
 
-	"github.com/kungfu-team/mlfs/cache"
-	"github.com/kungfu-team/mlfs/iseq"
-	"github.com/kungfu-team/mlfs/state"
-	"github.com/kungfu-team/mlfs/uri"
-	"github.com/kungfu-team/mlfs/vfs"
-	"github.com/kungfu-team/mlfs/vfs/vfile"
+	"github.com/kungfu-team/tenplex/mlfs/cache"
+	"github.com/kungfu-team/tenplex/mlfs/iseq"
+	"github.com/kungfu-team/tenplex/mlfs/state"
+	"github.com/kungfu-team/tenplex/mlfs/uri"
+	"github.com/kungfu-team/tenplex/mlfs/vfs"
+	"github.com/kungfu-team/tenplex/mlfs/vfs/vfile"
 )
 
 // TFRecords Dataset

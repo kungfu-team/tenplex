@@ -12,12 +12,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kungfu-team/mlfs/buildinfo"
-	"github.com/kungfu-team/mlfs/fsutil"
-	"github.com/kungfu-team/mlfs/pid"
-	"github.com/kungfu-team/mlfs/uri"
-	"github.com/kungfu-team/mlfs/vfs"
-	"github.com/kungfu-team/tensor"
+	"github.com/kungfu-team/tenplex/mlfs/buildinfo"
+	"github.com/kungfu-team/tenplex/mlfs/fsutil"
+	"github.com/kungfu-team/tenplex/mlfs/pid"
+	"github.com/kungfu-team/tenplex/mlfs/uri"
+	"github.com/kungfu-team/tenplex/mlfs/vfs"
+	"github.com/kungfu-team/tenplex/tensor"
 )
 
 type webUI struct {

@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/kungfu-team/mlfs/vfs"
-	"github.com/kungfu-team/tensor"
+	"github.com/kungfu-team/tenplex/mlfs/vfs"
+	"github.com/kungfu-team/tenplex/tensor"
 )
 
 type Tensor = tensor.Tensor

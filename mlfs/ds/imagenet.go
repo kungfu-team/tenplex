@@ -1,6 +1,6 @@
 package ds
 
-import "github.com/kungfu-team/mlfs/hash"
+import "github.com/kungfu-team/tenplex/mlfs/hash"
 
 var (
 	ImagenetIndex = hash.HashedFile{

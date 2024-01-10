@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 
-	"github.com/kungfu-team/mlfs/fuse"
-	"github.com/kungfu-team/mlfs/utils"
+	"github.com/kungfu-team/tenplex/mlfs/fuse"
+	"github.com/kungfu-team/tenplex/mlfs/utils"
 )
 
 var (

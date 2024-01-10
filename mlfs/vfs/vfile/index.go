@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/kungfu-team/mlfs/uri"
+	"github.com/kungfu-team/tenplex/mlfs/uri"
 )
 
 func SaveIdxFile(filename string, idx IndexedFiles) error {

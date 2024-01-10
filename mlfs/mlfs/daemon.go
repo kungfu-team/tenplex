@@ -13,9 +13,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/kungfu-team/mlfs/buildinfo"
-	"github.com/kungfu-team/mlfs/pid"
-	"github.com/kungfu-team/mlfs/utils"
+	"github.com/kungfu-team/tenplex/mlfs/buildinfo"
+	"github.com/kungfu-team/tenplex/mlfs/pid"
+	"github.com/kungfu-team/tenplex/mlfs/utils"
 )
 
 const DefaultCtrlPort = 20010

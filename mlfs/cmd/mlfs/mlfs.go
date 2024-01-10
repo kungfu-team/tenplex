@@ -10,8 +10,8 @@ import (
 	"path"
 	"sort"
 
-	"github.com/kungfu-team/mlfs/buildinfo"
-	"github.com/kungfu-team/mlfs/mlfs"
+	"github.com/kungfu-team/tenplex/mlfs/buildinfo"
+	"github.com/kungfu-team/tenplex/mlfs/mlfs"
 )
 
 var config = flag.String("config", ``, ``)

@@ -1,6 +1,6 @@
 package vfile
 
-import "github.com/kungfu-team/mlfs/iseq"
+import "github.com/kungfu-team/tenplex/mlfs/iseq"
 
 func (f IndexedFiles) Shard(i, n int) *vfile {
 	seq := iseq.Seq(iseq.Iota(f.NumRange()))

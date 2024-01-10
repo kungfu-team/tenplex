@@ -3,7 +3,7 @@ package ufs
 import (
 	"log"
 
-	"github.com/kungfu-team/mlfs/vfs"
+	"github.com/kungfu-team/tenplex/mlfs/vfs"
 )
 
 func Umount(mnt string) {

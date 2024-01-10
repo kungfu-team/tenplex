@@ -8,9 +8,9 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/kungfu-team/mlfs/iotrace"
-	"github.com/kungfu-team/mlfs/uri"
-	"github.com/kungfu-team/mlfs/vfs/vfile"
+	"github.com/kungfu-team/tenplex/mlfs/iotrace"
+	"github.com/kungfu-team/tenplex/mlfs/uri"
+	"github.com/kungfu-team/tenplex/mlfs/vfs/vfile"
 )
 
 func BuildIndex(names []string, m int) (vfile.IndexedFiles, error) {

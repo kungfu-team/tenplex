@@ -6,8 +6,8 @@ import (
 	"path"
 	"time"
 
-	"github.com/kungfu-team/mlfs/ds"
-	"github.com/kungfu-team/mlfs/mlfs/t"
+	"github.com/kungfu-team/tenplex/mlfs/ds"
+	"github.com/kungfu-team/tenplex/mlfs/mlfs/t"
 )
 
 var pwd, _ = os.Getwd()

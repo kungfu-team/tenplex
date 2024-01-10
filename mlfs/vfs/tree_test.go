@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/kungfu-team/mlfs/vfs"
+	"github.com/kungfu-team/tenplex/mlfs/vfs"
 )
 
 func Test_1(t *testing.T) {

@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kungfu-team/mlfs/bimap"
-	"github.com/kungfu-team/mlfs/mlfs"
-	"github.com/kungfu-team/mlfs/par"
-	"github.com/kungfu-team/mlfs/uri"
-	"github.com/kungfu-team/mlfs/utils"
+	"github.com/kungfu-team/tenplex/mlfs/bimap"
+	"github.com/kungfu-team/tenplex/mlfs/mlfs"
+	"github.com/kungfu-team/tenplex/mlfs/par"
+	"github.com/kungfu-team/tenplex/mlfs/uri"
+	"github.com/kungfu-team/tenplex/mlfs/utils"
 )
 
 var (

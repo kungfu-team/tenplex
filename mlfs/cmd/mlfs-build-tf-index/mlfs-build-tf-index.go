@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/kungfu-team/mlfs/tfrecord"
-	"github.com/kungfu-team/mlfs/vfs/vfile"
+	"github.com/kungfu-team/tenplex/mlfs/tfrecord"
+	"github.com/kungfu-team/tenplex/mlfs/vfs/vfile"
 )
 
 var (

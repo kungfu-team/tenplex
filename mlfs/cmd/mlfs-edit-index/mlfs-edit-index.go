@@ -10,8 +10,8 @@ import (
 	"log"
 	"strings"
 
-	"github.com/kungfu-team/mlfs/mlfs"
-	"github.com/kungfu-team/mlfs/vfs/vfile"
+	"github.com/kungfu-team/tenplex/mlfs/mlfs"
+	"github.com/kungfu-team/tenplex/mlfs/vfs/vfile"
 )
 
 var (

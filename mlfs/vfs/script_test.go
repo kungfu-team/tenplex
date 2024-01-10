@@ -5,7 +5,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/kungfu-team/mlfs/vfs"
+	"github.com/kungfu-team/tenplex/mlfs/vfs"
 )
 
 func runScript(r *vfs.Tree, script string) error {

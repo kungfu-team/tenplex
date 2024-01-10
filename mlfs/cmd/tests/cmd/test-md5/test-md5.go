@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/kungfu-team/mlfs/ds"
+	"github.com/kungfu-team/tenplex/mlfs/ds"
 )
 
 func main() {

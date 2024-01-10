@@ -3,7 +3,7 @@ package vfile
 import (
 	"io"
 
-	"github.com/kungfu-team/mlfs/uri"
+	"github.com/kungfu-team/tenplex/mlfs/uri"
 )
 
 type link struct {

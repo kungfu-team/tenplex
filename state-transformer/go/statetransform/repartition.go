@@ -6,7 +6,7 @@ import (
 
 	"github.com/kungfu-team/state-migrator/go/client"
 	"github.com/kungfu-team/state-migrator/go/meta"
-	"github.com/kungfu-team/tensor"
+	"github.com/kungfu-team/tenplex/tensor"
 )
 
 type Requests = map[int][]int

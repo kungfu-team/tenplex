@@ -15,16 +15,16 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/kungfu-team/mlfs/buildinfo"
-	"github.com/kungfu-team/mlfs/cache"
-	"github.com/kungfu-team/mlfs/ds/trds"
-	"github.com/kungfu-team/mlfs/pid"
-	"github.com/kungfu-team/mlfs/uri"
-	"github.com/kungfu-team/mlfs/utils"
-	"github.com/kungfu-team/mlfs/vfs"
-	"github.com/kungfu-team/mlfs/vfs/hfs"
-	"github.com/kungfu-team/mlfs/vfs/ufs"
-	"github.com/kungfu-team/mlfs/vfs/vfile"
+	"github.com/kungfu-team/tenplex/mlfs/buildinfo"
+	"github.com/kungfu-team/tenplex/mlfs/cache"
+	"github.com/kungfu-team/tenplex/mlfs/ds/trds"
+	"github.com/kungfu-team/tenplex/mlfs/pid"
+	"github.com/kungfu-team/tenplex/mlfs/uri"
+	"github.com/kungfu-team/tenplex/mlfs/utils"
+	"github.com/kungfu-team/tenplex/mlfs/vfs"
+	"github.com/kungfu-team/tenplex/mlfs/vfs/hfs"
+	"github.com/kungfu-team/tenplex/mlfs/vfs/ufs"
+	"github.com/kungfu-team/tenplex/mlfs/vfs/vfile"
 )
 
 var log = golog.New(os.Stderr, fmt.Sprintf(`[mlfs:%d] `, os.Getpid()), 0)

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/kungfu-team/mlfs/uri"
+	"github.com/kungfu-team/tenplex/mlfs/uri"
 )
 
 type HashedFile struct {

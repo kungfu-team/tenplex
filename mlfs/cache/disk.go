@@ -12,8 +12,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/kungfu-team/mlfs/hash"
-	"github.com/kungfu-team/mlfs/uri"
+	"github.com/kungfu-team/tenplex/mlfs/hash"
+	"github.com/kungfu-team/tenplex/mlfs/uri"
 )
 
 var errInvalidMD5 = errors.New("invalid MD5")

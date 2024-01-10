@@ -4,7 +4,7 @@ import (
 	"io"
 	"log"
 
-	"github.com/kungfu-team/mlfs/cache"
+	"github.com/kungfu-team/tenplex/mlfs/cache"
 )
 
 type vfile struct {

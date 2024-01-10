@@ -9,7 +9,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/kungfu-team/mlfs/closer"
+	"github.com/kungfu-team/tenplex/mlfs/closer"
 )
 
 const azBlobDomain = `blob.core.windows.net`

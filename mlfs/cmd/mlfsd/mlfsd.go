@@ -4,8 +4,8 @@ import (
 	"context"
 	"flag"
 
-	"github.com/kungfu-team/mlfs/mlfs"
-	"github.com/kungfu-team/mlfs/utils"
+	"github.com/kungfu-team/tenplex/mlfs/mlfs"
+	"github.com/kungfu-team/tenplex/mlfs/utils"
 )
 
 func main() {

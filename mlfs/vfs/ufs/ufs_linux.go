@@ -12,8 +12,8 @@ import (
 
 	"bazil.org/fuse"
 	"bazil.org/fuse/fs"
-	"github.com/kungfu-team/mlfs/vfs"
-	"github.com/kungfu-team/mlfs/vfs/vfile"
+	"github.com/kungfu-team/tenplex/mlfs/vfs"
+	"github.com/kungfu-team/tenplex/mlfs/vfs/vfile"
 )
 
 func (f *FS) Root() (fs.Node, error) {

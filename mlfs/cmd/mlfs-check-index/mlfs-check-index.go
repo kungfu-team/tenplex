@@ -8,9 +8,9 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/kungfu-team/mlfs/mlfs"
-	"github.com/kungfu-team/mlfs/uri"
-	"github.com/kungfu-team/mlfs/vfs/vfile"
+	"github.com/kungfu-team/tenplex/mlfs/mlfs"
+	"github.com/kungfu-team/tenplex/mlfs/uri"
+	"github.com/kungfu-team/tenplex/mlfs/vfs/vfile"
 )
 
 // ./bin/mlfs-check-index $(cat tests/data/*.json | jq -r '."idx-url"')

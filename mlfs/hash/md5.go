@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/kungfu-team/mlfs/iotrace"
+	"github.com/kungfu-team/tenplex/mlfs/iotrace"
 )
 
 type md5db struct {

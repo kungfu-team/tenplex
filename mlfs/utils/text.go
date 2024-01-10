@@ -4,7 +4,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/kungfu-team/mlfs/uri"
+	"github.com/kungfu-team/tenplex/mlfs/uri"
 )
 
 func Readlines(filename string) ([]string, error) {

@@ -4,8 +4,8 @@ import (
 	"flag"
 	"log"
 
-	"github.com/kungfu-team/mlfs/mlfs"
-	"github.com/kungfu-team/tensor"
+	"github.com/kungfu-team/tenplex/mlfs/mlfs"
+	"github.com/kungfu-team/tenplex/tensor"
 )
 
 var (

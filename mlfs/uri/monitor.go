@@ -3,8 +3,8 @@ package uri
 import (
 	"io"
 
-	"github.com/kungfu-team/mlfs/closer"
-	"github.com/kungfu-team/mlfs/iotrace"
+	"github.com/kungfu-team/tenplex/mlfs/closer"
+	"github.com/kungfu-team/tenplex/mlfs/iotrace"
 )
 
 type monitor struct {

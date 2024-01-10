@@ -3,7 +3,7 @@ package vfs_test
 import (
 	"testing"
 
-	"github.com/kungfu-team/mlfs/vfs"
+	"github.com/kungfu-team/tenplex/mlfs/vfs"
 )
 
 func Test_RmRecursive(t *testing.T) {

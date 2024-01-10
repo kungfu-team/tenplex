@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/kungfu-team/mlfs/ds"
-	"github.com/kungfu-team/mlfs/vfs/vfile"
+	"github.com/kungfu-team/tenplex/mlfs/ds"
+	"github.com/kungfu-team/tenplex/mlfs/vfs/vfile"
 )
 
 var (

@@ -4,7 +4,7 @@ import (
 	"image"
 	"image/color"
 
-	"github.com/kungfu-team/mlfs/vfs/vfile"
+	"github.com/kungfu-team/tenplex/mlfs/vfs/vfile"
 )
 
 type DSIDX struct {

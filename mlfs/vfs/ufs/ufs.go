@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/kungfu-team/mlfs/vfs"
+	"github.com/kungfu-team/tenplex/mlfs/vfs"
 )
 
 type FS struct {

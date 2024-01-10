@@ -11,13 +11,13 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/kungfu-team/mlfs/ds/trds"
-	"github.com/kungfu-team/mlfs/iotrace"
-	"github.com/kungfu-team/mlfs/par"
-	"github.com/kungfu-team/mlfs/tfrecord"
-	"github.com/kungfu-team/mlfs/uri"
-	"github.com/kungfu-team/mlfs/utils"
-	"github.com/kungfu-team/mlfs/vfs/vfile"
+	"github.com/kungfu-team/tenplex/mlfs/ds/trds"
+	"github.com/kungfu-team/tenplex/mlfs/iotrace"
+	"github.com/kungfu-team/tenplex/mlfs/par"
+	"github.com/kungfu-team/tenplex/mlfs/tfrecord"
+	"github.com/kungfu-team/tenplex/mlfs/uri"
+	"github.com/kungfu-team/tenplex/mlfs/utils"
+	"github.com/kungfu-team/tenplex/mlfs/vfs/vfile"
 )
 
 type Test struct {

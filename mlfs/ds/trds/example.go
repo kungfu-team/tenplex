@@ -3,8 +3,8 @@ package trds
 import (
 	"bytes"
 
-	"github.com/kungfu-team/mlfs/vfs"
-	"github.com/kungfu-team/mlfs/vfs/vfile"
+	"github.com/kungfu-team/tenplex/mlfs/vfs"
+	"github.com/kungfu-team/tenplex/mlfs/vfs/vfile"
 )
 
 func InitExample(r *vfs.Tree) {

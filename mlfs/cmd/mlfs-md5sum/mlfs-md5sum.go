@@ -9,9 +9,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/kungfu-team/mlfs/hash"
-	"github.com/kungfu-team/mlfs/iotrace"
-	"github.com/kungfu-team/mlfs/utils"
+	"github.com/kungfu-team/tenplex/mlfs/hash"
+	"github.com/kungfu-team/tenplex/mlfs/iotrace"
+	"github.com/kungfu-team/tenplex/mlfs/utils"
 )
 
 var (
