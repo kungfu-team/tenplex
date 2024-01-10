@@ -1,6 +1,0 @@
-`--num-layers`, `32`,
-`--hidden-size`, `3072`,
-`--num-attention-heads`, `32`,
-`--seq-length`, `1024`,
-`--max-position-embeddings`, `1024`,
-`--batch-size 8`,
