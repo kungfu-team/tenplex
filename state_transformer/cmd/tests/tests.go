@@ -7,9 +7,9 @@ import (
 	"os"
 	"path"
 
-	"github.com/kungfu-team/state-migrator/go/client"
-	"github.com/kungfu-team/state-migrator/go/meta"
-	"github.com/kungfu-team/state-migrator/go/search"
+	"github.com/kungfu-team/tenplex/state_transformer/go/client"
+	"github.com/kungfu-team/tenplex/state_transformer/go/meta"
+	"github.com/kungfu-team/tenplex/state_transformer/go/search"
 )
 
 func testSearchJsonForTensors(config *meta.Config, targetRank int, basePath string) {

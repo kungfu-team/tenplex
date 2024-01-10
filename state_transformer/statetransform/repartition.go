@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kungfu-team/state-migrator/go/client"
-	"github.com/kungfu-team/state-migrator/go/meta"
+	"github.com/kungfu-team/tenplex/state_transformer/go/client"
+	"github.com/kungfu-team/tenplex/state_transformer/go/meta"
 	"github.com/kungfu-team/tenplex/tensor"
 )
 

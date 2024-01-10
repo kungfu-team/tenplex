@@ -3,7 +3,7 @@ package search
 import (
 	"testing"
 
-	"github.com/kungfu-team/state-migrator/go/meta"
+	"github.com/kungfu-team/tenplex/state_transformer/go/meta"
 )
 
 func TestSearchJson(t *testing.T) {

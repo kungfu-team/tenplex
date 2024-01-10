@@ -3,7 +3,7 @@ package megatronlm
 import (
 	"fmt"
 
-	"github.com/kungfu-team/state-migrator/go/meta"
+	"github.com/kungfu-team/tenplex/state_transformer/go/meta"
 )
 
 func getValMapToMap(obj map[string]interface{}, key string) (map[string]interface{}, error) {

@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kungfu-team/state-migrator/go/meta"
+	"github.com/kungfu-team/tenplex/state_transformer/go/meta"
 	"github.com/kungfu-team/tenplex/tensor"
 	"golang.org/x/exp/slices"
 )

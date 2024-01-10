@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/kungfu-team/state-migrator/go/meta"
-	"github.com/kungfu-team/state-migrator/go/statetransform"
+	"github.com/kungfu-team/tenplex/state_transformer/go/meta"
+	"github.com/kungfu-team/tenplex/state_transformer/go/statetransform"
 )
 
 func main() {

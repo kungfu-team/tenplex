@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kungfu-team/state-migrator/go/meta"
+	"github.com/kungfu-team/tenplex/state_transformer/go/meta"
 )
 
 func logReplicateTensor(conf *meta.Config, sourceKey, targetKey []string, sourceDevice int, sourceMDPRank *meta.MDPRank, targetDevice int, targetMDPRank *meta.MDPRank) error {
