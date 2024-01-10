@@ -1,0 +1,6 @@
+github.com/kungfu-team/tensor v0.0.1 h1:QOEarsBlyjI52sNYUC1gfhemCjXHHqCiao+D1uccWCE=
+github.com/kungfu-team/tensor v0.0.1/go.mod h1:b9olEYHzmcoLPNs8hPRfAup3r78QumiNXuqBjxX85bs=
+golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa h1:FRnLl4eNAQl8hwxVVC17teOw8kdjVDVAiFMtgUdTSRQ=
+golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa/go.mod h1:zk2irFbV9DP96SEBUUAy67IdHUaZuSnrz1n472HUCLE=
+golang.org/x/sync v0.5.0 h1:60k92dhOjHxJkrqnwsfl8KuaHbn/5dl0lUPUklKo3qE=
+golang.org/x/sync v0.5.0/go.mod h1:Czt+wKu1gCyEFDUtn0jG5QVvpJ6rzVqr5aXyt9drQfk=

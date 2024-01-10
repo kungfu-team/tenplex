@@ -1,0 +1,2 @@
+- ./serve.sh        # start the state server
+- ./repartition.sh  # run the client which requests tensors from the servers
