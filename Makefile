@@ -42,3 +42,6 @@ t: test
 
 bin:
 	mkdir -p $(BIN_DIR)
+
+deb: binaries
+	./scripts/pack.sh
