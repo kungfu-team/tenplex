@@ -51,3 +51,6 @@ bin:
 
 deb: binaries
 	./scripts/pack.sh
+
+sys-install: deb
+	sudo dpkg -i ./build/*.deb
