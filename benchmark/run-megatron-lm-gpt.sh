@@ -1,6 +1,19 @@
 #!/bin/bash
 set -e
 
+join_() {
+    local IFS=$1
+    shift
+    echo "$*"
+}
+
+join() { join_ , $@; }
+
+list_hosts() {
+    echo "10.10.10.1"
+    echo "10.10.10.3"
+}
+
 tenplex-run \
     -image "kungfu.azurecr.io/mw-megatron-lm-update:latest" \
     -framework "megatron-lm" \
@@ -11,7 +24,7 @@ tenplex-run \
     -micro-batch-size 8 \
     -precision "fp16" \
     -index-url "/data/megatron-lm/gpt-2/enwiki/npzs_seq1024/indices.txt" \
-    -hosts "10.10.10.1,10.10.10.3" \
+    -hosts "$(join $(list_hosts))" \
     -tenplex-prefix "$HOME/.tenplex" \
     -schedule-file "$(pwd)/schedule.json" \
     -mlfs-port 20010 \
