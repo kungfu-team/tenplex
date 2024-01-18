@@ -141,7 +141,7 @@ func repartition(
 			args = append(args, `--central`)
 		}
 		migrate := Proc{
-			Prog: path.Join(home, ".tenplex/bin/state-migrator"),
+			Prog: "~/go/bin/state-migrator",
 			Args: args,
 			Host: host,
 			User: jobConf.User,

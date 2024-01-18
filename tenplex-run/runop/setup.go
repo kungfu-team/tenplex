@@ -94,14 +94,26 @@ func copyDir(uh proc.UserHost, local, remote string) P {
 	)
 }
 
-func PrepareVMs(jobConf *job.JobConfig) {
-	const (
-		stateMigratorPath = "/home/marcel/Elasticity/Repo/state-migrator/go/bin/state-migrator"
-		// stateMigratorPath = `/home/lg/code/repos/github.com/kungfu-team/state-migrator/go/bin/state-migrator`
-		structurePath = `/home/marcel/Elasticity/Repo/transformer-checkpoint`
+func cloneTransformerCkpts(host, user string) P {
+	dir := "~/.tenplex/transformer-checkpoint"
+	pRm := Proc{
+		Prog: `rm`,
+		Args: []string{`-rf`, dir},
+		Host: host,
+		User: user,
+	}
+	pClone := Proc{
+		Prog: `git`,
+		Args: []string{`clone`, `git@github.com:kungfu-team/transformer-checkpoint.git`, dir},
+		Host: host,
+		User: user,
+	}
+	return seq(ignore(ssh(pRm)), ssh(pClone))
+}
 
-		tenplexDir = "~/.tenplex"
-	)
+func PrepareVMs(jobConf *job.JobConfig) {
+	const tenplexDir = "~/.tenplex"
+
 	tenplexBinDir := path.Join(tenplexDir, "bin")
 	var ps []P
 	for _, host := range jobConf.Cluster.Hosts {
@@ -118,14 +130,10 @@ func PrepareVMs(jobConf *job.JobConfig) {
 			Host: host,
 			User: jobConf.User,
 		}
-		// scpMigrator := experimental.Scp(at(jobConf.User, host), stateMigratorPath, tenplexBinDir)
-		copyMigrator := copyDir(at(jobConf.User, host), stateMigratorPath, tenplexBinDir)
-		copyStructure := copyDir(at(jobConf.User, host), structurePath, tenplexDir)
 		s := seq(
 			ignore(ssh(rm)),
 			ssh(mk),
-			term(`copyMigrator: `, copyMigrator),
-			ignore(copyStructure),
+			term(`clone: `, cloneTransformerCkpts(host, jobConf.User)),
 		)
 		ps = append(ps, term(prefix, s))
 	}
