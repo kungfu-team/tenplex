@@ -1,13 +1,7 @@
 #!/bin/bash
 set -e
 
-join_() {
-    local IFS=$1
-    shift
-    echo "$*"
-}
-
-join() { join_ , $@; }
+. ./common.sh
 
 list_hosts() {
     echo "10.10.10.1"
