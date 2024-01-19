@@ -4,7 +4,7 @@ import requests
 import torch
 
 
-def check_stop(scheduler_addr):
+def check_stop(scheduler_addr: str):
     if scheduler_addr is None:
         return False
     stop = False
