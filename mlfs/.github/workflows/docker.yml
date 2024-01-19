@@ -1,0 +1,24 @@
+---
+name: Docker
+'on':
+# - push
+# - pull_request
+- workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+    - run: docker images
+    - uses: actions/checkout@v2
+
+    - run: ./docker/ubuntu/2004/Dockerfile
+      env:
+        SSH_KEY: ${{ secrets.KUNGFU_RSA }}
+
+    # - run: ./docker/ubuntu/2004/Dockerfile.tf1.13.2-gpu
+    - run: ./docker/ubuntu/1804/Dockerfile.tf1.13.2-gpu
+      env:
+        SSH_KEY: ${{ secrets.KUNGFU_RSA }}
+
+    - run: docker images

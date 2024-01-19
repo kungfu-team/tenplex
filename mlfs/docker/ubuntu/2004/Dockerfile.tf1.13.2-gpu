@@ -1,0 +1,57 @@
+#!/usr/bin/env -S sh -c 'docker build --rm--build-arg SSH_KEY="${SSH_KEY}"  -t $(cat $(dirname $0)/tf.tag.txt) -f $0 $(dirname $0)/../../..'
+
+FROM ubuntu:focal AS builder
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt update
+RUN apt install -y software-properties-common
+RUN add-apt-repository ppa:longsleep/golang-backports
+RUN apt install -y golang-go make git cmake
+
+RUN mkdir $HOME/.ssh
+RUN echo "StrictHostKeyChecking no" >$HOME/.ssh/config
+ARG SSH_KEY
+RUN echo "${SSH_KEY}" >$HOME/.ssh/id_rsa
+RUN chmod 0600 $HOME/.ssh/id_rsa
+RUN ssh-keygen -y -f $HOME/.ssh/id_rsa >$HOME/.ssh/id_rsa.pub
+
+RUN git config --global url."git@github.com:".insteadOf "https://github.com/"
+RUN go env -w GOPRIVATE=*
+
+WORKDIR /src
+ADD . .
+RUN GOBIN=$PWD/bin go install -v ./...
+RUN ./scripts/pack.sh
+RUN cp ./build/*.deb mlfs.deb
+
+FROM ubuntu:focal
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt update
+RUN apt install -y gnupg wget
+
+RUN echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/ /" >>/etc/apt/sources.list.d/nvidia.list
+RUN echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/ /" >>/etc/apt/sources.list.d/nvidia.list
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC F60F4B3D7FA2AF80
+RUN apt update
+
+RUN apt install -y cuda-cublas-10-0 cuda-cusolver-10-0 cuda-cudart-10-0 libcudnn7
+ENV LD_LIBRARY_PATH /usr/local/cuda-10.0/lib64
+
+RUN echo "deb http://ppa.launchpad.net/deadsnakes/ppa/ubuntu focal main" >/etc/apt/sources.list.d/deadsnakes-ubuntu-ppa-focal.list
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BA6932366A755776
+
+RUN apt update
+RUN apt install -y python3-pip python3.6 python3.6-distutils
+RUN python3.6 -m pip install -U pip
+RUN python3.6 -m pip install numpy==1.16
+RUN python3.6 -m pip install tensorflow-gpu==1.13.2
+
+RUN apt install -y systemd init fuse
+COPY --from=builder /src/mlfs.deb /
+RUN dpkg -i /mlfs.deb && rm /mlfs.deb
+
+WORKDIR /src
+ADD ./docker/test-tf.py .

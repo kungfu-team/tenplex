@@ -1,0 +1,18 @@
+# /lib/systemd/system/tenplex-scheduler.service
+
+[Unit]
+Description=Tenplex Scheduler
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+ExecStart=/etc/tenplex/scheduler.sh
+ExecStop=-/etc/tenplex/stop-scheduler.sh
+User=kungfu
+
+Restart=always
+RestartSec=1
+Type=simple
+
+[Install]
+WantedBy=multi-user.target

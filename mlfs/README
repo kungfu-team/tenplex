@@ -1,0 +1,60 @@
+elastic filesystem
+
+https://github.com/kungfu-team/mlfs
+
+
+Code Structure
+
+    ./cmd       - source for executable binaries
+
+    ./vfs       - a plain abstraction of FS
+    ./vfs/hfs   - expose vfs as HTTP endpoint
+    ./vfs/ufs   - expose vfs as FUSE endpoint
+    ./vfs/vfile - builtin virtual file types
+    ...
+
+
+
+    ./mlfs      - wraps vfs
+
+    ./mfs       - model fs    // TODO?
+    ??
+    ??
+
+    ./dsfs      - dataset fs
+    ./ds        - dataset
+    ./ds/trds   - TFRecord dataset
+
+    ./tfrecord  - the TFRecord format
+
+
+    ./iotrace   - trace utils
+
+
+Golang requirements
+    1.18
+
+
+system install
+    make deb
+    sudo dpkg -i ./build/*.deb
+    systemctl status mlfs
+    sudo systemctl enable mlfs
+    sudo systemctl start mlfs
+    systemctl status mlfs
+
+
+pre-build deb packages:
+
+    https://tenplex.blob.core.windows.net/public/deb/Packages
+
+
+Install with apt
+
+echo 'deb https://tenplex.blob.core.windows.net/public/deb ./' | sudo tee /etc/apt/sources.list.d/tenplex.list
+curl -s https://tenplex.blob.core.windows.net/public/deb/tenplex.gpg | sudo apt-key add -
+sudo apt update
+sudo apt install -y mlfs
+
+Known Bugs
+r.OpenAt(88758): 503 Egress is over the account limit.

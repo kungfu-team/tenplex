@@ -1,0 +1,17 @@
+# /lib/systemd/system/mlfs.service
+
+[Unit]
+Description=MLFS
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+ExecStart=/etc/mlfs/mlfs.sh
+ExecStop=-/etc/mlfs/stop.sh
+
+Restart=always
+RestartSec=1
+Type=simple
+
+[Install]
+WantedBy=multi-user.target

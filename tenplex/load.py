@@ -1,11 +1,14 @@
-import argparse
 import glob
 import os
 import pickle
+import time
 
+import numpy as np
 import torch
 
-from .tensor_file import read_tensor_file
+import tenplex
+from tenplex.mlfs_client import MLFSClient
+from tenplex.tensor_file import read_tensor_file
 
 
 def parse_value(value_str: str, name: str):
@@ -13,6 +16,8 @@ def parse_value(value_str: str, name: str):
     if file_ext == "none":
         return None
     if file_ext == "str":
+        if isinstance(value_str, bytes):
+            return value_str.decode("utf-8")
         return value_str
     if file_ext == "int":
         return int(value_str)
@@ -93,13 +98,175 @@ def load_traverse(path: str):
             payload = fil.read()
         return parse_value(payload, name)
 
+    print(f"path {path} is not a directory nor a file")
+
 
 def load(device_rank: int, mlfs_path: str):
+    load_start = time.time()
     pa = os.path.join(mlfs_path, "iter")
     with open(pa, "r") as iter_file:
         step = int(iter_file.read().strip())
-    pa = os.path.join(mlfs_path, f"load{step}/{device_rank}")
+    pa = os.path.join(mlfs_path, f"load/{device_rank}")
+    print(f"load checkpoint from {pa} at step {step}")
+
+    start_load_trav = time.time()
     ckpt = load_traverse(pa)
+    load_trav_dura = time.time() - start_load_trav
+    print(f"load traverse took {load_trav_dura}")
+
+    # Megatron-LM
+    ckpt['rng_state'][0]['random_rng_state'][1] = tuple(
+        ckpt['rng_state'][0]['random_rng_state'][1])
+    ckpt['rng_state'][0]['random_rng_state'] = tuple(
+        ckpt['rng_state'][0]['random_rng_state'])
+
+    print(
+        f"loaded checkpoint from {pa} and it took {time.time() - load_start}")
+
+    return ckpt, step
+
+
+def try_int(dic, key, val):
+    try:
+        dic[int(key)] = val
+    except ValueError:
+        dic[key] = val
+    return dic
+
+
+def set_value_try(ckpt, keys, name, value):
+    ele = ckpt
+
+    for key in keys:
+        if key not in ele:
+            try_int(ele, key, {})
+
+        try:
+            ele = ele[int(key)]
+        except ValueError:
+            ele = ele[key]
+
+    try_int(ele, name, value)
+
+    return ckpt
+
+
+def set_value(ckpt, keys, name, value):
+    ele = ckpt
+
+    for key in keys:
+        if key not in ele:
+            ele[key] = {}
+        ele = ele[key]
+
+    ele[name] = value
+
+    return ckpt
+
+
+def get_value(ckpt, keys):
+    ele = ckpt
+    for key in keys:
+        ele = ele[key]
+    return ele
+
+
+def dict_to_list(dic):
+    lis = []
+    for i in range(len(dic.keys())):
+        lis.append(dic[i])
+    return lis
+
+
+def dicts_to_lists(ckpt, dir_metas):
+    for met in dir_metas:
+        keys = met.split("/")
+        keys = keys_to_int(keys)
+        keys = keys[:len(keys) - 1]
+        try:
+            last_key = int(keys[-1])
+        except ValueError:
+            last_key = keys[-1]
+        parent_val = get_value(ckpt, keys[:len(keys) - 1])
+        try:
+            parent_val[last_key] = dict_to_list(parent_val[last_key])
+        except:
+            print(f"ERROR dict_to_list failed for {keys} {last_key}")
+
+    return ckpt
+
+
+def keys_to_int(keys):
+    new_keys = keys
+    for i, k in enumerate(keys):
+        try:
+            new_keys[i] = int(k)
+        except ValueError:
+            pass
+    return new_keys
+
+
+def to_int(val):
+    try:
+        return int(val)
+    except ValueError:
+        return val
+
+
+def load_http(job_id: str, device_rank: int, ip: str, port: int):
+    client = MLFSClient(ip, port)
+    step = int(client.get_text(f"/job/{job_id}/iter"))
+    base_path = f"/job/{job_id}/load/{device_rank}"
+    struct = client.get_dir(base_path)
+    struct_no_meta = list(filter(lambda x: not x.endswith(".meta"), struct))
+    dir_meta = list(filter(lambda x: x.endswith("dir.meta"), struct))
+    dir_meta.sort()
+
+    ckpt = {}
+    for ele in struct_no_meta:
+        rel_path = os.path.relpath(ele, base_path)
+        all_keys = rel_path.split("/")
+        all_keys = keys_to_int(all_keys)
+        file_name = all_keys[-1]
+        keys = all_keys[:len(all_keys) - 1]
+
+        try:
+            file_name.endswith('.numpy.ndarray')
+        except:
+            print(f"endswith failed for {ele} and keys {keys}")
+
+        if file_name.endswith('.numpy.ndarray'):
+            name_split = file_name.split(".")
+            name = '.'.join(name_split[0:-2])
+            name = to_int(name)
+            tensor_data, dtype, dims = client.get_tensor(ele)
+            typ = tenplex.tensor_file._dtypes[dtype]
+            np_tensor = np.frombuffer(tensor_data, dtype=typ).reshape(dims)
+            if 'np_rng_state' in ele:  # needs to stay numpy array
+                ckpt = set_value(ckpt, keys, name, np_tensor)
+                continue
+
+            torch_tensor = torch.from_numpy(np_tensor)
+            ckpt = set_value(ckpt, keys, name, torch_tensor)
+            continue
+
+        path_no_ext = ele.split(".")[0]
+        name = file_name.split(".")[0]
+        name = to_int(name)
+
+        if file_name.endswith(".argparse.Namespace"):
+            fil = client.get_file(path_no_ext)
+            obj = pickle.loads(fil)
+            ckpt = set_value(ckpt, keys, name, obj)
+            continue
+
+        fil = client.get_file(path_no_ext)
+        val = parse_value(fil, file_name)
+        ckpt = set_value(ckpt, keys, name, val)
+
+    dir_meta = [os.path.relpath(x, base_path) for x in dir_meta]
+    dir_meta.sort()
+    ckpt = dicts_to_lists(ckpt, dir_meta)
 
     # Megatron-LM
     ckpt['rng_state'][0]['random_rng_state'][1] = tuple(
@@ -108,16 +275,3 @@ def load(device_rank: int, mlfs_path: str):
         ckpt['rng_state'][0]['random_rng_state'])
 
     return ckpt, step
-
-
-def main():
-    parser = argparse.ArgumentParser(description='Write checkpoint')
-    parser.add_argument('--device-rank', type=int)
-    parser.add_argument('--mlfs-path', type=str)
-    args = parser.parse_args()
-
-    load(args.device_rank, args.mlfs_path)
-
-
-if __name__ == '__main__':
-    main()

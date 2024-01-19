@@ -1,0 +1,8 @@
+*.idx.txt
+*.log
+*.md5.txt
+*.tf_record
+/bin
+/build
+/tmp
+__pycache__

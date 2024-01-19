@@ -1,0 +1,20 @@
+{
+    "jobs": [
+        {
+            "steps": 1000,
+            "delay": 0,
+            "dataset": {
+                "Name": "openwebtext",
+                "IndexURL": "http://155.198.152.18:20110/"
+            }
+        },
+        {
+            "steps": 1000,
+            "delay": 4,
+            "dataset": {
+                "Name": "openwebtext",
+                "IndexURL": "http://155.198.152.18:20110/"
+            }
+        }
+    ]
+}

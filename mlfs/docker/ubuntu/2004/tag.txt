@@ -1,0 +1,1 @@
+kungfu.azurecr.io/mlfs-focal:snapshot
