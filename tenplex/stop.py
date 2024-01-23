@@ -21,6 +21,6 @@ def check_stop(scheduler_addr: str):
     else:
         stop_ten = torch.tensor(0, dtype=torch.int32, device=torch.device("cuda"))
     torch.distributed.all_reduce(stop_ten)
-    if stop_ten == 1:
+    if stop_ten > 0:
         return True
     return False
