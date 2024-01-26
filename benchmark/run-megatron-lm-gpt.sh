@@ -4,25 +4,30 @@ set -e
 . ./common.sh
 
 list_hosts() {
-    echo "10.10.10.1"
+    # echo "10.10.10.1"
     echo "10.10.10.3"
 }
 
-tenplex-run \
-    -image "kungfu.azurecr.io/mw-megatron-lm-update:latest" \
-    -framework "megatron-lm" \
-    -model "gpt" \
-    -model-size "xl" \
-    -dataset "enwiki" \
-    -batch-size 128 \
-    -micro-batch-size 8 \
-    -precision "fp16" \
-    -index-url "/data/megatron-lm/gpt-2/enwiki/npzs_seq1024/indices.txt" \
-    -hosts "$(join $(list_hosts))" \
-    -tenplex-prefix "$HOME/.tenplex" \
-    -schedule-file "$(pwd)/schedule.json" \
-    -mlfs-port 20010 \
-    -gpu-per-host 4 \
-    -gpu-per-container 2 \
-    -user $USER \
-    -seq-length 1024 > tenplex-run.log 2>&1
+flags() {
+    # echo -image "kungfu.azurecr.io/mw-megatron-lm-update:latest"
+    echo -image "kungfu.azurecr.io/mw-megatron-lm-23.06:latest"
+    echo -framework "megatron-lm"
+    echo -model "gpt"
+    echo -model-size "xl"
+    echo -dataset "enwiki"
+    echo -batch-size 128
+    echo -micro-batch-size 8
+    echo -precision "fp16"
+    echo -index-url "/data/megatron-lm/gpt-2/enwiki/npzs_seq1024/indices.txt"
+    echo -hosts "$(join $(list_hosts))"
+    echo -tenplex-prefix "$HOME/.tenplex"
+    echo -schedule-file "$(pwd)/schedule.json"
+    echo -mlfs-port 20010
+    echo -gpu-per-host 4
+    echo -gpu-per-container 4
+    echo -user $USER
+    echo -seq-length 1024
+}
+
+tenplex-run $(flags) > tenplex-run.log 2>&1
+
