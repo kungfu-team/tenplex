@@ -18,7 +18,7 @@ class MLFSDataset(torch.utils.data.Dataset):
         # remove job and jobID
         progress_path = re.sub(r"\/job\/[^\/]*", "", progress_path)
 
-        path = os.path.join(self.mlfs_path, progress_path)
+        path = self.mlfs_path + progress_path
         with open(path, "r", encoding="utf-8") as progress_file:
             rank_paths = progress_file.readlines()
 
@@ -27,7 +27,7 @@ class MLFSDataset(torch.utils.data.Dataset):
         # remove job and jobID
         rank_path = re.sub(r"\/job\/[^\/]*", "", rank_path)
 
-        path = os.path.join(self.mlfs_path, os.path.join(rank_path, "list.txt"))
+        path = self.mlfs_path + os.path.join(rank_path, "list.txt")
         with open(path, "r", encoding="utf-8") as list_file:
             self.data_file_paths = list_file.readlines()
 
@@ -36,10 +36,7 @@ class MLFSDataset(torch.utils.data.Dataset):
 
     def use_index_file(self, file_idx: int):
         self.current_file_idx = file_idx
-
-        self.npzs_path = os.path.join(
-            self.mlfs_path, self.data_file_paths[file_idx].strip()
-        )
+        self.npzs_path =self.mlfs_path + self.data_file_paths[file_idx].strip()
 
         # remove job and jobID
         self.npzs_path = re.sub(r"\/job\/[^\/]*", "", self.npzs_path)
