@@ -1,0 +1,26 @@
+[
+    {
+        "step": 0,
+        "para_conf": {
+            "size": 8,
+            "pp_size": 2,
+            "mp_size": 2
+        }
+    },
+    {
+        "step": 50,
+        "para_conf": {
+            "size": 4,
+            "pp_size": 2,
+            "mp_size": 1
+        }
+    },
+    {
+        "step": 60,
+        "para_conf": {
+            "size": 0,
+            "pp_size": 0,
+            "mp_size": 0
+        }
+    }
+]
