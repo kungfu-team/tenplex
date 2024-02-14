@@ -4,13 +4,12 @@ set -e
 . ./common.sh
 
 list_hosts() {
-    # echo "10.10.10.1"
+    echo "10.10.10.1"
     echo "10.10.10.3"
 }
 
 flags() {
-    # echo -image "kungfu.azurecr.io/mw-megatron-lm-update:latest"
-    echo -image "kungfu.azurecr.io/mw-megatron-lm-23.06:latest"
+    echo -image "kungfu.azurecr.io/mw-megatron-lm-23.06-update:latest"
     echo -framework "megatron-lm"
     echo -model "gpt"
     echo -model-size "xl"
