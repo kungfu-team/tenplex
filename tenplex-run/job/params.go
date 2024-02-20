@@ -88,6 +88,7 @@ func GenMegatronLMBERTCmd(c MDPConfig, rank int, jobID string, host string, jCon
 	}
 	cmd = append(cmd, args...)
 	cmd = append(cmd, `--tensorboard-dir`, path.Join(checkpoint_path, `tensorboard`))
+	cmd = append(cmd, `--tenplex`)
 	cmd = append(cmd, `--mlfs-path`, `/data/mlfs`)
 	cmd = append(cmd, `--jobid`, jobID)
 	cmd = append(cmd, `--host-ip`, host)
@@ -190,6 +191,7 @@ func GenMegatronLMGPTCmd(c MDPConfig, rank int, jobID string, host string, jConf
 	}
 	cmd = append(cmd, args...)
 	cmd = append(cmd, `--tensorboard-dir`, path.Join(checkpoint_path, `tensorboard`))
+	cmd = append(cmd, `--tenplex`)
 	cmd = append(cmd, `--mlfs-path`, `/data/mlfs`)
 	cmd = append(cmd, `--jobid`, jobID)
 	cmd = append(cmd, `--host-ip`, host)
