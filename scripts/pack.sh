@@ -9,7 +9,8 @@ cd build
 branch=$(git rev-parse --abbrev-ref HEAD)
 rev=$(git rev-list --count HEAD)
 commit=$(git rev-parse --short HEAD)
-export VERSION="0.0.1-git-${branch}-rev${rev}-${commit}"
+
+export VERSION="0.0.${rev}-git-${branch}-rev${rev}-${commit}"
 
 cmake ..
 make package

@@ -1,0 +1,35 @@
+name: deb
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    # https://help.github.com/en/articles/virtual-environments-for-github-actions#supported-virtual-environments
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - run: make
+    - run: make deb
+
+    - run: |
+        KEY_FILE=$HOME/gcloud-key.json
+        echo "${GCLOUD_KEY}" > $KEY_FILE
+        gcloud auth login --cred-file=$KEY_FILE
+        rm $KEY_FILE
+
+        gcloud config set project tenplex
+      env:
+        GCLOUD_KEY: ${{ secrets.GCLOUD_KEY }}
+
+    - run: |
+        REPO=tenplex
+        DEB=`ls build/*.deb`
+        LOC=europe-west2
+        gcloud artifacts apt upload $REPO --location=$LOC --source=$DEB

@@ -1,1 +1,3 @@
-deb https://tenplex.blob.core.windows.net/public/deb ./
+# deb https://tenplex.blob.core.windows.net/public/deb ./
+
+deb https://europe-west2-apt.pkg.dev/projects/tenplex tenplex main
