@@ -1,0 +1,15 @@
+- name: stop
+  become: true
+  ansible.builtin.shell:
+    cmd: systemctl stop mlfs
+  register: log
+
+- name: uninstall
+  become: true
+  ansible.builtin.apt:
+    state: absent
+    pkg:
+    - mlfs
+
+- debug: msg="{{ log.stdout }}"
+- debug: msg="{{ log.stderr }}"
