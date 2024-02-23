@@ -17,6 +17,7 @@ INSTALL_BIN(mlfs-download)
 INSTALL_BIN(mlfs-edit-index)
 INSTALL_BIN(mlfs)
 INSTALL_BIN(mlfsd)
+INSTALL_BIN(tenplex-state-transformer)
 
 INSTALL(FILES ${CMAKE_SOURCE_DIR}/mlfs/etc/os/linux/mlfs.service
         DESTINATION /lib/systemd/system)

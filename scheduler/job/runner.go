@@ -176,7 +176,7 @@ func (ru *Runner) TransformStateWithCmd(conf *meta.Config, newNumDev int, newClu
 			"--step", str(ru.CurStep),
 		}
 		p := Proc{
-			Prog: path.Join(home, ".tenplex/bin/state-migrator"),
+			Prog: path.Join(home, ".tenplex/bin/tenplex-state-transformer"),
 			Args: args,
 			Host: host,
 		}

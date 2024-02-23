@@ -143,12 +143,12 @@ func repartition(
 			args = append(args, `--central`)
 		}
 		migrate := Proc{
-			Prog: "~/go/bin/state-migrator",
+			Prog: "tenplex-state-transformer",
 			Args: args,
 			Host: host,
 			User: jobConf.User,
 		}
-		name := fmt.Sprintf("logs/state-migrator-%d-%d", round, i)
+		name := fmt.Sprintf("logs/tenplex-state-transformer-%d-%d", round, i)
 		p := proc.Tee2Files(name, ssh(migrate))
 		prefix := fmt.Sprintf("[%s %d] ", host, i)
 		transformPs = append(transformPs, term(prefix, p))

@@ -3,7 +3,7 @@ set -e
 
 make
 
-./bin/state-migrator \
+./bin/tenplex-state-transformer \
     --ckpt-dir "/data/$USER/mlfs" \
     --ckpt-struct-dir "$HOME/Elasticity/Repo/tenplex-run/transformer-checkpoint" \
     --source-pp-degree 2 \

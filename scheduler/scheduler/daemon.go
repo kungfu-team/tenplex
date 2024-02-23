@@ -36,7 +36,7 @@ func (d *Daemon) RegisterFlags(flag *flag.FlagSet) {
 	flag.StringVar(&d.DetectIPv4, `detect-self-ip`, ``, ``)
 	flag.StringVar(&d.User, `u`, defaultUser(), `cluster user`)
 	flag.BoolVar(&d.ReInstall, `reinstall`, false, ``)
-	flag.StringVar(&d.StateMigrator, `state-migrator`, ``, `path to state-migrator`)
+	flag.StringVar(&d.StateMigrator, `tenplex-state-transformer`, ``, `path to tenplex-state-transformer`)
 }
 
 func (d Daemon) Run() {
