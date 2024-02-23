@@ -118,7 +118,7 @@ func (sch *Scheduler) SetCluster(w http.ResponseWriter, req *http.Request) {
 	// log.Printf("uploaded state migrator")
 
 	log.Printf("clone transformer-checkpoint")
-	proc.Main(parmap(sch.cloneTransformerCheckpoint, sch.Cluster.Hosts...))
+	proc.Main(ignore(parmap(sch.cloneTransformerCheckpoint, sch.Cluster.Hosts...)))
 	log.Printf("cloned transformer-checkpoint")
 }
 
@@ -201,7 +201,10 @@ func (sch *Scheduler) sendTransformerCheckpoint(h string) P {
 
 func (sch *Scheduler) cloneTransformerCheckpoint(h string) P {
 	ckptPath := path.Join(tenplexPrefixRemote, `transformer-checkpoint`)
-	return ignore(at(sch.Admin, h).PC(`git`, `clone`, `https://github.com/kungfu-team/transformer-checkpoint.git`, path.Join(tenplexPrefixRemote, ckptPath)))
+	return seq(
+		at(sch.Admin, h).PC(`rm`, `-fr`, ckptPath),
+		at(sch.Admin, h).PC(`git`, `clone`, `https://github.com/kungfu-team/transformer-checkpoint.git`, path.Join(tenplexPrefixRemote, ckptPath)),
+	)
 }
 
 type (

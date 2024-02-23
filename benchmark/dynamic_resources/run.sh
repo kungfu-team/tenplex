@@ -3,7 +3,7 @@
 scheduler_flags() {
     echo -detect-self-ip ib0
     # echo -reinstall
-    echo -u marcel
+    echo -u $USER
 }
 
 tenplex-scheduler $(scheduler_flags) &
