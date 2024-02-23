@@ -12,7 +12,7 @@ flag() {
     echo -detect-self-ip ib0
     echo -reinstall
     echo -u marcel
-    echo -state-migrator /home/marcel/Elasticity/Repo/state-migrator/go/bin/state-migrator
+    echo -tenplex-state-transformer /home/marcel/Elasticity/Repo/tenplex-state-transformer/go/bin/tenplex-state-transformer
 }
 
 if [ ! -d transformer-checkpoint ]; then

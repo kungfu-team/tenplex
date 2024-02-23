@@ -9,7 +9,8 @@ INCLUDE(CPack)
 
 INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/bin/tenplex-scheduler DESTINATION bin)
 INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/bin/tenplex-user DESTINATION bin)
-INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/bin/state-migrator DESTINATION bin)
+INSTALL(PROGRAMS ${CMAKE_SOURCE_DIR}/bin/tenplex-state-transformer
+        DESTINATION bin)
 
 INSTALL(FILES ${CMAKE_SOURCE_DIR}/etc/os/linux/tenplex-scheduler.service
         DESTINATION /lib/systemd/system)
