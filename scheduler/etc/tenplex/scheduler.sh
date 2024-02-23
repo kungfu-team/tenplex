@@ -7,7 +7,7 @@ flags() {
     # echo -reinstall
     echo -u kungfu
 
-    echo -state-migrator /usr/bin/state-migrator
+    echo -tenplex-state-transformer /usr/bin/tenplex-state-transformer
 }
 
 /usr/bin/tenplex-scheduler $(flags)

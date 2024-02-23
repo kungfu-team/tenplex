@@ -233,8 +233,6 @@ func loadMetadata(conf *meta.Config) (*meta.Metadata, error) {
 }
 
 func MigrateState(conf *meta.Config, targetDevice int) error {
-	log.Printf("START MigrateState")
-
 	metadata, err := loadMetadata(conf)
 	if err != nil {
 		return err
@@ -304,6 +302,5 @@ func MigrateState(conf *meta.Config, targetDevice int) error {
 		return err
 	}
 
-	log.Printf("FINISHED MigrateState for device %d", targetDevice)
 	return nil
 }
