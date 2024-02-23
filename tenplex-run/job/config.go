@@ -25,6 +25,7 @@ type JobConfig struct {
 	TenplexPrefix  string
 	Cluster        cluster.Cluster
 	SchedulerIP    string
+	scheduleFile   string
 	Schedule       Schedule
 	MLFSPort       int
 	User           string
@@ -40,8 +41,6 @@ type ParallelismConfig struct {
 	PPSize int `json:"pp_size"`
 	MPSize int `json:"mp_size"`
 }
-
-var scheduleFile string
 
 func genJobID() string {
 	h := sha256.New()
@@ -65,7 +64,7 @@ func (j *JobConfig) RegisterFlags(flag *flag.FlagSet) {
 	flag.IntVar(&j.SequenceLength, "seq-length", 1024, "sequence length")
 	flag.StringVar(&j.Precision, "precision", "", "fp32 OR fp16 OR bf16")
 	flag.StringVar(&j.SchedulerIP, "scheduler-ip", "", "Scheduler IP")
-	flag.StringVar(&scheduleFile, "schedule-file", "", "Schedule file path")
+	flag.StringVar(&j.scheduleFile, "schedule-file", "", "Schedule file path")
 	flag.IntVar(&j.MLFSPort, "mlfs-port", 0, "MLFS port")
 	flag.StringVar(&j.User, "user", "kungfu", "Remote host user")
 	flag.StringVar(&j.DockerNetwork, "network", "tenplex", "Docker network name")
@@ -77,7 +76,7 @@ func (j *JobConfig) RegisterFlags(flag *flag.FlagSet) {
 }
 
 func (j *JobConfig) ParseSchedule() {
-	j.Schedule = GenSchedule(scheduleFile)
+	j.Schedule = GenSchedule(j.scheduleFile)
 }
 
 func OverwriteHostIdx(hostIdx int, jc *JobConfig) int {
