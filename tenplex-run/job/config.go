@@ -27,6 +27,7 @@ type JobConfig struct {
 	Failure        int
 	Central        bool
 	Redeploy       bool
+	NoTenplex      bool
 }
 
 type ParallelismConfig struct {
@@ -57,6 +58,7 @@ func (j *JobConfig) RegisterFlags(flag *flag.FlagSet) {
 	flag.IntVar(&j.Failure, "failure", 0, "Number of host failures to simulate")
 	flag.BoolVar(&j.Central, "central", false, "Set to true to transfrom state centrally")
 	flag.BoolVar(&j.Redeploy, "redeploy", false, "Set to true to redeploy job")
+	flag.BoolVar(&j.NoTenplex, "no-tenplex", false, "Set to true to run without Tenplex")
 	j.Cluster.RegisterFlags(flag)
 }
 
