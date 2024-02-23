@@ -25,8 +25,6 @@ flags() {
     echo -gpu-per-container 4
     echo -seq-length 1024
     echo -no-tenplex
-
-    echo -logfile "$(basename $0).log"
 }
 
-tenplex-run $(flags) >tenplex-run.log 2>&1
+tenplex_run_with flags

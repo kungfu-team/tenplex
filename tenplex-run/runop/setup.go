@@ -188,7 +188,7 @@ func CleanMachines(jobConf *job.JobConfig) {
 }
 
 func collectLogs(jobConf *job.JobConfig) {
-	var ps []proc.P
+	var ps []P
 	for _, h := range jobConf.Cluster.Hosts {
 		remote := h + `:` + path.Join(`.tenplex/training`, jobConf.ID)
 		local := path.Join(`training`, jobConf.ID)

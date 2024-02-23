@@ -30,4 +30,4 @@ flags() {
     echo -seq-length 1024
 }
 
-tenplex-run $(flags) >tenplex-run.log 2>&1
+tenplex_run_with flags

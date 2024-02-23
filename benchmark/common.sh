@@ -14,4 +14,11 @@ base_flags() {
 
     echo -mlfs-port 20010
     echo -tenplex-prefix "$HOME/.tenplex"
+
+    echo -logfile "$(basename $0).log"
+}
+
+tenplex_run_with() {
+    local flags=$1
+    tenplex-run $(flags) >tenplex-run.log 2>&1
 }
