@@ -86,6 +86,7 @@ func (ru *Runner) queryIter() error {
 
 func (ru *Runner) RunTraining(wg *sync.WaitGroup, ch *chan string, schedulerAddr string) {
 	ru.JobConfig = &job.JobConfig{
+		ID:             ru.Job.ID,
 		Framework:      ru.Job.Framework,
 		Precision:      ru.Job.Precision,
 		BatchSize:      ru.Job.BatchSize,
