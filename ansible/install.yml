@@ -18,6 +18,7 @@
   become: true
   ansible.builtin.apt:
     pkg:
+    - fuse3
     - mlfs
 
 - name: reload mlfs
