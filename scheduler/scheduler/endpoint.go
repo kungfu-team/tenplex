@@ -200,10 +200,8 @@ func (sch *Scheduler) sendTransformerCheckpoint(h string) P {
 }
 
 func (sch *Scheduler) cloneTransformerCheckpoint(h string) P {
-	pc := proc.PC
-	pc = proc.WithTerm(pc)
-	pc = experimental.WithLog(pc)
-	return at(sch.Admin, h).PC(`git`, `clone`, `https://github.com/kungfu-team/transformer-checkpoint.git`, path.Join(tenplexPrefixRemote, `transformer-checkpoint`))
+	ckptPath := path.Join(tenplexPrefixRemote, `transformer-checkpoint`)
+	return ignore(at(sch.Admin, h).PC(`git`, `clone`, `https://github.com/kungfu-team/transformer-checkpoint.git`, path.Join(tenplexPrefixRemote, ckptPath)))
 }
 
 type (

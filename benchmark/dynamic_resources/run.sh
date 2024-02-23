@@ -2,7 +2,7 @@
 
 scheduler_flags() {
     echo -detect-self-ip ib0
-    echo -reinstall
+    # echo -reinstall
     echo -u marcel
 }
 
@@ -27,7 +27,7 @@ hosts=$(join_ , $(list_hosts))
 user_flags() {
     echo -hosts $hosts
     echo -gpu-per-host 4
-    echo -image kungfu.azurecr.io/mw-megatron-lm-update
+    echo -image kungfu.azurecr.io/mw-megatron-lm-23.06-update:latest
     echo -plan ./single-job-time.json
     echo -timed-job
 }
