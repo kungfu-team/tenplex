@@ -20,7 +20,6 @@ flags() {
     echo -precision "fp16"
     echo -index-url "/data/megatron-lm/gpt-2/enwiki/npzs_seq1024/indices.txt"
     echo -hosts "$(join $(list_hosts))"
-    echo -tenplex-prefix "$HOME/.tenplex"
     echo -schedule-file "$(pwd)/schedule.json"
     echo -gpu-per-host 4
     echo -gpu-per-container 4

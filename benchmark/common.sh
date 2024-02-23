@@ -13,4 +13,5 @@ base_flags() {
     echo -user $USER
 
     echo -mlfs-port 20010
+    echo -tenplex-prefix "$HOME/.tenplex"
 }
