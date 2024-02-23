@@ -55,6 +55,7 @@ func (cluster *ContainerCluster) Run(c Container) P {
 		`--name`, c.Name,
 		`--rm`,
 		`--env`, `CUDA_DEVICE_MAX_CONNECTIONS=1`,
+		`--env`, `PYTHONUNBUFFERED=1`,
 		`--ulimit`, `memlock=-1`,
 		`--shm-size`, `1g`,
 		`--expose`, `6000`,

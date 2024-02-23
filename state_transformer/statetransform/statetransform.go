@@ -45,7 +45,8 @@ func addListMeta(conf *meta.Config, ckptClient *client.CheckpointClient, targetS
 func setNonTensor(conf *meta.Config, ckptClient *client.CheckpointClient, nonTensor []string, weightDecayTens [][]string, targetMDPRank *meta.MDPRank) error {
 	sourcePPRank := rand.Intn(conf.SourcePPDegree)
 	sourceMPRank := rand.Intn(conf.SourceMPDegree)
-	sourceDPRank := rand.Intn(conf.SourceDPDegree)
+	// sourceDPRank := rand.Intn(conf.SourceDPDegree)
+	sourceDPRank := 0 // With Megatron-LM there are no replicated ckpts
 
 	if len(nonTensor) >= 6 &&
 		equal(nonTensor[:3], []string{"optimizer", "optimizer", "param_groups"}) &&
