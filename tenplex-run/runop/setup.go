@@ -3,6 +3,7 @@ package runop
 import (
 	"fmt"
 	"log"
+	"os"
 	"path"
 	"time"
 
@@ -186,6 +187,22 @@ func CleanMachines(jobConf *job.JobConfig) {
 	}
 }
 
+func collectLogs(jobConf *job.JobConfig) {
+	var ps []proc.P
+	for _, h := range jobConf.Cluster.Hosts {
+		remote := h + `:` + path.Join(`.tenplex/training`, jobConf.ID)
+		local := path.Join(`training`, jobConf.ID)
+		if err := os.MkdirAll(local, os.ModePerm); err != nil {
+			log.Printf("`mkdir -p %s` failed: %v", local, err)
+		}
+		p := proc.PC(`scp`, `-r`, remote, local)
+		ps = append(ps, p)
+	}
+	if r := proc.Run(proc.Par(ps...), &proc.Stdio); r.Err != nil {
+		log.Printf("collect logs failed")
+	}
+}
+
 func Main(jobConf *job.JobConfig) {
 	RoundID.Reset()
 	CleanMachines(jobConf)
@@ -193,4 +210,5 @@ func Main(jobConf *job.JobConfig) {
 	PrepareVMs(jobConf)
 	PullImages(jobConf)
 	ScalingTraining(jobConf)
+	collectLogs(jobConf)
 }

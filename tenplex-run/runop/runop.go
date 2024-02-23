@@ -66,11 +66,7 @@ func RunTraining(jobConf *job.JobConfig, paraConf *job.ParallelismConfig, progre
 	return nil
 }
 
-func repartition(
-	from, to *job.ParallelismConfig,
-	step int,
-	jobConf *job.JobConfig,
-) error {
+func repartition(from, to *job.ParallelismConfig, step int, jobConf *job.JobConfig) error {
 	var round = RoundID.Next()
 	var home = path.Join("/home", jobConf.User)
 	t0 := time.Now()
