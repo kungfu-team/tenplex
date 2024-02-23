@@ -1,13 +1,18 @@
 package job
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"flag"
+	"fmt"
+	"time"
 
 	"github.com/kungfu-team/tenplex/mlfs/ds"
 	"github.com/kungfu-team/tenplex/tenplex-run/cluster"
 )
 
 type JobConfig struct {
+	ID             string
 	Framework      string
 	Precision      string
 	BatchSize      int
@@ -20,6 +25,7 @@ type JobConfig struct {
 	TenplexPrefix  string
 	Cluster        cluster.Cluster
 	SchedulerIP    string
+	scheduleFile   string
 	Schedule       Schedule
 	MLFSPort       int
 	User           string
@@ -36,9 +42,16 @@ type ParallelismConfig struct {
 	MPSize int `json:"mp_size"`
 }
 
-var scheduleFile string
+func genJobID() string {
+	h := sha256.New()
+	h.Write([]byte(fmt.Sprintf("hello world %d", time.Now().Unix())))
+	byt := h.Sum(nil)
+	he := hex.EncodeToString(byt)
+	return he[0:10]
+}
 
 func (j *JobConfig) RegisterFlags(flag *flag.FlagSet) {
+	flag.StringVar(&j.ID, "jobid", genJobID(), "job id")
 	flag.StringVar(&j.Framework, "framework", "", "megatron-lm OR deepspeed")
 	flag.StringVar(&j.Model, "model", "", "gpt OR bert")
 	flag.StringVar(&j.ModelSize, "model-size", "", "model size")
@@ -51,7 +64,7 @@ func (j *JobConfig) RegisterFlags(flag *flag.FlagSet) {
 	flag.IntVar(&j.SequenceLength, "seq-length", 1024, "sequence length")
 	flag.StringVar(&j.Precision, "precision", "", "fp32 OR fp16 OR bf16")
 	flag.StringVar(&j.SchedulerIP, "scheduler-ip", "", "Scheduler IP")
-	flag.StringVar(&scheduleFile, "schedule-file", "", "Schedule file path")
+	flag.StringVar(&j.scheduleFile, "schedule-file", "", "Schedule file path")
 	flag.IntVar(&j.MLFSPort, "mlfs-port", 0, "MLFS port")
 	flag.StringVar(&j.User, "user", "kungfu", "Remote host user")
 	flag.StringVar(&j.DockerNetwork, "network", "tenplex", "Docker network name")
@@ -63,7 +76,7 @@ func (j *JobConfig) RegisterFlags(flag *flag.FlagSet) {
 }
 
 func (j *JobConfig) ParseSchedule() {
-	j.Schedule = GenSchedule(scheduleFile)
+	j.Schedule = GenSchedule(j.scheduleFile)
 }
 
 func OverwriteHostIdx(hostIdx int, jc *JobConfig) int {

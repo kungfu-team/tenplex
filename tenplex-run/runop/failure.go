@@ -14,9 +14,9 @@ import (
 
 var client = http.Client{Timeout: 3 * time.Second}
 
-func simulateFailures(jc *job.JobConfig, jobID string, n int) error {
+func simulateFailures(jc *job.JobConfig, n int) error {
 	for i := 0; i < n; i++ {
-		if err := simulateOneFailure(jc, jobID, i/jc.Cluster.GPUsPerHost, i); err != nil {
+		if err := simulateOneFailure(jc, i/jc.Cluster.GPUsPerHost, i); err != nil {
 			log.Printf("%s failed: %v", "simulateOneFailure", err)
 			return err
 		}
@@ -24,9 +24,9 @@ func simulateFailures(jc *job.JobConfig, jobID string, n int) error {
 	return nil
 }
 
-func simulateOneFailure(jobConf *job.JobConfig, jobID string, hostIdx int, workerID int) error {
+func simulateOneFailure(jobConf *job.JobConfig, hostIdx int, workerID int) error {
 	ip := jobConf.Cluster.Hosts[hostIdx]
-	p := path.Join("/job", jobID, "save", str(workerID))
+	p := path.Join("/job", jobConf.ID, "save", str(workerID))
 	log.Printf("simulateOneFailure by del: %s from [%d]=%s", p, hostIdx, ip)
 	q := url.Values{}
 	q.Set(`path`, p)

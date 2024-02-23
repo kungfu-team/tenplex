@@ -80,14 +80,14 @@ func (j Job) newWorker(i int, jConf *JobConfig, jobID string, host string, maste
 	}
 }
 
-func (j Job) NewCluster(hosts []string, size int, jConf *JobConfig, jobID string) *ContainerCluster {
+func (j Job) NewCluster(hosts []string, size int, jConf *JobConfig) *ContainerCluster {
 	if size > len(hosts)*jConf.Cluster.GPUsPerHost {
 		log.Panicf("size %d > num hosts %d * %d gpus per host", size, len(hosts), jConf.Cluster.GPUsPerHost)
 	}
 	return &ContainerCluster{
 		Image:     j.Image,
 		trainJob:  j,
-		Workers:   j.createWorkers(jConf, size, hosts, jobID),
+		Workers:   j.createWorkers(jConf, size, hosts, jConf.ID),
 		Framework: jConf.Framework,
 		User:      jConf.User,
 	}

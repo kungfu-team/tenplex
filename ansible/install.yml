@@ -1,0 +1,36 @@
+- name: add apt sources list
+  become: true
+  ansible.builtin.shell:
+    cmd: echo "deb https://europe-west2-apt.pkg.dev/projects/tenplex tenplex main" | sudo tee /etc/apt/sources.list.d/tenplex.list
+  register: log
+
+- name: apt update
+  become: true
+  ansible.builtin.shell:
+    cmd: apt update
+  register: log
+
+# - name: Update apt repository cache
+#   ansible.builtin.apt:
+#     update_cache: yes
+
+- name: Install a list of packages
+  become: true
+  ansible.builtin.apt:
+    pkg:
+    - fuse3
+    - mlfs
+
+- name: reload mlfs
+  become: true
+  ansible.builtin.shell:
+    cmd: |
+      systemctl daemon-reload
+      systemctl restart mlfs
+  register: log
+
+- name: show info
+  # command: mlfs info
+  ansible.builtin.shell:
+    cmd: mlfs info
+  register: log

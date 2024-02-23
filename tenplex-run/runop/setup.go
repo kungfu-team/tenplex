@@ -3,6 +3,7 @@ package runop
 import (
 	"fmt"
 	"log"
+	"os"
 	"path"
 	"time"
 
@@ -22,7 +23,7 @@ var (
 	runScript = experimental.RunScript
 )
 
-func createCluster(jobConf *job.JobConfig, paraConf *job.ParallelismConfig, hosts []string, maxTrainStep int, jobID string) *job.ContainerCluster {
+func createCluster(jobConf *job.JobConfig, paraConf *job.ParallelismConfig, hosts []string, maxTrainStep int) *job.ContainerCluster {
 	gpusPerContainer := jobConf.Cluster.GPUsPerContainer
 	numNodes := int(paraConf.Size / gpusPerContainer)
 	if numNodes < 1 {
@@ -50,7 +51,7 @@ func createCluster(jobConf *job.JobConfig, paraConf *job.ParallelismConfig, host
 		Config:   cfg,
 	}
 
-	return j.NewCluster(hosts, numNodes, jobConf, jobID)
+	return j.NewCluster(hosts, numNodes, jobConf)
 }
 
 func dockerPull(image, user string) func(string) P {
@@ -186,6 +187,23 @@ func CleanMachines(jobConf *job.JobConfig) {
 	}
 }
 
+func collectLogs(jobConf *job.JobConfig) {
+	var ps []P
+	for _, h := range jobConf.Cluster.Hosts {
+		remote := h + `:` + path.Join(`.tenplex/training`, jobConf.ID)
+		local := path.Join(`training`, jobConf.ID)
+		if err := os.MkdirAll(path.Dir(local), os.ModePerm); err != nil {
+			log.Printf("`mkdir -p %s` failed: %v", local, err)
+		}
+		log.Printf("will collect log %s -> %s", remote, local)
+		p := proc.PC(`scp`, `-r`, remote, local)
+		ps = append(ps, ignore(p))
+	}
+	if r := run(par(ps...), &proc.Stdio); r.Err != nil {
+		log.Printf("collect logs failed")
+	}
+}
+
 func Main(jobConf *job.JobConfig) {
 	RoundID.Reset()
 	CleanMachines(jobConf)
@@ -193,4 +211,5 @@ func Main(jobConf *job.JobConfig) {
 	PrepareVMs(jobConf)
 	PullImages(jobConf)
 	ScalingTraining(jobConf)
+	collectLogs(jobConf)
 }
