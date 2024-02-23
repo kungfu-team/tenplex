@@ -1,13 +1,18 @@
 package job
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"flag"
+	"fmt"
+	"time"
 
 	"github.com/kungfu-team/tenplex/mlfs/ds"
 	"github.com/kungfu-team/tenplex/tenplex-run/cluster"
 )
 
 type JobConfig struct {
+	ID             string
 	Framework      string
 	Precision      string
 	BatchSize      int
@@ -38,7 +43,16 @@ type ParallelismConfig struct {
 
 var scheduleFile string
 
+func genJobID() string {
+	h := sha256.New()
+	h.Write([]byte(fmt.Sprintf("hello world %d", time.Now().Unix())))
+	byt := h.Sum(nil)
+	he := hex.EncodeToString(byt)
+	return he[0:10]
+}
+
 func (j *JobConfig) RegisterFlags(flag *flag.FlagSet) {
+	flag.StringVar(&j.ID, "jobid", genJobID(), "job id")
 	flag.StringVar(&j.Framework, "framework", "", "megatron-lm OR deepspeed")
 	flag.StringVar(&j.Model, "model", "", "gpt OR bert")
 	flag.StringVar(&j.ModelSize, "model-size", "", "model size")

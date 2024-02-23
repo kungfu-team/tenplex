@@ -25,7 +25,7 @@ func mount(cli *mlfs.Client, ds ds.Dataset, jobID string, batchSize, progress, d
 	return err
 }
 
-func addDataset(dpSize, progress int, jobConf *job.JobConfig, jobID string) error {
+func addDataset(dpSize, progress int, jobConf *job.JobConfig) error {
 	seed := 42
 	log.Printf("MLFS dataset seed %d", seed)
 	for _, host := range jobConf.Cluster.Hosts {
@@ -33,7 +33,7 @@ func addDataset(dpSize, progress int, jobConf *job.JobConfig, jobID string) erro
 		if err != nil {
 			return fmt.Errorf("%s %v", host, err)
 		}
-		if err := mount(cli, jobConf.Dataset, jobID, jobConf.BatchSize, progress, dpSize, seed); err != nil {
+		if err := mount(cli, jobConf.Dataset, jobConf.ID, jobConf.BatchSize, progress, dpSize, seed); err != nil {
 			return fmt.Errorf("%s %v", host, err)
 		}
 	}

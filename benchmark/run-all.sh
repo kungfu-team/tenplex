@@ -17,8 +17,8 @@ measure() {
 cd $(dirname $0)
 
 run_all() {
-    # measure ./run-megatron-lm-gpt-no-tenplex.sh
-    # measure ./run-megatron-lm-gpt-redeploy.sh
+    measure ./run-megatron-lm-gpt-no-tenplex.sh
+    measure ./run-megatron-lm-gpt-redeploy.sh
     measure ./run-megatron-lm-gpt-central.sh
 }
 

@@ -117,7 +117,7 @@ func (ru *Runner) RunTraining(wg *sync.WaitGroup, ch *chan string, schedulerAddr
 				log.Panicf("recovered from RunTraining: %v", err)
 			}
 		}()
-		err := runop.RunTraining(ru.JobConfig, ru.ParaConfig, progress, ru.Job.Steps, ru.Job.ID, ru.Cluster.Hosts)
+		err := runop.RunTraining(ru.JobConfig, ru.ParaConfig, progress, ru.Job.Steps, ru.Cluster.Hosts)
 		if err != nil {
 			log.Panicf("Run training failed. %v", err)
 		}
@@ -147,7 +147,7 @@ var str = strconv.Itoa
 var home = os.Getenv(`HOME`)
 
 func (ru *Runner) TransformStateWithCmd(conf *meta.Config, newNumDev int, newCluster *cluster.Cluster) error {
-	transformPs := []P{}
+	var transformPs []P
 	for i := 0; i < newNumDev; i++ {
 		hostIdx := i / conf.GpusPerHost
 		host := newCluster.Hosts[hostIdx] // new Hosts
@@ -246,5 +246,3 @@ func (ru *Runner) TransformAndRun(newParaConf *job.ParallelismConfig, newSubClu 
 	ru.RunTraining(wg, ch, schedulerAddr)
 	log.Printf("TransformAndRun %s on new cluster: %s | done:RunTraining", ru.Job.ID, strings.Join(newSubClu.Hosts, ","))
 }
-
-var tee2Files = proc.Tee2Files

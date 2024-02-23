@@ -22,7 +22,7 @@ var (
 	runScript = experimental.RunScript
 )
 
-func createCluster(jobConf *job.JobConfig, paraConf *job.ParallelismConfig, hosts []string, maxTrainStep int, jobID string) *job.ContainerCluster {
+func createCluster(jobConf *job.JobConfig, paraConf *job.ParallelismConfig, hosts []string, maxTrainStep int) *job.ContainerCluster {
 	gpusPerContainer := jobConf.Cluster.GPUsPerContainer
 	numNodes := int(paraConf.Size / gpusPerContainer)
 	if numNodes < 1 {
@@ -50,7 +50,7 @@ func createCluster(jobConf *job.JobConfig, paraConf *job.ParallelismConfig, host
 		Config:   cfg,
 	}
 
-	return j.NewCluster(hosts, numNodes, jobConf, jobID)
+	return j.NewCluster(hosts, numNodes, jobConf)
 }
 
 func dockerPull(image, user string) func(string) P {

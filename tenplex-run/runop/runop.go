@@ -1,8 +1,6 @@
 package runop
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"log"
@@ -45,12 +43,12 @@ func train(c *job.ContainerCluster, jobConf *job.JobConfig) error {
 	return nil
 }
 
-func RunTraining(jobConf *job.JobConfig, paraConf *job.ParallelismConfig, progress, maxStep int, jobID string, hosts []string) error {
+func RunTraining(jobConf *job.JobConfig, paraConf *job.ParallelismConfig, progress, maxStep int, hosts []string) error {
 	if !jobConf.NoTenplex {
 		// add dataset to MLFS
 		dpSize := paraConf.Size / (paraConf.PPSize * paraConf.MPSize)
 		addDataStart := time.Now()
-		if err := addDataset(dpSize, progress, jobConf, jobID); err != nil {
+		if err := addDataset(dpSize, progress, jobConf); err != nil {
 			log.Printf("add dataset failed but IGNORE: %v", err)
 			// return err
 		}
@@ -58,10 +56,10 @@ func RunTraining(jobConf *job.JobConfig, paraConf *job.ParallelismConfig, progre
 	}
 
 	// train
-	log.Printf("Start training: %s", jobID)
-	cluster := createCluster(jobConf, paraConf, hosts, maxStep, jobID)
+	log.Printf("Start training: %s", jobConf.ID)
+	cluster := createCluster(jobConf, paraConf, hosts, maxStep)
 	err := RunTrainMLMGo(cluster, jobConf)
-	log.Printf("Finished training: %s", jobID)
+	log.Printf("Finished training: %s", jobConf.ID)
 	if err != nil {
 		return err
 	}
@@ -72,7 +70,6 @@ func repartition(
 	from, to *job.ParallelismConfig,
 	step int,
 	jobConf *job.JobConfig,
-	jobID string,
 ) error {
 	var round = RoundID.Next()
 	var home = path.Join("/home", jobConf.User)
@@ -131,7 +128,7 @@ func repartition(
 			"--target-rank", str(i),
 			"--source-hosts", srcHo,
 			"--target-hosts", trgHo,
-			"--jobid", jobID,
+			"--jobid", jobConf.ID,
 			"--gpus-per-host", "4",
 			"--num-layers", str(numLayers),
 			"--model", jobConf.Model,
@@ -163,17 +160,8 @@ func repartition(
 
 var RoundID = counter.New()
 
-func genJobID() string {
-	h := sha256.New()
-	h.Write([]byte(fmt.Sprintf("hello world %d", time.Now().Unix())))
-	byt := h.Sum(nil)
-	he := hex.EncodeToString(byt)
-	return he[0:10]
-}
-
 func ScalingTraining(jobConf *job.JobConfig) {
 	schedule := jobConf.Schedule
-	jobID := genJobID()
 
 	for i, scalingPoint := range schedule {
 		// stop training
@@ -193,7 +181,7 @@ func ScalingTraining(jobConf *job.JobConfig) {
 		if scalingPoint.Step > 0 {
 			if jobConf.Failure > 0 {
 				log.Printf("Simulating failure")
-				if err := simulateFailures(jobConf, jobID, jobConf.Failure); err != nil {
+				if err := simulateFailures(jobConf, jobConf.Failure); err != nil {
 					log.Printf("simulateFailures: %v", err)
 					return
 				}
@@ -207,7 +195,6 @@ func ScalingTraining(jobConf *job.JobConfig) {
 					scalingPoint.ParaConf,
 					scalingPoint.Step,
 					jobConf,
-					jobID,
 				)
 				if err != nil {
 					log.Printf("%v", err)
@@ -227,7 +214,7 @@ func ScalingTraining(jobConf *job.JobConfig) {
 				hosts = hosts[len(hosts)/2:]
 			}
 		}
-		if err := RunTraining(jobConf, scalingPoint.ParaConf, progress, maxStep, jobID, hosts); err != nil {
+		if err := RunTraining(jobConf, scalingPoint.ParaConf, progress, maxStep, hosts); err != nil {
 			// log.Panic(err)
 			log.Printf("Training failed. Stopping containers")
 			StopContainers(jobConf.Cluster.Hosts, jobConf.User)
