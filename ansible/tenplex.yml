@@ -1,0 +1,20 @@
+# ansible-playbook -i hosts.txt ansible/tenplex.yml
+
+- name: install tenplex
+  hosts: all
+  tasks:
+
+  # TODO: add apt repo and keys
+
+  - name: Install a list of packages
+    become: true
+    ansible.builtin.apt:
+      pkg:
+      - mlfs
+
+  - name: show info
+    command: mlfs info
+    register: log
+
+  - debug: msg="{{ log.stdout }}"
+  - debug: msg="{{ log.stderr }}"
