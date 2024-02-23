@@ -34,7 +34,7 @@ func main() {
 	if len(*logfile) > 0 {
 		if lf, err := os.Create(*logfile); err == nil {
 			log.Printf("log into %s", *logfile)
-			log.SetOutput(lf)
+			log.SetOutput(io.MultiWriter(lf, os.Stderr))
 			defer lf.Close()
 		}
 	}
