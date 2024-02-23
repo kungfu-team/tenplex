@@ -100,7 +100,7 @@ func (ru *Runner) RunTraining(wg *sync.WaitGroup, ch *chan string, schedulerAddr
 		Cluster:        *ru.Cluster,
 		SchedulerIP:    schedulerAddr,
 		MLFSPort:       mlfs.DefaultCtrlPort,
-		User:           "marcel", // TODO: make dynamic
+		User:           os.Getenv(`USER`), // TODO: pass in from flag
 		Failure:        ru.Job.Failure,
 	}
 
