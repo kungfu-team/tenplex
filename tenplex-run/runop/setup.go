@@ -192,7 +192,7 @@ func collectLogs(jobConf *job.JobConfig) {
 	for _, h := range jobConf.Cluster.Hosts {
 		remote := h + `:` + path.Join(`.tenplex/training`, jobConf.ID)
 		local := path.Join(`training`, jobConf.ID)
-		if err := os.MkdirAll(local, os.ModePerm); err != nil {
+		if err := os.MkdirAll(path.Dir(local), os.ModePerm); err != nil {
 			log.Printf("`mkdir -p %s` failed: %v", local, err)
 		}
 		log.Printf("will collect log %s -> %s", remote, local)
