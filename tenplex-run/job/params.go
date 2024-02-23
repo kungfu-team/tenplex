@@ -185,7 +185,7 @@ func GenMegatronLMGPTCmd(c MDPConfig, rank int, jobID string, host string, jConf
 	args := []string{
 		`--save`, checkpoint_path,
 		`--load`, checkpoint_path,
-		`--data-path`, `/data/dataset`,
+		`--data-path`, `/data/dataset/gpt-2/my-gpt2_text_document`,
 		`--tensor-model-parallel-size`, str(c.ModelParallelSize),
 		`--pipeline-model-parallel-size`, str(c.PipelineParallelSize),
 		// `--DDP-impl`, `local`,

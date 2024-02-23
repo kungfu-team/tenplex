@@ -26,6 +26,7 @@ flags() {
     echo -gpu-per-container 4
     echo -user $USER
     echo -seq-length 1024
+    echo -no-tenplex
 }
 
 tenplex-run $(flags) > tenplex-run.log 2>&1

@@ -46,14 +46,16 @@ func train(c *job.ContainerCluster, jobConf *job.JobConfig) error {
 }
 
 func RunTraining(jobConf *job.JobConfig, paraConf *job.ParallelismConfig, progress, maxStep int, jobID string, hosts []string) error {
-	// add dataset to MLFS
-	dpSize := paraConf.Size / (paraConf.PPSize * paraConf.MPSize)
-	addDataStart := time.Now()
-	if err := addDataset(dpSize, progress, jobConf, jobID); err != nil {
-		log.Printf("add dataset failed but IGNORE: %v", err)
-		// return err
+	if !jobConf.NoTenplex {
+		// add dataset to MLFS
+		dpSize := paraConf.Size / (paraConf.PPSize * paraConf.MPSize)
+		addDataStart := time.Now()
+		if err := addDataset(dpSize, progress, jobConf, jobID); err != nil {
+			log.Printf("add dataset failed but IGNORE: %v", err)
+			// return err
+		}
+		log.Printf("Adding dataset took %s", time.Since(addDataStart))
 	}
-	log.Printf("Adding dataset took %s", time.Since(addDataStart))
 
 	// train
 	log.Printf("Start training: %s", jobID)
@@ -197,20 +199,22 @@ func ScalingTraining(jobConf *job.JobConfig) {
 				}
 			}
 
-			// repartition
-			log.Printf("Start repartition func")
-			err := repartition(
-				schedule[i-1].ParaConf,
-				scalingPoint.ParaConf,
-				scalingPoint.Step,
-				jobConf,
-				jobID,
-			)
-			if err != nil {
-				log.Printf("%v", err)
-				return
+			if !jobConf.NoTenplex {
+				// repartition
+				log.Printf("Start repartition func")
+				err := repartition(
+					schedule[i-1].ParaConf,
+					scalingPoint.ParaConf,
+					scalingPoint.Step,
+					jobConf,
+					jobID,
+				)
+				if err != nil {
+					log.Printf("%v", err)
+					return
+				}
+				log.Printf("Finished repartition func")
 			}
-			log.Printf("Finished repartition func")
 		}
 
 		maxStep := schedule[i+1].Step

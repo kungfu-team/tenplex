@@ -44,33 +44,39 @@ func (j Job) newWorker(i int, jConf *JobConfig, jobID string, host string, maste
 		cmd = GenMegatronDeepspeedCommand(j.Config, i, jobID, jConf)
 	}
 	dockerName := fmt.Sprintf(`trainer-%s-%02d`, jobID, i)
-	return Container{
-		Name: dockerName,
-		IP:   dockerName,
-		// IP:   host,
-		GPUs: gpus,
-		Host: host,
-		Cmd:  cmd,
-		Rank: i,
-
-		PathMaps: []PathMap{
-			// {
-			//         HostPath:      path.Join(j.HostPath, jobID, str(i), `data`),
-			//         ContainerPath: `/data/dataset`,
-			// },
-			{
-				HostPath:      `/data/megatron-lm/gpt-2`,
+	pathMaps := []PathMap{}
+	if jConf.NoTenplex {
+		pathMaps = append(pathMaps,
+			PathMap{
+				HostPath:      `/mnt/k1d2/megatron-lm`,
 				ContainerPath: `/data/dataset`,
 			},
-			{
-				HostPath:      path.Join(j.HostPath, jobID, str(i), `ckpt`),
+			PathMap{
+				HostPath:      `/mnt/k1d2/ckpt`,
 				ContainerPath: `/data/ckpt`,
 			},
-			{
+		)
+	} else {
+		pathMaps = append(pathMaps,
+			PathMap{
 				HostPath:      path.Join("/mnt/mlfs/job", jobID),
 				ContainerPath: `/data/mlfs`,
 			},
-		},
+			PathMap{
+				HostPath:      path.Join(j.HostPath, jobID, str(i), `ckpt`),
+				ContainerPath: `/data/ckpt`,
+			},
+		)
+	}
+
+	return Container{
+		Name:     dockerName,
+		IP:       dockerName,
+		GPUs:     gpus,
+		Host:     host,
+		Cmd:      cmd,
+		Rank:     i,
+		PathMaps: pathMaps,
 	}
 }
 
