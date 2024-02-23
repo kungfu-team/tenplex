@@ -19,3 +19,9 @@ curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor | sud
 sudo apt update
 sudo apt install -y mlfs
 ```
+
+Run benchmarks
+
+```
+./benchmark/run-all.sh
+```

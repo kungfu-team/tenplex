@@ -18,6 +18,7 @@ import (
 
 var (
 	mlfsGitCommit = flag.String("mlfs-git-commit", ``, ``)
+	logfile       = flag.String(`logfile`, ``, `path to logfile`)
 )
 
 func parseFlags() *job.JobConfig {
@@ -30,6 +31,13 @@ func parseFlags() *job.JobConfig {
 
 func main() {
 	j := parseFlags()
+	if len(*logfile) > 0 {
+		if lf, err := os.Create(*logfile); err == nil {
+			log.Printf("log into %s", *logfile)
+			log.SetOutput(io.MultiWriter(lf, os.Stderr))
+			defer lf.Close()
+		}
+	}
 	t0 := time.Now()
 	defer func() { log.Printf("%s took %s", strings.Join(os.Args, ` `), time.Since(t0)) }()
 	log.Printf("%+v", j)

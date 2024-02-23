@@ -3,18 +3,8 @@
 - name: install tenplex
   hosts: all
   tasks:
-
-  # TODO: add apt repo and keys
-
-  - name: Install a list of packages
-    become: true
-    ansible.builtin.apt:
-      pkg:
-      - mlfs
-
-  - name: show info
-    command: mlfs info
-    register: log
+  # - import_tasks: ./uninstall.yml
+  - import_tasks: ./install.yml
 
   - debug: msg="{{ log.stdout }}"
   - debug: msg="{{ log.stderr }}"
