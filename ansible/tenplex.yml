@@ -3,7 +3,7 @@
 - name: install tenplex
   hosts: all
   tasks:
-  - import_tasks: ./uninstall.yml
+  # - import_tasks: ./uninstall.yml
   - import_tasks: ./install.yml
 
   - debug: msg="{{ log.stdout }}"

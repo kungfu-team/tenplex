@@ -1,3 +1,9 @@
+# - name: cleanup
+#   become: true
+#   ansible.builtin.shell:
+#     cmd: killall apt
+#   register: log
+
 - name: stop
   become: true
   ansible.builtin.shell:
