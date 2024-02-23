@@ -195,10 +195,11 @@ func collectLogs(jobConf *job.JobConfig) {
 		if err := os.MkdirAll(local, os.ModePerm); err != nil {
 			log.Printf("`mkdir -p %s` failed: %v", local, err)
 		}
+		log.Printf("will collect log %s -> %s", remote, local)
 		p := proc.PC(`scp`, `-r`, remote, local)
-		ps = append(ps, p)
+		ps = append(ps, ignore(p))
 	}
-	if r := proc.Run(proc.Par(ps...), &proc.Stdio); r.Err != nil {
+	if r := run(par(ps...), &proc.Stdio); r.Err != nil {
 		log.Printf("collect logs failed")
 	}
 }
