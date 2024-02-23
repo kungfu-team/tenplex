@@ -148,6 +148,7 @@ func (u *User) RegisterFlags(flag *flag.FlagSet) {
 	flag.StringVar(&u.PlansFile, `plan`, ``, `path to json file`)
 	flag.BoolVar(&u.SingleTimedJob, `timed-job`, false, `only run a single timed job`)
 	flag.BoolVar(&u.SimulateFailure, `failure`, false, `simulate failure`)
+	flag.Var(&u.Hosts, `hosts`, `IPs separated by ,`)
 
 	// old flags
 	flag.BoolVar(&u.AddJobB, `B`, false, ``)
