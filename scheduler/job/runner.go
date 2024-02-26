@@ -86,6 +86,7 @@ func (ru *Runner) queryIter() error {
 
 func (ru *Runner) RunTraining(wg *sync.WaitGroup, ch *chan string, schedulerAddr string) {
 	ru.JobConfig = &job.JobConfig{
+		ID:             ru.Job.ID,
 		Framework:      ru.Job.Framework,
 		Precision:      ru.Job.Precision,
 		BatchSize:      ru.Job.BatchSize,
@@ -99,7 +100,7 @@ func (ru *Runner) RunTraining(wg *sync.WaitGroup, ch *chan string, schedulerAddr
 		Cluster:        *ru.Cluster,
 		SchedulerIP:    schedulerAddr,
 		MLFSPort:       mlfs.DefaultCtrlPort,
-		User:           "marcel", // TODO: make dynamic
+		User:           os.Getenv(`USER`), // TODO: pass in from flag
 		Failure:        ru.Job.Failure,
 	}
 

@@ -10,11 +10,8 @@ import (
 
 	"github.com/kungfu-team/tenplex/scheduler/experiments/fakeuser"
 	"github.com/kungfu-team/tenplex/scheduler/logging"
-	"github.com/kungfu-team/tenplex/scheduler/stringlist"
 	"github.com/lgarithm/go/tr"
 )
-
-var hosts = stringlist.Flag("hosts", nil, "comma separated IPs")
 
 func main() {
 	prog := path.Base(os.Args[0])
@@ -23,7 +20,6 @@ func main() {
 	var u fakeuser.User
 	u.RegisterFlags(flag.CommandLine)
 	flag.Parse()
-	u.Hosts = *hosts
 	// u.Hosts = resolveHosts(*hosts) // TODO: make it work
 	if len(u.PlansFile) > 0 {
 		if u.SingleTimedJob {

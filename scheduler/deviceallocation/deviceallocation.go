@@ -11,16 +11,15 @@ import (
 
 type DeviceAllocations = map[int]job.ParallelismConfig
 
-func GenDevicAllocations() DeviceAllocations {
+func GenDeviceAllocations() DeviceAllocations {
 	deviceAllos := make(DeviceAllocations)
 
-	// deviceAllos[1] = job.ParallelismConfig{Size: 1, PPSize: 1, MPSize: 1}
-	// deviceAllos[2] = job.ParallelismConfig{Size: 2, PPSize: 1, MPSize: 2}
-	// deviceAllos[4] = job.ParallelismConfig{Size: 4, PPSize: 1, MPSize: 2}
+	deviceAllos[1] = job.ParallelismConfig{Size: 1, PPSize: 1, MPSize: 1}
+	deviceAllos[2] = job.ParallelismConfig{Size: 2, PPSize: 1, MPSize: 2}
 	deviceAllos[4] = job.ParallelismConfig{Size: 4, PPSize: 1, MPSize: 2}
 	deviceAllos[8] = job.ParallelismConfig{Size: 8, PPSize: 2, MPSize: 2}
 	deviceAllos[16] = job.ParallelismConfig{Size: 16, PPSize: 4, MPSize: 2}
-	// deviceAllos[32] = job.ParallelismConfig{Size: 32, PPSize: 4, MPSize: 2}
+	deviceAllos[32] = job.ParallelismConfig{Size: 32, PPSize: 4, MPSize: 2}
 
 	return deviceAllos
 }

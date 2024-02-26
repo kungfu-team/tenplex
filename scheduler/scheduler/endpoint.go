@@ -113,13 +113,13 @@ func (sch *Scheduler) SetCluster(w http.ResponseWriter, req *http.Request) {
 	proc.Main(ignore(parmap(sch.cleanTrainingDir, sch.Cluster.Hosts...)))
 	log.Printf("cleaned training dir")
 
-	log.Printf("upload state migrator")
-	proc.Main(parmap(sch.sendStateMigrator, sch.Cluster.Hosts...))
-	log.Printf("uploaded state migrator")
+	// log.Printf("upload state migrator")
+	// proc.Main(parmap(sch.sendStateMigrator, sch.Cluster.Hosts...))
+	// log.Printf("uploaded state migrator")
 
-	log.Printf("upload transformer-checkpoint")
-	proc.Main(parmap(sch.sendTransformerCheckpoint, sch.Cluster.Hosts...))
-	log.Printf("uploaded transformer-checkpoint")
+	log.Printf("clone transformer-checkpoint")
+	proc.Main(ignore(parmap(sch.cloneTransformerCheckpoint, sch.Cluster.Hosts...)))
+	log.Printf("cloned transformer-checkpoint")
 }
 
 func (sch *Scheduler) GetStop(w http.ResponseWriter, req *http.Request) {
@@ -145,7 +145,7 @@ func (sch *Scheduler) restartMLFS(h string) P {
 		pc(`sudo`, `systemctl`, `start`, `mlfs`),
 		pc(`sudo`, `systemctl`, `status`, `mlfs`),
 		proc.Echo(`started mlfs `+h),
-		proc.If(true, proc.Lambda(func() P {
+		proc.If(false, proc.Lambda(func() P {
 			sas, err := loadSAS()
 			if err != nil {
 				log.Panic(err)
@@ -196,6 +196,14 @@ func (sch *Scheduler) sendTransformerCheckpoint(h string) P {
 		at(sch.Admin, h).PC(`rm`, `-fr`, path.Join(tenplexPrefixRemote, `transformer-checkpoint`)),
 		term(`sendTransformerCheckpoint % `,
 			pc(`scp`, `-o`, `StrictHostKeyChecking=no`, `-r`, `./transformer-checkpoint`, sch.Admin+`@`+h+`:`+tenplexPrefixRemote)),
+	)
+}
+
+func (sch *Scheduler) cloneTransformerCheckpoint(h string) P {
+	ckptPath := path.Join(tenplexPrefixRemote, `transformer-checkpoint`)
+	return seq(
+		at(sch.Admin, h).PC(`rm`, `-fr`, ckptPath),
+		at(sch.Admin, h).PC(`git`, `clone`, `https://github.com/kungfu-team/transformer-checkpoint.git`, path.Join(tenplexPrefixRemote, ckptPath)),
 	)
 }
 

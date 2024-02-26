@@ -40,7 +40,7 @@ func (d *Daemon) RegisterFlags(flag *flag.FlagSet) {
 }
 
 func (d Daemon) Run() {
-	devAllos := deviceallocation.GenDevicAllocations()
+	devAllos := deviceallocation.GenDeviceAllocations()
 	if len(d.DeviceAllocationFile) > 0 {
 		var err error
 		if devAllos, err = deviceallocation.LoadFile(d.DeviceAllocationFile); err != nil {

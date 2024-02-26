@@ -5,8 +5,8 @@ import "github.com/lgarithm/proc/experimental"
 func ReInstallMLFS(a At) P {
 	const script = `
 set -e
-echo 'deb https://tenplex.blob.core.windows.net/public/deb ./' | sudo tee /etc/apt/sources.list.d/tenplex.list
-curl -s https://tenplex.blob.core.windows.net/public/deb/tenplex.gpg | sudo apt-key add -
+echo "deb https://europe-west2-apt.pkg.dev/projects/tenplex tenplex main" | sudo tee /etc/apt/sources.list.d/tenplex.list
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/packages-cloud-google-apt.gpg >/dev/null
 sudo apt update
 sudo apt remove -y mlfs
 sudo apt reinstall -y mlfs
