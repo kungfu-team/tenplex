@@ -110,7 +110,7 @@ func (sch *Scheduler) SetCluster(w http.ResponseWriter, req *http.Request) {
 	log.Printf("restarted mlfsd ...")
 
 	log.Printf("clean training dir")
-	proc.Main(ignore(parmap(sch.cleanTrainingDir, sch.Cluster.Hosts...)))
+	proc.Main(parmap(sch.cleanTrainingDir, sch.Cluster.Hosts...))
 	log.Printf("cleaned training dir")
 
 	// log.Printf("upload state migrator")
@@ -161,49 +161,18 @@ func (sch *Scheduler) restartMLFS(h string) P {
 func (sch *Scheduler) cleanTrainingDir(h string) P {
 	p := Proc{
 		Prog: `sudo`,
-		Args: []string{`rm -r ~/.tenplex/training/*`},
+		Args: []string{`rm`, `-fr`, `~/.tenplex/training/*`},
 		Host: h,
 		User: sch.Admin,
 	}
 	return ssh(p)
 }
 
-func (sch *Scheduler) sendStateMigrator(h string) P {
-	rpc := at(sch.Admin, h).PC
-	rpc = proc.WithTerm(rpc)
-	rpc = experimental.WithLog(rpc)
-	pc := proc.PC
-	pc = proc.WithTerm(pc)
-	pc = experimental.WithLog(pc)
-	stateMigrator := sch.StateMigrator
-	if len(stateMigrator) == 0 {
-		stateMigrator = "tenplex-state-transformer"
-	}
-	remoteDir := path.Join(tenplexPrefixRemote, `bin`)
-	log.Printf("%s %s %s", `scp`, stateMigrator, sch.Admin+`@`+h+`:`+remoteDir)
-	return seq(
-		rpc(`rm`, `-fr`, remoteDir),
-		rpc(`mkdir`, `-p`, remoteDir),
-		pc(`scp`, `-o`, `StrictHostKeyChecking=no`, stateMigrator, sch.Admin+`@`+h+`:`+remoteDir),
-	)
-}
-
-func (sch *Scheduler) sendTransformerCheckpoint(h string) P {
-	pc := proc.PC
-	pc = proc.WithTerm(pc)
-	pc = experimental.WithLog(pc)
-	return seq(
-		at(sch.Admin, h).PC(`rm`, `-fr`, path.Join(tenplexPrefixRemote, `transformer-checkpoint`)),
-		term(`sendTransformerCheckpoint % `,
-			pc(`scp`, `-o`, `StrictHostKeyChecking=no`, `-r`, `./transformer-checkpoint`, sch.Admin+`@`+h+`:`+tenplexPrefixRemote)),
-	)
-}
-
 func (sch *Scheduler) cloneTransformerCheckpoint(h string) P {
 	ckptPath := path.Join(tenplexPrefixRemote, `transformer-checkpoint`)
 	return seq(
 		at(sch.Admin, h).PC(`rm`, `-fr`, ckptPath),
-		at(sch.Admin, h).PC(`git`, `clone`, `https://github.com/kungfu-team/transformer-checkpoint.git`, path.Join(tenplexPrefixRemote, ckptPath)),
+		at(sch.Admin, h).PC(`git`, `clone`, `https://github.com/kungfu-team/transformer-checkpoint.git`, ckptPath),
 	)
 }
 
