@@ -118,7 +118,7 @@ func (sch *Scheduler) SetCluster(w http.ResponseWriter, req *http.Request) {
 	// log.Printf("uploaded state migrator")
 
 	log.Printf("clone transformer-checkpoint")
-	proc.Main(ignore(parmap(sch.cloneTransformerCheckpoint, sch.Cluster.Hosts...)))
+	proc.Main(parmap(sch.cloneTransformerCheckpoint, sch.Cluster.Hosts...))
 	log.Printf("cloned transformer-checkpoint")
 }
 

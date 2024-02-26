@@ -4,6 +4,7 @@ set -e
 scheduler_common_flags() {
     echo -detect-self-ip ib0
     echo -u $USER
+    echo -reinstall
 }
 
 scheduler_tenplex_flags() {
