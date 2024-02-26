@@ -59,7 +59,6 @@ func (d Daemon) Run() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/addjobs", s.AddJobs)
-	mux.HandleFunc("/addtimedjob", s.AddTimedJob)
 	mux.HandleFunc("/setcluster", s.SetCluster)
 	mux.HandleFunc("/stop", s.GetStop)
 	hs := http.Server{

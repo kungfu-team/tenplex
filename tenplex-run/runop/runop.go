@@ -4,9 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"path"
 	"strconv"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/kungfu-team/tenplex/tenplex-run/counter"
@@ -156,8 +159,41 @@ func repartition(from, to *job.ParallelismConfig, step int, jobConf *job.JobConf
 
 var RoundID = counter.New()
 
+type StopServer struct {
+	Stopped  int32
+	FinishWG sync.WaitGroup
+}
+
+func (ss *StopServer) Start(port int) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/stop", ss.GetStop)
+	hs := http.Server{
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: mux,
+	}
+	go hs.ListenAndServe()
+}
+
+func (ss *StopServer) GetStop(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodGet {
+		log.Printf("method must be get")
+		http.Error(w, "method must be get", http.StatusMethodNotAllowed)
+		return
+	}
+	if atomic.LoadInt32(&ss.Stopped) > 0 {
+		w.Write([]byte("stop"))
+	} else {
+		w.Write([]byte("run"))
+	}
+}
+
 func ScalingTraining(jobConf *job.JobConfig) {
 	schedule := jobConf.Schedule
+	stopSer := StopServer{}
+	if jobConf.TimeBased {
+		port := 22222 // TODO make dynamic
+		stopSer.Start(port)
+	}
 
 	for i, scalingPoint := range schedule {
 		// stop training
@@ -174,7 +210,8 @@ func ScalingTraining(jobConf *job.JobConfig) {
 			}
 		}
 
-		if scalingPoint.Step > 0 {
+		// if scalingPoint.Step > 0 {
+		if i > 0 {
 			if jobConf.Failure > 0 {
 				log.Printf("Simulating failure")
 				if err := simulateFailures(jobConf, jobConf.Failure); err != nil {
@@ -200,7 +237,12 @@ func ScalingTraining(jobConf *job.JobConfig) {
 			}
 		}
 
-		maxStep := schedule[i+1].Step
+		var maxStep int
+		if jobConf.TimeBased {
+			maxStep = 10000
+		} else {
+			maxStep = schedule[i+1].Step
+		}
 		progress := scalingPoint.Step * (jobConf.BatchSize)
 		hosts := jobConf.Cluster.Hosts
 		if jobConf.Redeploy {
@@ -210,10 +252,28 @@ func ScalingTraining(jobConf *job.JobConfig) {
 				hosts = hosts[len(hosts)/2:]
 			}
 		}
-		if err := RunTraining(jobConf, scalingPoint.ParaConf, progress, maxStep, hosts); err != nil {
-			// log.Panic(err)
-			log.Printf("Training failed. Stopping containers")
-			StopContainers(jobConf.Cluster.Hosts, jobConf.User)
+		if jobConf.TimeBased {
+			stopSer.FinishWG.Add(1)
+			go func() {
+				if err := RunTraining(jobConf, scalingPoint.ParaConf, progress, maxStep, hosts); err != nil {
+					log.Printf("Training failed. Stopping containers")
+					StopContainers(jobConf.Cluster.Hosts, jobConf.User)
+				}
+				stopSer.FinishWG.Done()
+			}()
+			log.Printf("sleep for %d minutes", scalingPoint.Step)
+			time.Sleep(time.Duration(scalingPoint.Step) * time.Minute)
+			log.Printf("woke up again")
+
+			// stop training
+			atomic.StoreInt32(&stopSer.Stopped, 1)
+			stopSer.FinishWG.Wait()
+			atomic.StoreInt32(&stopSer.Stopped, 0)
+		} else {
+			if err := RunTraining(jobConf, scalingPoint.ParaConf, progress, maxStep, hosts); err != nil {
+				log.Printf("Training failed. Stopping containers")
+				StopContainers(jobConf.Cluster.Hosts, jobConf.User)
+			}
 		}
 	}
 }

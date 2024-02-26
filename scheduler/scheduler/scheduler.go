@@ -8,7 +8,6 @@ import (
 	"path"
 	"sync"
 	"sync/atomic"
-	"time"
 
 	"github.com/kungfu-team/tenplex/mlfs/mlfs"
 	"github.com/kungfu-team/tenplex/scheduler/deviceallocation"
@@ -139,68 +138,6 @@ func (sch *Scheduler) scale(newJobs []job.Job) {
 		go runner.RunTraining(sch.FinishWG, &sch.FinishChannel, sch.selfAddr())
 
 		i++
-	}
-}
-
-func (sch *Scheduler) runTimedJob(j job.TimedJob) {
-	for i, sp := range j.Timing {
-		duration := sp.Time
-		size := sp.Size
-
-		unixTime := time.Now().Unix()
-		if size == 0 && duration == 0 {
-			log.Printf("stop training at %d", unixTime)
-			return
-		}
-
-		if size == 0 {
-			log.Printf("It is unix time %d and training should pause for %d minutes", unixTime, duration)
-			continue
-		}
-
-		if size%sch.Cluster.GPUsPerContainer != 0 {
-			log.Panicf("size %d is not dividible GPUs per container %d", size, sch.Cluster.GPUsPerHost)
-		}
-
-		log.Printf("start interval %d of %d for timed job", i, duration)
-		numHosts := size / sch.Cluster.GPUsPerHost
-
-		subClu := cluster.NewCluster(
-			sch.Cluster.GPUsPerHost,
-			sch.Cluster.GPUsPerContainer,
-			sch.Cluster.Hosts[:numHosts]...,
-		)
-		paraConf := sch.DevAllocations[size]
-		if i == 0 {
-			runner := job.Runner{
-				Job:           j.Job,
-				Cluster:       subClu,
-				ParaConfig:    &paraConf,
-				MLFSPort:      mlfs.DefaultCtrlPort,
-				TenplexPrefix: tenplexPrefix,
-			}
-			sch.Runners = []*job.Runner{&runner}
-			sch.Jobs = []job.Job{j.Job}
-		}
-		sch.FinishWG.Add(1)
-		if i == 0 {
-			go sch.Runners[0].RunTraining(sch.FinishWG, &sch.FinishChannel, sch.selfAddr())
-		} else {
-			go sch.Runners[0].TransformAndRun(&paraConf, subClu, sch.FinishWG, &sch.FinishChannel, sch.selfAddr())
-		}
-
-		if i == len(j.Timing)-1 {
-			sch.FinishWG.Wait()
-		} else {
-			log.Printf("sleep for %d minutes", duration)
-			time.Sleep(time.Duration(duration) * time.Minute)
-			log.Printf("woke up again")
-
-			// stop training
-			atomic.StoreInt32(&sch.stopped, 1)
-			sch.FinishWG.Wait()
-			atomic.StoreInt32(&sch.stopped, 0)
-		}
 	}
 }
 

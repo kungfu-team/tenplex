@@ -1,28 +1,10 @@
 #!/bin/bash
 set -e
 
-scheduler_common_flags() {
-    echo -detect-self-ip ib0
-    echo -u $USER
-    echo -reinstall
-}
+. $(pwd)/../common.sh
 
-scheduler_tenplex_flags() {
-    # echo -device-allocation ./tenplex-allocation.json
-    echo -device-allocation ./tenplex-allocation-test.json
-}
-
-scheduler_pytorch_flags() {
-    # echo -device-allocation ./pytorch-allocation.json
-    echo -device-allocation ./pytorch-allocation-test.json
-}
-
-
-join_() {
-    local IFS=$1
-    shift
-    echo "$*"
-}
+    # echo -plan ./tenplex-schedule-test.json
+    # echo -plan ./pytorch-schedule-test.json
 
 list_hosts() {
     echo "10.10.10.1"
@@ -31,29 +13,32 @@ list_hosts() {
     # echo "10.10.10.4"
 }
 
-hosts=$(join_ , $(list_hosts))
+common_flags() {
+    base_flags
 
-user_common_flags() {
-    echo -hosts $hosts
+    echo -framework "megatron-lm"
+    echo -model "gpt"
+    echo -model-size "xl"
+    echo -dataset "enwiki"
+    echo -batch-size 128
+    echo -micro-batch-size 8
+    echo -precision "fp16"
+    echo -index-url "/data/megatron-lm/gpt-2/enwiki/npzs_seq1024/indices.txt"
+    echo -hosts "$(join $(list_hosts))"
+    echo -schedule-file "$(pwd)/tenplex-schedule-test.json"
     echo -gpu-per-host 4
-    echo -image kungfu.azurecr.io/mw-megatron-lm-23.06-update:latest
-    echo -timed-job
+    echo -gpu-per-container 4
+    echo -seq-length 1024
+    echo -time-based
+    echo -scheduler-ip "http://10.10.10.1:22222"
 }
 
-user_tenplex_flags() {
-    # echo -plan ./tenplex-schedule.json
-    echo -plan ./tenplex-schedule-test.json
+tenplex_flags() {
+    echo -schedule-file "$(pwd)/tenplex-schedule-test.json"
 }
 
-user_pytorch_flags() {
-    # echo -plan ./pytorch-schedule.json
-    echo -plan ./pytorch-schedule-test.json
+pytorch_flags() {
+    echo -schedule-file "$(pwd)/pytorch-schedule-test.json"
 }
 
-tenplex-scheduler $(scheduler_common_flags) $(scheduler_tenplex_flags) &
-tenplex-user $(user_common_flags) $(user_tenplex_flags)
-pkill -P $$
-
-# tenplex-scheduler $(scheduler_common_flags) $(scheduler_pytorch_flags) &
-# tenplex-user $(user_common_flags) $(user_pytorch_flags)
-# pkill -P $$
+tenplex-run $(common_flags) $(tenplex_flags) > dyn.log 2>&1

@@ -34,6 +34,7 @@ type JobConfig struct {
 	Central        bool
 	Redeploy       bool
 	NoTenplex      bool
+	TimeBased      bool
 }
 
 type ParallelismConfig struct {
@@ -72,6 +73,7 @@ func (j *JobConfig) RegisterFlags(flag *flag.FlagSet) {
 	flag.BoolVar(&j.Central, "central", false, "Set to true to transfrom state centrally")
 	flag.BoolVar(&j.Redeploy, "redeploy", false, "Set to true to redeploy job")
 	flag.BoolVar(&j.NoTenplex, "no-tenplex", false, "Set to true to run without Tenplex")
+	flag.BoolVar(&j.TimeBased, "time-based", false, "Set to true to run scaling based on time")
 	j.Cluster.RegisterFlags(flag)
 }
 
