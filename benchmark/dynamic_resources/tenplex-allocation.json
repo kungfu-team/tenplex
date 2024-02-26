@@ -1,0 +1,17 @@
+{
+    "4": {
+        "Size": 4,
+        "PPSize": 1,
+        "MPSize": 2
+    },
+    "8": {
+        "Size": 8,
+        "PPSize": 2,
+        "MPSize": 2
+    },
+    "16": {
+        "Size": 16,
+        "PPSize": 4,
+        "MPSize": 2
+    }
+}

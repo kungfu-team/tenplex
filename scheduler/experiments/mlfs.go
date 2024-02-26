@@ -19,15 +19,4 @@ mlfs info
 	)
 }
 
-func runScript(a At, script string, filename string, su bool) P {
-	run := a.PC(`./` + filename)
-	if su {
-		run = a.PC(`sudo `, `./`+filename)
-	}
-	return seq(
-		touchExe(a, filename, []byte(script)),
-		run,
-	)
-}
-
-var touchExe = experimental.TouchExe
+var runScript = experimental.RunScript

@@ -1,8 +1,10 @@
 #!/bin/bash
+set -e
 
 scheduler_common_flags() {
     echo -detect-self-ip ib0
     echo -u $USER
+    echo -reinstall
 }
 
 scheduler_tenplex_flags() {
@@ -52,6 +54,6 @@ tenplex-scheduler $(scheduler_common_flags) $(scheduler_tenplex_flags) &
 tenplex-user $(user_common_flags) $(user_tenplex_flags)
 pkill -P $$
 
-tenplex-scheduler $(scheduler_common_flags) $(scheduler_pytorch_flags) &
-tenplex-user $(user_common_flags) $(user_pytorch_flags)
-pkill -P $$
+# tenplex-scheduler $(scheduler_common_flags) $(scheduler_pytorch_flags) &
+# tenplex-user $(user_common_flags) $(user_pytorch_flags)
+# pkill -P $$

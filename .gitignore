@@ -4,5 +4,5 @@ __pycache__
 build
 bin
 *.log
-*.json
 *.egg-info
+events.out.tfevents.*
