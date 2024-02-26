@@ -19,8 +19,8 @@ import (
 	"github.com/kungfu-team/tenplex/scheduler/job"
 	"github.com/kungfu-team/tenplex/scheduler/scalepoint"
 	"github.com/kungfu-team/tenplex/scheduler/scheduler"
-	"github.com/kungfu-team/tenplex/scheduler/stringlist"
 	"github.com/kungfu-team/tenplex/tenplex-run/cluster"
+	"github.com/kungfu-team/tenplex/tenplex-run/listflag"
 )
 
 var openwebtext = ds.Dataset{
@@ -128,7 +128,7 @@ const localhost = "127.0.0.1"
 type User struct {
 	GpuPerHost      int
 	GpuPerContainer int
-	Hosts           stringlist.Value
+	Hosts           listflag.Strings
 	SchedulerPort   int
 	Image           string
 	PlansFile       string
