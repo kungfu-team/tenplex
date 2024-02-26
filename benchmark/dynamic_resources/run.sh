@@ -36,7 +36,10 @@ tenplex_flags() {
 
 pytorch_flags() {
     echo -schedule-file "$(pwd)/pytorch-schedule.json"
+    echo -no-tenplex
 }
 
-tenplex-run $(common_flags) $(tenplex_flags) > dyn_tenplex.log 2>&1
-tenplex-run $(common_flags) $(common_flags) > dyn_pytorch.log 2>&1
+# tenplex-run $(common_flags) $(tenplex_flags) > dyn_tenplex.log 2>&1
+
+sudo rm -r /mnt/k1d2/ckpt/*
+tenplex-run $(common_flags) $(pytorch_flags) > dyn_pytorch.log 2>&1
