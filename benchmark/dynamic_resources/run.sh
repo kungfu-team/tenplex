@@ -3,14 +3,11 @@ set -e
 
 . $(pwd)/../common.sh
 
-    # echo -plan ./tenplex-schedule-test.json
-    # echo -plan ./pytorch-schedule-test.json
-
 list_hosts() {
     echo "10.10.10.1"
     echo "10.10.10.2"
-    # echo "10.10.10.3"
-    # echo "10.10.10.4"
+    echo "10.10.10.3"
+    echo "10.10.10.4"
 }
 
 common_flags() {
@@ -38,7 +35,8 @@ tenplex_flags() {
 }
 
 pytorch_flags() {
-    echo -schedule-file "$(pwd)/pytorch-schedule-test.json"
+    echo -schedule-file "$(pwd)/pytorch-schedule.json"
 }
 
-tenplex-run $(common_flags) $(tenplex_flags) > dyn.log 2>&1
+tenplex-run $(common_flags) $(tenplex_flags) > dyn_tenplex.log 2>&1
+tenplex-run $(common_flags) $(common_flags) > dyn_pytorch.log 2>&1
