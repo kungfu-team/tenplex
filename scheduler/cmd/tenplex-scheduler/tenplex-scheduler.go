@@ -37,7 +37,9 @@ func main() {
 	d.RegisterFlags(flag.CommandLine)
 	flag.Parse()
 	if len(d.DetectIPv4) > 0 || len(d.SelfIP) == 0 {
-		d.SelfIP = detectIP(d.DetectIPv4)
+		if d.SelfIP = detectIP(d.DetectIPv4); len(d.SelfIP) == 0 {
+			log.Panic("self IP is empty")
+		}
 	}
 	log.Printf("using self ip: %s", d.SelfIP)
 	d.Run()
