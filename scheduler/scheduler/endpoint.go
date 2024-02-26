@@ -177,7 +177,7 @@ func (sch *Scheduler) sendStateMigrator(h string) P {
 	pc = experimental.WithLog(pc)
 	stateMigrator := sch.StateMigrator
 	if len(stateMigrator) == 0 {
-		stateMigrator = path.Join(tenplexPrefix, `scheduler/bin/tenplex-state-transformer`)
+		stateMigrator = "tenplex-state-transformer"
 	}
 	remoteDir := path.Join(tenplexPrefixRemote, `bin`)
 	log.Printf("%s %s %s", `scp`, stateMigrator, sch.Admin+`@`+h+`:`+remoteDir)
