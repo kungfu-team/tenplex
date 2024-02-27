@@ -33,6 +33,7 @@ func (d *TenplexRunFlags) RegisterFlags(flag *flag.FlagSet) {
 }
 
 func main() {
+	log.SetPrefix(fmt.Sprintf(`[%s] `, os.Args[0]))
 	var d TenplexRunFlags
 	d.RegisterFlags(flag.CommandLine)
 	flag.Parse()
