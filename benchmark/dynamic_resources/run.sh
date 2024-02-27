@@ -28,16 +28,18 @@ common_flags() {
 
 tenplex_flags() {
     common_flags
+    echo -jobid tenplex-dyn-res
     echo -schedule-file "$(pwd)/tenplex-schedule-test.json"
 }
 
 pytorch_flags() {
     common_flags
+    echo -jobid pytorch-dyn-res
     echo -schedule-file "$(pwd)/pytorch-schedule-test.json"
     echo -no-tenplex
 }
 
-tenplex_run_with tenplex_flags
+# tenplex_run_with tenplex_flags
 
-# sudo rm -fr /mnt/k1d2/ckpt/*
-# tenplex_run_with pytorch_flags
+sudo rm -fr /mnt/k1d2/ckpt/*
+tenplex_run_with pytorch_flags
