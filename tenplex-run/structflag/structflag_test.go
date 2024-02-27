@@ -8,7 +8,12 @@ import (
 	"github.com/kungfu-team/tenplex/tenplex-run/structflag"
 )
 
+type Base struct {
+	Y int `flag:"y"`
+}
+
 type App struct {
+	Base
 	Name string `flag:"name"`
 	X    int    `flag:"x"`
 }
@@ -16,7 +21,8 @@ type App struct {
 func Test_1(t *testing.T) {
 	var a App
 	f := flag.NewFlagSet(`cmd`, flag.ExitOnError)
-	structflag.RegisterFlags(&a, f)
+	structflag.RegisterFlags(&a, f) // won't register Base
+	// structflag.RegisterFlags(&a.Base, f)
 }
 
 func Test_2(t *testing.T) {
