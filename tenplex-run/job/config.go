@@ -83,6 +83,7 @@ func (j *JobConfig) ParseParaConfig() {
 			log.Panic(err)
 		}
 		j.ParaConfigs = paraConfigs
+		return
 	}
 	j.ParaConfigs = para_config.GenParaConfig()
 }
