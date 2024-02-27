@@ -38,6 +38,7 @@ func main() {
 	d.RegisterFlags(flag.CommandLine)
 	flag.Parse()
 	d.ParseSchedule()
+	d.ParseParaConfig()
 	if len(d.logfile) > 0 {
 		if lf, err := os.Create(d.logfile); err == nil {
 			log.Printf("log into %s", d.logfile)

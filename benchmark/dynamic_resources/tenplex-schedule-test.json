@@ -1,34 +1,18 @@
 [
     {
         "time": 5,
-        "para_conf": {
-            "size": 8,
-            "pp_size": 2,
-            "mp_size": 2
-        }
+        "size": 8
     },
     {
         "time": 5,
-        "para_conf": {
-            "size": 4,
-            "pp_size": 2,
-            "mp_size": 2
-        }
+        "size": 4
     },
     {
         "time": 5,
-        "para_conf": {
-            "size": 8,
-            "pp_size": 2,
-            "mp_size": 2
-        }
+        "size": 8
     },
     {
         "time": 0,
-        "para_conf": {
-            "size": 0,
-            "pp_size": 0,
-            "mp_size": 0
-        }
+        "size": 0
     }
 ]

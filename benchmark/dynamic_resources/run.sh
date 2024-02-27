@@ -37,7 +37,7 @@ pytorch_flags() {
     echo -no-tenplex
 }
 
-# tenplex_run_with tenplex_flags
+tenplex_run_with tenplex_flags
 
-sudo rm -fr /mnt/k1d2/ckpt/*
-tenplex_run_with pytorch_flags
+# sudo rm -fr /mnt/k1d2/ckpt/*
+# tenplex_run_with pytorch_flags

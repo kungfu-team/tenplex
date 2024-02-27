@@ -9,6 +9,7 @@ import (
 
 	"github.com/kungfu-team/tenplex/tenplex-run/docker"
 	"github.com/kungfu-team/tenplex/tenplex-run/job"
+	"github.com/kungfu-team/tenplex/tenplex-run/para_config"
 	"github.com/lgarithm/proc"
 	"github.com/lgarithm/proc/experimental"
 )
@@ -23,7 +24,7 @@ var (
 	runScript = experimental.RunScript
 )
 
-func createCluster(jobConf *job.JobConfig, paraConf *job.ParallelismConfig, hosts []string, maxTrainStep int) *job.ContainerCluster {
+func createCluster(jobConf *job.JobConfig, paraConf *para_config.ParallelismConfig, hosts []string, maxTrainStep int) *job.ContainerCluster {
 	gpusPerContainer := jobConf.Cluster.GPUsPerContainer
 	numNodes := int(paraConf.Size / gpusPerContainer)
 	if numNodes < 1 {
