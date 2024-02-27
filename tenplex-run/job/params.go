@@ -2,7 +2,6 @@ package job
 
 import (
 	"fmt"
-	"path"
 	"strconv"
 )
 
@@ -27,17 +26,9 @@ func GenMegatronLMBERTCmd(c MDPConfig, rank int, jobID string, host string, jCon
 	cmd := []string{
 		`torchrun`,
 	}
-	distributed_args := []string{
-		`--nproc_per_node`, str(c.GPUPerNode),
-		`--nnodes`, str(c.NumNodes),
-		`--node_rank`, str(rank),
-		// `--master_addr`, fmt.Sprintf("trainer-%s-00", jobID),
-		`--master_addr`, jConf.Cluster.Hosts[0],
-		`--master_port`, `6000`,
-	}
-	cmd = append(cmd, distributed_args...)
+	cmd = append(cmd, jConf.DistFlags(c, rank)...)
 	cmd = append(cmd, `/workspace/Megatron-LM/pretrain_bert.py`)
-	bert_args := []string{}
+	var bert_args []string
 	if jConf.ModelSize == "base" {
 		bert_args = append(bert_args,
 			`--num-layers`, `12`,
@@ -65,39 +56,12 @@ func GenMegatronLMBERTCmd(c MDPConfig, rank int, jobID string, host string, jCon
 		`--global-batch-size`, str(jConf.BatchSize), // default: 32
 		`--vocab-file`, `/workspace/Megatron-LM/vocab/bert-large-uncased-vocab.txt`,
 		`--split`, `949,50,1`,
-	}...)
-	if c.Precision == "fp16" {
-		bert_args = append(bert_args,
-			`--fp16`)
-	}
-	cmd = append(cmd, bert_args...)
-	output_args := []string{
-		`--log-interval`, str(c.LogInterval),
-		`--save-interval`, str(c.SaveInterval),
-		`--eval-interval`, str(c.EvalInterval),
-		`--eval-iters`, `0`, // default: 10
-	}
-	cmd = append(cmd, output_args...)
-	checkpoint_path := `/data/ckpt`
-	args := []string{
-		`--save`, checkpoint_path,
-		`--load`, checkpoint_path,
 		`--data-path`, `/data/dataset/bert_text_sentence`,
-		`--tensor-model-parallel-size`, str(c.ModelParallelSize),
-		`--pipeline-model-parallel-size`, str(c.PipelineParallelSize),
-	}
-	cmd = append(cmd, args...)
-	cmd = append(cmd, `--tensorboard-dir`, path.Join(checkpoint_path, `tensorboard`))
-	if !jConf.NoTenplex {
-		cmd = append(cmd, `--tenplex`)
-		cmd = append(cmd, `--mlfs-path`, `/data/mlfs`)
-		cmd = append(cmd, `--jobid`, jobID)
-		cmd = append(cmd, `--host-ip`, host)
-		cmd = append(cmd, `--mlfs-port`, str(jConf.MLFSPort))
-		if jConf.SchedulerIP != "" {
-			cmd = append(cmd, `--scheduler-addr`, jConf.SchedulerIP)
-		}
-	}
+	}...)
+	cmd = append(cmd, bert_args...)
+	cmd = append(cmd, jConf.LogFlags(c)...)
+	cmd = append(cmd, jConf.TenplexFlags(c, host)...)
+	cmd = append(cmd, jConf.OtherFlags(c)...)
 	return cmd
 }
 
@@ -105,15 +69,7 @@ func GenMegatronLMGPTCmd(c MDPConfig, rank int, jobID string, host string, jConf
 	cmd := []string{
 		`torchrun`,
 	}
-	distributed_args := []string{
-		`--nproc_per_node`, str(c.GPUPerNode),
-		`--nnodes`, str(c.NumNodes),
-		`--node_rank`, str(rank),
-		// `--master_addr`, fmt.Sprintf("trainer-%s-00", jobID),
-		`--master_addr`, masterAddr,
-		`--master_port`, `6000`,
-	}
-	cmd = append(cmd, distributed_args...)
+	cmd = append(cmd, jConf.DistFlags(c, rank)...)
 	cmd = append(cmd, `/workspace/Megatron-LM/pretrain_gpt.py`)
 	gpt_args := []string{
 		`--micro-batch-size`, str(jConf.MicroBatchSize),
@@ -168,41 +124,16 @@ func GenMegatronLMGPTCmd(c MDPConfig, rank int, jobID string, host string, jConf
 	} else {
 		panic(fmt.Sprintf("Model size not matching %v", jConf.ModelSize))
 	}
-
-	if c.Precision == "fp16" {
-		gpt_args = append(gpt_args,
-			`--fp16`)
-	}
 	cmd = append(cmd, gpt_args...)
-	output_args := []string{
-		`--log-interval`, str(c.LogInterval),
-		`--save-interval`, str(c.SaveInterval),
-		`--eval-interval`, str(c.EvalInterval),
-		`--eval-iters`, `0`, // default: 10
-	}
-	cmd = append(cmd, output_args...)
-	checkpoint_path := `/data/ckpt`
 	args := []string{
-		`--save`, checkpoint_path,
-		`--load`, checkpoint_path,
 		`--data-path`, `/data/dataset/gpt-2/my-gpt2_text_document`,
-		`--tensor-model-parallel-size`, str(c.ModelParallelSize),
-		`--pipeline-model-parallel-size`, str(c.PipelineParallelSize),
 		// `--DDP-impl`, `local`,
 		`--distributed-backend`, `nccl`,
 	}
 	cmd = append(cmd, args...)
-	cmd = append(cmd, `--tensorboard-dir`, path.Join(checkpoint_path, `tensorboard`))
-	if !jConf.NoTenplex {
-		cmd = append(cmd, `--tenplex`)
-		cmd = append(cmd, `--mlfs-path`, `/data/mlfs`)
-		cmd = append(cmd, `--jobid`, jobID)
-		cmd = append(cmd, `--host-ip`, host)
-		cmd = append(cmd, `--mlfs-port`, str(jConf.MLFSPort))
-		if jConf.SchedulerIP != "" {
-			cmd = append(cmd, `--scheduler-addr`, jConf.SchedulerIP)
-		}
-	}
+	cmd = append(cmd, jConf.LogFlags(c)...)
+	cmd = append(cmd, jConf.TenplexFlags(c, host)...)
+	cmd = append(cmd, jConf.OtherFlags(c)...)
 	return cmd
 }
 

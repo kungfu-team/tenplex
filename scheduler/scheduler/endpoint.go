@@ -20,31 +20,6 @@ import (
 	"github.com/lgarithm/proc/iostream"
 )
 
-func (sch *Scheduler) AddTimedJob(w http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodPost {
-		log.Printf("method must be post")
-		http.Error(w, "method must be post", http.StatusMethodNotAllowed)
-		return
-	}
-	data, err := io.ReadAll(req.Body)
-	if err != nil {
-		log.Printf("cannot read body")
-		http.Error(w, "cannot read body", http.StatusInternalServerError)
-		return
-	}
-	buf := bytes.NewBuffer(data)
-	dec := gob.NewDecoder(buf)
-	var job job.TimedJob
-	err = dec.Decode(&job)
-	if err != nil {
-		log.Printf("cannot decode body")
-		http.Error(w, "cannot decode body", http.StatusInternalServerError)
-		return
-	}
-
-	sch.runTimedJob(job)
-}
-
 func (sch *Scheduler) AddJobs(w http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
 		log.Printf("method must be post")

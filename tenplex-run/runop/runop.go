@@ -3,16 +3,25 @@ package runop
 import (
 	"errors"
 	"fmt"
+	"io"
 	"log"
+	"net"
+	"net/http"
+	"net/url"
 	"path"
 	"strconv"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/kungfu-team/tenplex/tenplex-run/counter"
 	"github.com/kungfu-team/tenplex/tenplex-run/job"
+	"github.com/kungfu-team/tenplex/tenplex-run/web"
 	"github.com/lgarithm/proc"
 )
+
+const DefaultSchedulerPort = 22222
 
 var (
 	par   = proc.Par
@@ -156,8 +165,41 @@ func repartition(from, to *job.ParallelismConfig, step int, jobConf *job.JobConf
 
 var RoundID = counter.New()
 
+type StopServer struct {
+	Stopped  int32
+	FinishWG sync.WaitGroup
+}
+
+func (ss *StopServer) Start(port int) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/stop", ss.GetStop)
+	hs := http.Server{
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: web.WithLogReq(mux),
+	}
+	go hs.ListenAndServe()
+}
+
+func (ss *StopServer) GetStop(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodGet {
+		log.Printf("method must be get")
+		http.Error(w, "method must be get", http.StatusMethodNotAllowed)
+		return
+	}
+	if atomic.LoadInt32(&ss.Stopped) > 0 {
+		w.Write([]byte("stop"))
+	} else {
+		w.Write([]byte("run"))
+	}
+}
+
 func ScalingTraining(jobConf *job.JobConfig) {
+	var stopSer StopServer
 	schedule := jobConf.Schedule
+	if jobConf.TimeBased {
+		port := DefaultSchedulerPort
+		stopSer.Start(port)
+	}
 
 	for i, scalingPoint := range schedule {
 		// stop training
@@ -174,7 +216,8 @@ func ScalingTraining(jobConf *job.JobConfig) {
 			}
 		}
 
-		if scalingPoint.Step > 0 {
+		// if scalingPoint.Step > 0 {
+		if i > 0 {
 			if jobConf.Failure > 0 {
 				log.Printf("Simulating failure")
 				if err := simulateFailures(jobConf, jobConf.Failure); err != nil {
@@ -189,7 +232,7 @@ func ScalingTraining(jobConf *job.JobConfig) {
 				err := repartition(
 					schedule[i-1].ParaConf,
 					scalingPoint.ParaConf,
-					scalingPoint.Step,
+					getStep(jobConf, scalingPoint),
 					jobConf,
 				)
 				if err != nil {
@@ -200,20 +243,39 @@ func ScalingTraining(jobConf *job.JobConfig) {
 			}
 		}
 
-		maxStep := schedule[i+1].Step
-		progress := scalingPoint.Step * (jobConf.BatchSize)
+		maxStep := getMaxStep(i, jobConf.TimeBased, schedule)
 		hosts := jobConf.Cluster.Hosts
 		if jobConf.Redeploy {
-			if scalingPoint.Step == 0 {
+			if i == 0 {
 				hosts = hosts[:len(hosts)/2]
 			} else {
 				hosts = hosts[len(hosts)/2:]
 			}
 		}
-		if err := RunTraining(jobConf, scalingPoint.ParaConf, progress, maxStep, hosts); err != nil {
-			// log.Panic(err)
-			log.Printf("Training failed. Stopping containers")
-			StopContainers(jobConf.Cluster.Hosts, jobConf.User)
+		progress := getStep(jobConf, scalingPoint) * jobConf.BatchSize
+		if jobConf.TimeBased {
+			stopSer.FinishWG.Add(1)
+			go func() {
+				if err := RunTraining(jobConf, scalingPoint.ParaConf, progress, maxStep, hosts); err != nil {
+					log.Printf("Training failed. Stopping containers")
+					StopContainers(jobConf.Cluster.Hosts, jobConf.User)
+				}
+				stopSer.FinishWG.Done()
+			}()
+			d := time.Duration(*scalingPoint.Time) * time.Minute
+			log.Printf("sleep for %s", d)
+			time.Sleep(d)
+			log.Printf("woke up again")
+
+			// stop training
+			atomic.StoreInt32(&stopSer.Stopped, 1)
+			stopSer.FinishWG.Wait()
+			atomic.StoreInt32(&stopSer.Stopped, 0)
+		} else {
+			if err := RunTraining(jobConf, scalingPoint.ParaConf, progress, maxStep, hosts); err != nil {
+				log.Printf("Training failed. Stopping containers")
+				StopContainers(jobConf.Cluster.Hosts, jobConf.User)
+			}
 		}
 	}
 }
@@ -250,4 +312,61 @@ func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
 	StopContainers(jobConf.Cluster.Hosts, jobConf.User)
 
 	return nil
+}
+
+func getStep(j *job.JobConfig, sp job.ScalingPoint) int {
+	if j.TimeBased {
+		step, err := QueryIter(j.ID, j.Cluster.Hosts[0], j.MLFSPort)
+		if err != nil {
+			log.Printf("QueryIter failed: %v", err)
+			return 0
+		}
+		return step
+	}
+	return *sp.Step
+}
+
+func getMaxStep(i int, timeBased bool, schedule job.Schedule) int {
+	if timeBased {
+		return 10000
+	} else {
+		return *schedule[i+1].Step
+	}
+}
+
+func QueryIter(jobID string, host string, port int) (int, error) {
+	query := url.Values{}
+	query.Set("path", fmt.Sprintf("job/%s/iter", jobID))
+	u := url.URL{
+		Scheme:   `http`,
+		Host:     net.JoinHostPort(host, str(port)),
+		Path:     `/query`,
+		RawQuery: query.Encode(),
+	}
+	url := u.String()
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		log.Printf("new request error")
+		return 0, err
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("client do error")
+		return 0, err
+	}
+	body, err := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		log.Printf("readall error")
+		return 0, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf("response failed with status code: %d", resp.StatusCode)
+	}
+	iter, err := strconv.Atoi(string(body))
+	if err != nil {
+		log.Printf("conv error")
+		return 0, err
+	}
+	return iter, nil
 }
