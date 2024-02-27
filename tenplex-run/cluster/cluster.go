@@ -4,12 +4,13 @@ import (
 	"flag"
 
 	"github.com/kungfu-team/tenplex/tenplex-run/listflag"
+	"github.com/kungfu-team/tenplex/tenplex-run/structflag"
 )
 
 type Cluster struct {
-	GPUsPerHost      int
-	GPUsPerContainer int
-	Hosts            listflag.Strings
+	GPUsPerHost      int              `flag:"gpu-per-host" default:"4"`
+	GPUsPerContainer int              `flag:"gpu-per-container" default:"4"`
+	Hosts            listflag.Strings `flag:"hosts"`
 }
 
 func NewCluster(gpuPerHost int, gpusPerContainer int, hosts ...string) *Cluster {
@@ -20,8 +21,4 @@ func NewCluster(gpuPerHost int, gpusPerContainer int, hosts ...string) *Cluster 
 	}
 }
 
-func (c *Cluster) RegisterFlags(flag *flag.FlagSet) {
-	flag.IntVar(&c.GPUsPerHost, "gpu-per-host", 4, ``)
-	flag.IntVar(&c.GPUsPerContainer, "gpu-per-container", 4, ``)
-	flag.Var(&c.Hosts, `hosts`, `IPs separated by ,`)
-}
+func (c *Cluster) RegisterFlags(flag *flag.FlagSet) { structflag.RegisterFlags(c, flag) }

@@ -24,7 +24,7 @@ func Test_2(t *testing.T) {
 		Name: `abc`,
 		X:    2,
 	}
-	args := structflag.ToFlags(&a)
+	args := structflag.ToArgs(&a)
 	want := `-name abc -x 2`
 	if got := strings.Join(args, " "); got != want {
 		t.Errorf("%q != %q", got, want)
