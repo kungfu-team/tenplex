@@ -7,11 +7,19 @@ import (
 )
 
 type ScalingPoint struct {
-	Step     int                `json:"step"`
+	Step     *int               `json:"step"`
+	Time     *int               `json:"time"`
 	ParaConf *ParallelismConfig `json:"para_conf"`
 }
 
 var Empty ParallelismConfig // Size == PPSize == MPSize == 0
+
+func NewStepBasedScapingPoint(step int, pc ParallelismConfig) ScalingPoint {
+	return ScalingPoint{
+		Step:     &step,
+		ParaConf: &pc,
+	}
+}
 
 type Schedule = []ScalingPoint
 
@@ -30,8 +38,8 @@ func GenSchedule(scheduleFile string) Schedule {
 	}
 
 	schedule := Schedule{
-		{0, &ParallelismConfig{Size: 4, PPSize: 2, MPSize: 2}},
-		{100, &Empty},
+		NewStepBasedScapingPoint(0, ParallelismConfig{Size: 4, PPSize: 2, MPSize: 2}),
+		NewStepBasedScapingPoint(100, Empty),
 	}
 	return schedule
 }

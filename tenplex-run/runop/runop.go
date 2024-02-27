@@ -188,8 +188,8 @@ func (ss *StopServer) GetStop(w http.ResponseWriter, req *http.Request) {
 }
 
 func ScalingTraining(jobConf *job.JobConfig) {
+	var stopSer StopServer
 	schedule := jobConf.Schedule
-	stopSer := StopServer{}
 	if jobConf.TimeBased {
 		port := 22222 // TODO make dynamic
 		stopSer.Start(port)
@@ -226,7 +226,7 @@ func ScalingTraining(jobConf *job.JobConfig) {
 				err := repartition(
 					schedule[i-1].ParaConf,
 					scalingPoint.ParaConf,
-					scalingPoint.Step,
+					getStep(jobConf.TimeBased, scalingPoint),
 					jobConf,
 				)
 				if err != nil {
@@ -237,21 +237,16 @@ func ScalingTraining(jobConf *job.JobConfig) {
 			}
 		}
 
-		var maxStep int
-		if jobConf.TimeBased {
-			maxStep = 10000
-		} else {
-			maxStep = schedule[i+1].Step
-		}
-		progress := scalingPoint.Step * (jobConf.BatchSize)
+		maxStep := getMaxStep(i, jobConf.TimeBased, schedule)
 		hosts := jobConf.Cluster.Hosts
 		if jobConf.Redeploy {
-			if scalingPoint.Step == 0 {
+			if i == 0 {
 				hosts = hosts[:len(hosts)/2]
 			} else {
 				hosts = hosts[len(hosts)/2:]
 			}
 		}
+		progress := getStep(jobConf.TimeBased, scalingPoint) * jobConf.BatchSize
 		if jobConf.TimeBased {
 			stopSer.FinishWG.Add(1)
 			go func() {
@@ -261,8 +256,8 @@ func ScalingTraining(jobConf *job.JobConfig) {
 				}
 				stopSer.FinishWG.Done()
 			}()
-			log.Printf("sleep for %d minutes", scalingPoint.Step)
-			time.Sleep(time.Duration(scalingPoint.Step) * time.Minute)
+			log.Printf("sleep for %d minutes", *scalingPoint.Time)
+			time.Sleep(time.Duration(*scalingPoint.Time) * time.Minute)
 			log.Printf("woke up again")
 
 			// stop training
@@ -310,4 +305,19 @@ func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
 	StopContainers(jobConf.Cluster.Hosts, jobConf.User)
 
 	return nil
+}
+
+func getStep(timeBased bool, sp job.ScalingPoint) int {
+	if timeBased {
+		return *sp.Time // FIXME: read step
+	}
+	return *sp.Step
+}
+
+func getMaxStep(i int, timeBased bool, schedule job.Schedule) int {
+	if timeBased {
+		return 10000
+	} else {
+		return *schedule[i+1].Step
+	}
 }
