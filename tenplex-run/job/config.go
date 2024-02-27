@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
+	"path"
 	"time"
 
 	"github.com/kungfu-team/tenplex/mlfs/ds"
@@ -92,4 +93,56 @@ func OverwriteHost(host string, jc *JobConfig) string {
 		return jc.Cluster.Hosts[0]
 	}
 	return host
+}
+
+func (j *JobConfig) DistFlags(c MDPConfig, rank int) []string {
+	return []string{
+		`--nproc_per_node`, str(c.GPUPerNode),
+		`--nnodes`, str(c.NumNodes),
+		`--node_rank`, str(rank),
+		`--master_addr`, j.Cluster.Hosts[0],
+		`--master_port`, `6000`,
+	}
+}
+
+func (j *JobConfig) LogFlags(c MDPConfig) []string {
+	return []string{
+		`--log-interval`, str(c.LogInterval),
+		`--save-interval`, str(c.SaveInterval),
+		`--eval-interval`, str(c.EvalInterval),
+		`--eval-iters`, `0`, // default: 10
+	}
+}
+
+func (j *JobConfig) TenplexFlags(c MDPConfig, host string) []string {
+	if j.NoTenplex {
+		return nil
+	}
+	var cmd []string
+	cmd = append(cmd, `--tenplex`)
+	cmd = append(cmd, `--mlfs-path`, `/data/mlfs`)
+	cmd = append(cmd, `--jobid`, j.ID)
+	cmd = append(cmd, `--host-ip`, host)
+	cmd = append(cmd, `--mlfs-port`, str(j.MLFSPort))
+	return cmd
+}
+
+func (j *JobConfig) OtherFlags(c MDPConfig) []string {
+	const checkpoint_path = `/data/ckpt`
+	var cmd []string
+	args := []string{
+		`--save`, checkpoint_path,
+		`--load`, checkpoint_path,
+		`--tensor-model-parallel-size`, str(c.ModelParallelSize),
+		`--pipeline-model-parallel-size`, str(c.PipelineParallelSize),
+		`--tensorboard-dir`, path.Join(checkpoint_path, `tensorboard`),
+	}
+	cmd = append(cmd, args...)
+	if len(j.SchedulerEndpoint) > 0 {
+		cmd = append(cmd, `--scheduler-addr`, j.SchedulerEndpoint)
+	}
+	if c.Precision == "fp16" {
+		cmd = append(cmd, `--fp16`)
+	}
+	return cmd
 }
