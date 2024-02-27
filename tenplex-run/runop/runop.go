@@ -17,6 +17,7 @@ import (
 
 	"github.com/kungfu-team/tenplex/tenplex-run/counter"
 	"github.com/kungfu-team/tenplex/tenplex-run/job"
+	"github.com/kungfu-team/tenplex/tenplex-run/web"
 	"github.com/lgarithm/proc"
 )
 
@@ -174,7 +175,7 @@ func (ss *StopServer) Start(port int) {
 	mux.HandleFunc("/stop", ss.GetStop)
 	hs := http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
-		Handler: mux,
+		Handler: web.WithLogReq(mux),
 	}
 	go hs.ListenAndServe()
 }
