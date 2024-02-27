@@ -26,6 +26,7 @@ func GenMegatronLMBERTCmd(c MDPConfig, rank int, jobID string, host string, jCon
 	cmd := []string{
 		`torchrun`,
 	}
+	cmd = append(cmd, jConf.DistFlags(c, rank)...)
 	cmd = append(cmd, `/workspace/Megatron-LM/pretrain_bert.py`)
 	var bert_args []string
 	if jConf.ModelSize == "base" {
@@ -58,7 +59,6 @@ func GenMegatronLMBERTCmd(c MDPConfig, rank int, jobID string, host string, jCon
 		`--data-path`, `/data/dataset/bert_text_sentence`,
 	}...)
 	cmd = append(cmd, bert_args...)
-	cmd = append(cmd, jConf.DistFlags(c, rank)...)
 	cmd = append(cmd, jConf.LogFlags(c)...)
 	cmd = append(cmd, jConf.TenplexFlags(c, host)...)
 	cmd = append(cmd, jConf.OtherFlags(c)...)
@@ -69,6 +69,7 @@ func GenMegatronLMGPTCmd(c MDPConfig, rank int, jobID string, host string, jConf
 	cmd := []string{
 		`torchrun`,
 	}
+	cmd = append(cmd, jConf.DistFlags(c, rank)...)
 	cmd = append(cmd, `/workspace/Megatron-LM/pretrain_gpt.py`)
 	gpt_args := []string{
 		`--micro-batch-size`, str(jConf.MicroBatchSize),
@@ -130,7 +131,6 @@ func GenMegatronLMGPTCmd(c MDPConfig, rank int, jobID string, host string, jConf
 		`--distributed-backend`, `nccl`,
 	}
 	cmd = append(cmd, args...)
-	cmd = append(cmd, jConf.DistFlags(c, rank)...)
 	cmd = append(cmd, jConf.LogFlags(c)...)
 	cmd = append(cmd, jConf.TenplexFlags(c, host)...)
 	cmd = append(cmd, jConf.OtherFlags(c)...)
