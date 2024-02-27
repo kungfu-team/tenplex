@@ -3,8 +3,11 @@ package runop
 import (
 	"errors"
 	"fmt"
+	"io"
 	"log"
+	"net"
 	"net/http"
+	"net/url"
 	"path"
 	"strconv"
 	"strings"
@@ -16,6 +19,8 @@ import (
 	"github.com/kungfu-team/tenplex/tenplex-run/job"
 	"github.com/lgarithm/proc"
 )
+
+const DefaultSchedulerPort = 22222
 
 var (
 	par   = proc.Par
@@ -191,7 +196,7 @@ func ScalingTraining(jobConf *job.JobConfig) {
 	var stopSer StopServer
 	schedule := jobConf.Schedule
 	if jobConf.TimeBased {
-		port := 22222 // TODO make dynamic
+		port := DefaultSchedulerPort
 		stopSer.Start(port)
 	}
 
@@ -226,7 +231,7 @@ func ScalingTraining(jobConf *job.JobConfig) {
 				err := repartition(
 					schedule[i-1].ParaConf,
 					scalingPoint.ParaConf,
-					getStep(jobConf.TimeBased, scalingPoint),
+					getStep(jobConf, scalingPoint),
 					jobConf,
 				)
 				if err != nil {
@@ -246,7 +251,7 @@ func ScalingTraining(jobConf *job.JobConfig) {
 				hosts = hosts[len(hosts)/2:]
 			}
 		}
-		progress := getStep(jobConf.TimeBased, scalingPoint) * jobConf.BatchSize
+		progress := getStep(jobConf, scalingPoint) * jobConf.BatchSize
 		if jobConf.TimeBased {
 			stopSer.FinishWG.Add(1)
 			go func() {
@@ -307,9 +312,14 @@ func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
 	return nil
 }
 
-func getStep(timeBased bool, sp job.ScalingPoint) int {
-	if timeBased {
-		return *sp.Time // FIXME: read step
+func getStep(j *job.JobConfig, sp job.ScalingPoint) int {
+	if j.TimeBased {
+		step, err := QueryIter(j.ID, j.Cluster.Hosts[0], j.MLFSPort)
+		if err != nil {
+			log.Printf("QueryIter failed: %v", err)
+			return 0
+		}
+		return step
 	}
 	return *sp.Step
 }
@@ -320,4 +330,41 @@ func getMaxStep(i int, timeBased bool, schedule job.Schedule) int {
 	} else {
 		return *schedule[i+1].Step
 	}
+}
+
+func QueryIter(jobID string, host string, port int) (int, error) {
+	query := url.Values{}
+	query.Set("path", fmt.Sprintf("job/%s/iter", jobID))
+	u := url.URL{
+		Scheme:   `http`,
+		Host:     net.JoinHostPort(host, str(port)),
+		Path:     `/query`,
+		RawQuery: query.Encode(),
+	}
+	url := u.String()
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		log.Printf("new request error")
+		return 0, err
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("client do error")
+		return 0, err
+	}
+	body, err := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		log.Printf("readall error")
+		return 0, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf("response failed with status code: %d", resp.StatusCode)
+	}
+	iter, err := strconv.Atoi(string(body))
+	if err != nil {
+		log.Printf("conv error")
+		return 0, err
+	}
+	return iter, nil
 }

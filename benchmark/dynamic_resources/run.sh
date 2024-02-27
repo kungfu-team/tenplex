@@ -4,10 +4,7 @@ set -e
 . $(pwd)/../common.sh
 
 list_hosts() {
-    echo "10.10.10.1"
-    echo "10.10.10.2"
-    echo "10.10.10.3"
-    echo "10.10.10.4"
+    cat $(pwd)/../hosts.txt | head -n 2
 }
 
 common_flags() {
@@ -22,24 +19,25 @@ common_flags() {
     echo -precision "fp16"
     echo -index-url "/data/megatron-lm/gpt-2/enwiki/npzs_seq1024/indices.txt"
     echo -hosts "$(join $(list_hosts))"
-    echo -schedule-file "$(pwd)/tenplex-schedule-test.json"
     echo -gpu-per-host 4
     echo -gpu-per-container 4
     echo -seq-length 1024
     echo -time-based
-    echo -scheduler-ip "http://10.10.10.1:22222"
+    echo -detect-self-ip ib0
 }
 
 tenplex_flags() {
+    common_flags
     echo -schedule-file "$(pwd)/tenplex-schedule-test.json"
 }
 
 pytorch_flags() {
+    common_flags
     echo -schedule-file "$(pwd)/pytorch-schedule.json"
     echo -no-tenplex
 }
 
-# tenplex-run $(common_flags) $(tenplex_flags) > dyn_tenplex.log 2>&1
+tenplex_run_with tenplex_flags
 
-sudo rm -r /mnt/k1d2/ckpt/*
-tenplex-run $(common_flags) $(pytorch_flags) > dyn_pytorch.log 2>&1
+# sudo rm -fr /mnt/k1d2/ckpt/*
+# tenplex_run_with pytorch_flags

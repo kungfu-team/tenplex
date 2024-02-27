@@ -94,8 +94,8 @@ func GenMegatronLMBERTCmd(c MDPConfig, rank int, jobID string, host string, jCon
 		cmd = append(cmd, `--jobid`, jobID)
 		cmd = append(cmd, `--host-ip`, host)
 		cmd = append(cmd, `--mlfs-port`, str(jConf.MLFSPort))
-		if jConf.SchedulerIP != "" {
-			cmd = append(cmd, `--scheduler-addr`, jConf.SchedulerIP)
+		if jConf.SchedulerEndpoint != "" {
+			cmd = append(cmd, `--scheduler-addr`, jConf.SchedulerEndpoint)
 		}
 	}
 	return cmd
@@ -199,8 +199,8 @@ func GenMegatronLMGPTCmd(c MDPConfig, rank int, jobID string, host string, jConf
 		cmd = append(cmd, `--jobid`, jobID)
 		cmd = append(cmd, `--host-ip`, host)
 		cmd = append(cmd, `--mlfs-port`, str(jConf.MLFSPort))
-		if jConf.SchedulerIP != "" {
-			cmd = append(cmd, `--scheduler-addr`, jConf.SchedulerIP)
+		if jConf.SchedulerEndpoint != "" {
+			cmd = append(cmd, `--scheduler-addr`, jConf.SchedulerEndpoint)
 		}
 	}
 	return cmd

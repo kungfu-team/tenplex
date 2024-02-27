@@ -2,9 +2,7 @@ package job
 
 import (
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"os"
 	"path"
 	"strconv"
@@ -45,63 +43,34 @@ type Runner struct {
 }
 
 func (ru *Runner) queryIter() error {
-	pa := fmt.Sprintf("job/%s/iter", ru.Job.ID)
-	url := fmt.Sprintf("http://%s:%d/query", ru.Cluster.Hosts[0], ru.MLFSPort)
-
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	iter, err := runop.QueryIter(ru.Job.ID, ru.Cluster.Hosts[0], ru.MLFSPort)
 	if err != nil {
-		log.Printf("new request error")
 		return err
 	}
-	query := req.URL.Query()
-	query.Add("path", pa)
-	req.URL.RawQuery = query.Encode()
-	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Printf("client do error")
-		return err
-	}
-	body, err := io.ReadAll(resp.Body)
-	resp.Body.Close()
-	if err != nil {
-		log.Printf("readall error")
-		return err
-	}
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("response failed with status code: %d", resp.StatusCode)
-	}
-	iter, err := strconv.Atoi(string(body))
-	if err != nil {
-		log.Printf("conv error")
-		return err
-	}
-
 	log.Printf("queryIter %s iter %d", ru.Job.ID, iter)
 	ru.CurStep = iter
 	log.Printf("queryIter  %s ru.CurStep %d", ru.Job.ID, ru.CurStep)
-
 	return nil
 }
 
 func (ru *Runner) RunTraining(wg *sync.WaitGroup, ch *chan string, schedulerAddr string) {
 	ru.JobConfig = &job.JobConfig{
-		ID:             ru.Job.ID,
-		Framework:      ru.Job.Framework,
-		Precision:      ru.Job.Precision,
-		BatchSize:      ru.Job.BatchSize,
-		MicroBatchSize: ru.Job.MicroBatchSize,
-		SequenceLength: ru.Job.SequenceLength,
-		Dataset:        ru.Job.Dataset,
-		Image:          ru.Job.Image,
-		Model:          ru.Job.Model,
-		ModelSize:      ru.Job.ModelSize,
-		TenplexPrefix:  ru.TenplexPrefix,
-		Cluster:        *ru.Cluster,
-		SchedulerIP:    schedulerAddr,
-		MLFSPort:       mlfs.DefaultCtrlPort,
-		User:           os.Getenv(`USER`), // TODO: pass in from flag
-		Failure:        ru.Job.Failure,
+		ID:                ru.Job.ID,
+		Framework:         ru.Job.Framework,
+		Precision:         ru.Job.Precision,
+		BatchSize:         ru.Job.BatchSize,
+		MicroBatchSize:    ru.Job.MicroBatchSize,
+		SequenceLength:    ru.Job.SequenceLength,
+		Dataset:           ru.Job.Dataset,
+		Image:             ru.Job.Image,
+		Model:             ru.Job.Model,
+		ModelSize:         ru.Job.ModelSize,
+		TenplexPrefix:     ru.TenplexPrefix,
+		Cluster:           *ru.Cluster,
+		SchedulerEndpoint: schedulerAddr,
+		MLFSPort:          mlfs.DefaultCtrlPort,
+		User:              os.Getenv(`USER`), // TODO: pass in from flag
+		Failure:           ru.Job.Failure,
 	}
 
 	runop.PullImages(ru.JobConfig)
@@ -145,7 +114,6 @@ func genID() func() int {
 var getTransformID = genID()
 
 var str = strconv.Itoa
-var home = os.Getenv(`HOME`)
 
 func (ru *Runner) TransformStateWithCmd(conf *meta.Config, newNumDev int, newCluster *cluster.Cluster) error {
 	var transformPs []P

@@ -21,6 +21,5 @@ base_flags() {
 }
 
 tenplex_run_with() {
-    local flags=$1
-    tenplex-run $(flags) >$logfile 2>&1
+    tenplex-run $($1) >$logfile 2>&1
 }

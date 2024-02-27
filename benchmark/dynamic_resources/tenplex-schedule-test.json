@@ -1,6 +1,6 @@
 [
     {
-        "step": 5,
+        "time": 5,
         "para_conf": {
             "size": 8,
             "pp_size": 2,
@@ -8,7 +8,7 @@
         }
     },
     {
-        "step": 5,
+        "time": 5,
         "para_conf": {
             "size": 4,
             "pp_size": 2,
@@ -16,7 +16,7 @@
         }
     },
     {
-        "step": 5,
+        "time": 5,
         "para_conf": {
             "size": 8,
             "pp_size": 2,
@@ -24,7 +24,7 @@
         }
     },
     {
-        "step": 0,
+        "time": 0,
         "para_conf": {
             "size": 0,
             "pp_size": 0,

@@ -12,29 +12,29 @@ import (
 )
 
 type JobConfig struct {
-	ID             string
-	Framework      string
-	Precision      string
-	BatchSize      int
-	MicroBatchSize int
-	SequenceLength int
-	Dataset        ds.Dataset
-	Image          string
-	Model          string
-	ModelSize      string
-	TenplexPrefix  string
-	Cluster        cluster.Cluster
-	SchedulerIP    string
-	scheduleFile   string
-	Schedule       Schedule
-	MLFSPort       int
-	User           string
-	DockerNetwork  string
-	Failure        int
-	Central        bool
-	Redeploy       bool
-	NoTenplex      bool
-	TimeBased      bool
+	ID                string
+	Framework         string
+	Precision         string
+	BatchSize         int
+	MicroBatchSize    int
+	SequenceLength    int
+	Dataset           ds.Dataset
+	Image             string
+	Model             string
+	ModelSize         string
+	TenplexPrefix     string
+	Cluster           cluster.Cluster
+	SchedulerEndpoint string
+	scheduleFile      string
+	Schedule          Schedule
+	MLFSPort          int
+	User              string
+	DockerNetwork     string
+	Failure           int
+	Central           bool
+	Redeploy          bool
+	NoTenplex         bool
+	TimeBased         bool
 }
 
 type ParallelismConfig struct {
@@ -64,7 +64,6 @@ func (j *JobConfig) RegisterFlags(flag *flag.FlagSet) {
 	flag.IntVar(&j.MicroBatchSize, "micro-batch-size", 0, "micro batch size")
 	flag.IntVar(&j.SequenceLength, "seq-length", 1024, "sequence length")
 	flag.StringVar(&j.Precision, "precision", "", "fp32 OR fp16 OR bf16")
-	flag.StringVar(&j.SchedulerIP, "scheduler-ip", "", "Scheduler IP")
 	flag.StringVar(&j.scheduleFile, "schedule-file", "", "Schedule file path")
 	flag.IntVar(&j.MLFSPort, "mlfs-port", 0, "MLFS port")
 	flag.StringVar(&j.User, "user", "kungfu", "Remote host user")
