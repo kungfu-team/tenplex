@@ -1,5 +1,7 @@
 package meta
 
+import "github.com/kungfu-team/tenplex/tenplex-run/listflag"
+
 type Config struct {
 	CkptStructDir   string
 	SourceMPDegree  int
@@ -13,8 +15,8 @@ type Config struct {
 	Precision       string
 	OutputTimestamp string
 	InputTimestamp  string
-	SourceHosts     []string
-	TargetHosts     []string
+	SourceHosts     listflag.Strings
+	TargetHosts     listflag.Strings
 	Port            int
 	GpusPerHost     int
 	MdpLibrary      string
