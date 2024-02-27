@@ -70,7 +70,7 @@ func genJobConf(r *Run) *job.JobConfig {
 func genRuns(trains []TrainConfig, scheduleFiles []string, isCentral []bool) []Run {
 	var runs []Run
 	for _, sch := range scheduleFiles {
-		sch, err := job.LoadFile(sch)
+		sch, err := job.LoadScheduleFile(sch)
 		if err != nil {
 			panic(err)
 		}

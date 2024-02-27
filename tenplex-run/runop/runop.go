@@ -261,8 +261,9 @@ func ScalingTraining(jobConf *job.JobConfig) {
 				}
 				stopSer.FinishWG.Done()
 			}()
-			log.Printf("sleep for %d minutes", *scalingPoint.Time)
-			time.Sleep(time.Duration(*scalingPoint.Time) * time.Minute)
+			d := time.Duration(*scalingPoint.Time) * time.Minute
+			log.Printf("sleep for %s", d)
+			time.Sleep(d)
 			log.Printf("woke up again")
 
 			// stop training

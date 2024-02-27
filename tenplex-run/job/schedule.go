@@ -25,13 +25,13 @@ type Schedule = []ScalingPoint
 
 func GenSchedule(scheduleFile string) Schedule {
 	if len(scheduleFile) > 0 {
-		s, err := LoadFile(scheduleFile)
+		s, err := LoadScheduleFile(scheduleFile)
 		if err != nil {
-			log.Panicf("scheduler.LoadFile: %v", err)
+			log.Panicf("LoadScheduleFile: %v", err)
 		}
 		log.Printf("schedule")
 		for _, p := range s {
-			log.Printf("schedule step %d %v", p.Step, *p.ParaConf)
+			log.Printf("schedule step %#v", p)
 		}
 		log.Printf("schedule end")
 		return s
@@ -44,7 +44,7 @@ func GenSchedule(scheduleFile string) Schedule {
 	return schedule
 }
 
-func LoadFile(filename string) (Schedule, error) {
+func LoadScheduleFile(filename string) (Schedule, error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return nil, err

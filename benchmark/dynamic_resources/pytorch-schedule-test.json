@@ -25,6 +25,8 @@
     },
     {
         "time": 0,
-        "size": 0
+        "para_conf": {
+            "size": 0
+        }
     }
 ]
