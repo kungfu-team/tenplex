@@ -26,7 +26,7 @@ func RegisterFlags(v interface{}, flag *flag.FlagSet) {
 type FlagValue = flag.Value
 
 func registerFlag(v *reflect.Value, name string, def string, flag *flag.FlagSet) {
-	log.Printf("registerFlag %s with defval: %q", name, def)
+	// log.Printf("registerFlag %s with defval: %q", name, def)
 	switch v.Kind() {
 	case reflect.String:
 		p := (*string)(v.Addr().UnsafePointer())
