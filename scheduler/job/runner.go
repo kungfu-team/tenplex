@@ -16,6 +16,7 @@ import (
 	"github.com/kungfu-team/tenplex/tenplex-run/job"
 	"github.com/kungfu-team/tenplex/tenplex-run/para_config"
 	"github.com/kungfu-team/tenplex/tenplex-run/runop"
+	"github.com/kungfu-team/tenplex/tenplex-run/structflag"
 	"github.com/lgarithm/proc"
 )
 
@@ -121,33 +122,17 @@ func (ru *Runner) TransformStateWithCmd(conf *meta.Config, newNumDev int, newClu
 	for i := 0; i < newNumDev; i++ {
 		hostIdx := i / conf.GpusPerHost
 		host := newCluster.Hosts[hostIdx] // new Hosts
-		args := []string{
-			"--ckpt-struct-dir", conf.CkptStructDir,
-			"--precision", conf.Precision,
-			"--input-timestamp", conf.InputTimestamp,
-			"--output-timestamp", conf.OutputTimestamp,
-			"--sequence-length", str(conf.SeqLength),
-			"--source-pp-degree", str(conf.SourcePPDegree),
-			"--target-pp-degree", str(conf.TargetPPDegree),
-			"--source-mp-degree", str(conf.SourceMPDegree),
-			"--target-mp-degree", str(conf.TargetMPDegree),
-			"--source-size", str(conf.SourceSize),
-			"--target-size", str(conf.TargetSize),
-			"--target-rank", str(i),
-			"--source-hosts", strings.Join(conf.SourceHosts, ","),
-			"--target-hosts", strings.Join(conf.TargetHosts, ","),
-			"--mdp-library", conf.MdpLibrary,
-			"--gpus-per-host", str(conf.GpusPerHost),
-			"--jobid", conf.JobID,
-			"--num-layers", str(ru.Job.NumLayers),
-			"--model", ru.Job.Model,
-			"--model-size", ru.Job.ModelSize,
-			"--vocab-size", str(ru.Job.VocabSize),
-			"--step", str(ru.CurStep),
-		}
+
+		c := *conf
+		c.TargetRank = i
+		c.Step = ru.CurStep
+		c.NumLayers = ru.Job.NumLayers // remove?
+		c.Model = ru.Job.Model         // remove?
+		c.ModelSize = ru.Job.ModelSize // remove?
+		c.VocabSize = ru.Job.VocabSize // remove?
 		p := Proc{
 			Prog: "tenplex-state-transformer",
-			Args: args,
+			Args: structflag.ToArgs(&c),
 			Host: host,
 		}
 		prefix := fmt.Sprintf("[%s %d Transform] ", host, i)

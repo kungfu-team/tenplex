@@ -16,6 +16,7 @@ type App struct {
 	Base
 	Name string `flag:"name"`
 	X    int    `flag:"x"`
+	OK   bool   `flag:"ok"`
 }
 
 func Test_1(t *testing.T) {
@@ -29,9 +30,10 @@ func Test_2(t *testing.T) {
 	a := App{
 		Name: `abc`,
 		X:    2,
+		OK:   true,
 	}
 	args := structflag.ToArgs(&a)
-	want := `-name abc -x 2`
+	want := `-name abc -x 2 -ok`
 	if got := strings.Join(args, " "); got != want {
 		t.Errorf("%q != %q", got, want)
 	}

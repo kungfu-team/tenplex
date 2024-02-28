@@ -1,8 +1,8 @@
 package ds
 
 type Dataset struct {
-	Name     string `json:"name"`
-	IndexURL string `json:"index-url"`
+	Name     string `json:"name" flag:"dataset"`
+	IndexURL string `json:"index-url" flag:"index-url"`
 	Size     int    `json:"size"` // Total number of samples
 }
 

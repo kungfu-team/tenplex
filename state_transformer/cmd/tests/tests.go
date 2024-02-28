@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -72,11 +73,15 @@ func testLoadStructs(conf *meta.Config) {
 }
 
 func main() {
-	conf, targetRank := meta.ReadFlags()
-	log.Printf("config %v", conf)
-	log.Printf("target rank %v", targetRank)
+	var conf meta.Config
+	conf.RegisterFlags(flag.CommandLine)
+	flag.Parse()
+	conf.Complete()
 
-	testCkptClient(conf)
-	testSearchJsonForTensors(conf, targetRank, meta.GetStructPath(conf, false))
-	testLoadStructs(conf)
+	log.Printf("config %v", conf)
+	log.Printf("target rank %v", conf.TargetRank)
+
+	testCkptClient(&conf)
+	testSearchJsonForTensors(&conf, conf.TargetRank, meta.GetStructPath(&conf, false))
+	testLoadStructs(&conf)
 }

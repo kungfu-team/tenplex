@@ -26,7 +26,7 @@ func RegisterFlags(v interface{}, flag *flag.FlagSet) {
 type FlagValue = flag.Value
 
 func registerFlag(v *reflect.Value, name string, def string, flag *flag.FlagSet) {
-	log.Printf("registerFlag %s with defval: %q", name, def)
+	// log.Printf("registerFlag %s with defval: %q", name, def)
 	switch v.Kind() {
 	case reflect.String:
 		p := (*string)(v.Addr().UnsafePointer())
@@ -36,6 +36,12 @@ func registerFlag(v *reflect.Value, name string, def string, flag *flag.FlagSet)
 		flag.IntVar(p, name, 0, ``)
 		if len(def) > 0 {
 			*p, _ = strconv.Atoi(def)
+		}
+	case reflect.Bool:
+		p := (*bool)(v.Addr().UnsafePointer())
+		flag.BoolVar(p, name, false, ``)
+		if len(def) > 0 {
+			*p, _ = strconv.ParseBool(def)
 		}
 	default:
 		if p, ok := v.Addr().Interface().(FlagValue); ok {
@@ -61,13 +67,21 @@ func ToArgs(v interface{}) []string {
 }
 
 func toArg(v *reflect.Value, name string) []string {
+	flg := `-` + name
 	switch v.Kind() {
 	case reflect.String:
 		p := (*string)(v.Addr().UnsafePointer())
-		return []string{`-` + name, *p}
+		return []string{flg, *p}
 	case reflect.Int:
 		p := (*int)(v.Addr().UnsafePointer())
-		return []string{`-` + name, str(*p)}
+		return []string{flg, str(*p)}
+	case reflect.Bool:
+		p := (*bool)(v.Addr().UnsafePointer())
+		if *p {
+			return []string{flg}
+		} else {
+			return nil
+		}
 	default:
 		return nil
 	}

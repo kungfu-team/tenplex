@@ -12,34 +12,35 @@ import (
 	"github.com/kungfu-team/tenplex/mlfs/ds"
 	"github.com/kungfu-team/tenplex/tenplex-run/cluster"
 	"github.com/kungfu-team/tenplex/tenplex-run/para_config"
+	"github.com/kungfu-team/tenplex/tenplex-run/structflag"
 )
 
 type JobConfig struct {
-	ID                string
-	Framework         string
-	Precision         string
-	BatchSize         int
-	MicroBatchSize    int
-	SequenceLength    int
-	Dataset           ds.Dataset
-	Image             string
-	Model             string
-	ModelSize         string
-	TenplexPrefix     string
+	BatchSize         int  `flag:"batch-size"`
+	Central           bool `flag:"central"`
 	Cluster           cluster.Cluster
-	SchedulerEndpoint string
-	scheduleFile      string
-	Schedule          para_config.Schedule
-	MLFSPort          int
-	User              string
-	DockerNetwork     string
-	Failure           int
-	Central           bool
-	Redeploy          bool
-	NoTenplex         bool
-	TimeBased         bool
-	ParaConfigFile    string
+	Dataset           ds.Dataset
+	DockerNetwork     string `flag:"network"`
+	Failure           int    `flag:"failure"`
+	Framework         string `flag:"framework"`
+	ID                string `flag:"jobid"`
+	Image             string `flag:"image"`
+	MicroBatchSize    int    `flag:"micro-batch-size"`
+	MLFSPort          int    `flag:"mlfs-port"`
+	Model             string `flag:"model"`
+	ModelSize         string `flag:"model-size"`
+	NoTenplex         bool   `flag:"no-tenplex"`
+	ParaConfigFile    string `flag:"para-config"`
 	ParaConfigs       para_config.ParaConfig
+	Precision         string `flag:"precision"`
+	Redeploy          bool   `flag:"redeploy"`
+	Schedule          para_config.Schedule
+	scheduleFile      string `flag:"schedule-file"`
+	SchedulerEndpoint string
+	SequenceLength    int    `flag:"seq-length" default:"1024"`
+	TenplexPrefix     string `flag:"tenplex-prefix"`
+	TimeBased         bool   `flag:"time-based"`
+	User              string `flag:"user"`
 }
 
 func genJobID() string {
@@ -51,29 +52,10 @@ func genJobID() string {
 }
 
 func (j *JobConfig) RegisterFlags(flag *flag.FlagSet) {
-	flag.StringVar(&j.ID, "jobid", genJobID(), "job id")
-	flag.StringVar(&j.Framework, "framework", "", "megatron-lm OR deepspeed")
-	flag.StringVar(&j.Model, "model", "", "gpt OR bert")
-	flag.StringVar(&j.ModelSize, "model-size", "", "model size")
-	flag.StringVar(&j.Dataset.Name, "dataset", "", "enwiki OR openwebtext")
-	flag.StringVar(&j.Dataset.IndexURL, "index-url", "", "dataset index URL")
-	flag.StringVar(&j.Image, "image", "kungfu.azurecr.io/deepspeed-run:latest", "")
-	flag.StringVar(&j.TenplexPrefix, "tenplex-prefix", "", "")
-	flag.IntVar(&j.BatchSize, "batch-size", 0, "batch size")
-	flag.IntVar(&j.MicroBatchSize, "micro-batch-size", 0, "micro batch size")
-	flag.IntVar(&j.SequenceLength, "seq-length", 1024, "sequence length")
-	flag.StringVar(&j.Precision, "precision", "", "fp32 OR fp16 OR bf16")
-	flag.StringVar(&j.scheduleFile, "schedule-file", "", "Schedule file path")
-	flag.IntVar(&j.MLFSPort, "mlfs-port", 0, "MLFS port")
-	flag.StringVar(&j.User, "user", "kungfu", "Remote host user")
-	flag.StringVar(&j.DockerNetwork, "network", "tenplex", "Docker network name")
-	flag.IntVar(&j.Failure, "failure", 0, "Number of host failures to simulate")
-	flag.BoolVar(&j.Central, "central", false, "Set to true to transfrom state centrally")
-	flag.BoolVar(&j.Redeploy, "redeploy", false, "Set to true to redeploy job")
-	flag.BoolVar(&j.NoTenplex, "no-tenplex", false, "Set to true to run without Tenplex")
-	flag.BoolVar(&j.TimeBased, "time-based", false, "Set to true to run scaling based on time")
-	flag.StringVar(&j.ParaConfigFile, "para-config", "", "Set Para config file")
+	structflag.RegisterFlags(j, flag)
+	structflag.RegisterFlags(&j.Dataset, flag)
 	j.Cluster.RegisterFlags(flag)
+	j.ID = genJobID()
 }
 
 func (j *JobConfig) ParseParaConfig() {
