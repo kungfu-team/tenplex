@@ -28,4 +28,6 @@ type Config struct {
 	VocabSize       int              `flag:"vocab-size"`
 	Step            int              `flag:"step"`
 	Central         bool             `flag:"central"`
+
+	TargetRank int `flag:"target-rank"`
 }

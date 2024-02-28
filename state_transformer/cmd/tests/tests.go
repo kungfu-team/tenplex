@@ -72,11 +72,11 @@ func testLoadStructs(conf *meta.Config) {
 }
 
 func main() {
-	conf, targetRank := meta.ReadFlags()
+	conf := meta.ReadFlags()
 	log.Printf("config %v", conf)
-	log.Printf("target rank %v", targetRank)
+	log.Printf("target rank %v", conf.TargetRank)
 
 	testCkptClient(conf)
-	testSearchJsonForTensors(conf, targetRank, meta.GetStructPath(conf, false))
+	testSearchJsonForTensors(conf, conf.TargetRank, meta.GetStructPath(conf, false))
 	testLoadStructs(conf)
 }
