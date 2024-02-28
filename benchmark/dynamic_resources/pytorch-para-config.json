@@ -1,12 +1,12 @@
 {
     "8": {
-        "Size": 8,
-        "PPSize": 4,
-        "MPSize": 2
+        "size": 8,
+        "pp_size": 4,
+        "mp_size": 2
     },
     "16": {
-        "Size": 16,
-        "PPSize": 4,
-        "MPSize": 2
+        "size": 16,
+        "pp_size": 4,
+        "mp_size": 2
     }
 }

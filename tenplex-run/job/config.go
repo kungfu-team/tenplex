@@ -83,6 +83,11 @@ func (j *JobConfig) ParseParaConfig() {
 			log.Panic(err)
 		}
 		j.ParaConfigs = paraConfigs
+		log.Printf("ParaConfigs start")
+		for size, para := range j.ParaConfigs {
+			log.Printf("%d: %v", size, para)
+		}
+		log.Printf("ParaConfigs end")
 		return
 	}
 	j.ParaConfigs = para_config.GenParaConfig()
