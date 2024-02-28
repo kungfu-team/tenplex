@@ -52,7 +52,7 @@ func genJobID() string {
 }
 
 func (j *JobConfig) RegisterFlags(flag *flag.FlagSet) {
-	structflag.RegisterFlags(&j, flag)
+	structflag.RegisterFlags(j, flag)
 	structflag.RegisterFlags(&j.Dataset, flag)
 	j.Cluster.RegisterFlags(flag)
 	j.ID = genJobID()
