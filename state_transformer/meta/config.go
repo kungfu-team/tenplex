@@ -37,7 +37,7 @@ type Config struct {
 	TargetRank int `flag:"target-rank"`
 }
 
-func (c *Config) RegisterFlags(flag *flag.FlagSet) { structflag.RegisterFlags(&c, flag) }
+func (c *Config) RegisterFlags(flag *flag.FlagSet) { structflag.RegisterFlags(c, flag) }
 
 func (c *Config) Complete() {
 	c.SourceDPDegree = c.SourceSize / (c.SourcePPDegree * c.SourceMPDegree)
