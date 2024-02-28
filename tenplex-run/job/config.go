@@ -5,11 +5,13 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
+	"log"
 	"path"
 	"time"
 
 	"github.com/kungfu-team/tenplex/mlfs/ds"
 	"github.com/kungfu-team/tenplex/tenplex-run/cluster"
+	"github.com/kungfu-team/tenplex/tenplex-run/para_config"
 )
 
 type JobConfig struct {
@@ -27,7 +29,7 @@ type JobConfig struct {
 	Cluster           cluster.Cluster
 	SchedulerEndpoint string
 	scheduleFile      string
-	Schedule          Schedule
+	Schedule          para_config.Schedule
 	MLFSPort          int
 	User              string
 	DockerNetwork     string
@@ -36,12 +38,8 @@ type JobConfig struct {
 	Redeploy          bool
 	NoTenplex         bool
 	TimeBased         bool
-}
-
-type ParallelismConfig struct {
-	Size   int `json:"size"`
-	PPSize int `json:"pp_size"`
-	MPSize int `json:"mp_size"`
+	ParaConfigFile    string
+	ParaConfigs       para_config.ParaConfig
 }
 
 func genJobID() string {
@@ -74,11 +72,29 @@ func (j *JobConfig) RegisterFlags(flag *flag.FlagSet) {
 	flag.BoolVar(&j.Redeploy, "redeploy", false, "Set to true to redeploy job")
 	flag.BoolVar(&j.NoTenplex, "no-tenplex", false, "Set to true to run without Tenplex")
 	flag.BoolVar(&j.TimeBased, "time-based", false, "Set to true to run scaling based on time")
+	flag.StringVar(&j.ParaConfigFile, "para-config", "", "Set Para config file")
 	j.Cluster.RegisterFlags(flag)
 }
 
+func (j *JobConfig) ParseParaConfig() {
+	if len(j.ParaConfigFile) > 0 {
+		paraConfigs, err := para_config.LoadFile(j.ParaConfigFile)
+		if err != nil {
+			log.Panic(err)
+		}
+		j.ParaConfigs = paraConfigs
+		log.Printf("ParaConfigs start")
+		for size, para := range j.ParaConfigs {
+			log.Printf("%d: %v", size, para)
+		}
+		log.Printf("ParaConfigs end")
+		return
+	}
+	j.ParaConfigs = para_config.GenParaConfig()
+}
+
 func (j *JobConfig) ParseSchedule() {
-	j.Schedule = GenSchedule(j.scheduleFile)
+	j.Schedule = para_config.GenSchedule(j.scheduleFile)
 }
 
 func OverwriteHostIdx(hostIdx int, jc *JobConfig) int {

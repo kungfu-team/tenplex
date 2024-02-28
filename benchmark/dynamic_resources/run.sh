@@ -4,7 +4,7 @@ set -e
 . $(pwd)/../common.sh
 
 list_hosts() {
-    cat $(pwd)/../hosts.txt | head -n 2
+    cat $(pwd)/../hosts.txt
 }
 
 common_flags() {
@@ -28,16 +28,20 @@ common_flags() {
 
 tenplex_flags() {
     common_flags
-    echo -schedule-file "$(pwd)/tenplex-schedule-test.json"
+    echo -jobid tenplex-dyn-res
+    echo -schedule-file "$(pwd)/tenplex-schedule.json"
+    echo -para-config "$(pwd)/tenplex-para-config.json"
 }
 
 pytorch_flags() {
     common_flags
+    echo -jobid pytorch-dyn-res
     echo -schedule-file "$(pwd)/pytorch-schedule-test.json"
+    echo -para-config "$(pwd)/pytorch-para-config.json"
     echo -no-tenplex
 }
 
-# tenplex_run_with tenplex_flags
+# tenplex-run $(tenplex_flags) >tenplex-dyn-res.log 2>&1
 
 sudo rm -fr /mnt/k1d2/ckpt/*
-tenplex_run_with pytorch_flags
+tenplex-run $(pytorch_flags) >pytorch-dyn-res.log 2>&1

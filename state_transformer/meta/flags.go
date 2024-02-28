@@ -2,7 +2,6 @@ package meta
 
 import (
 	"flag"
-	"strings"
 )
 
 func ReadFlags() (*Config, int) {
@@ -21,10 +20,8 @@ func ReadFlags() (*Config, int) {
 	flag.StringVar(&conf.MdpLibrary, "mdp-library", "", "Multi-dimensional parallelism library")
 	flag.StringVar(&conf.Model, "model", "", "gpt or bert")
 	flag.StringVar(&conf.ModelSize, "model-size", "", "Model size")
-	var sourceHosts string
-	flag.StringVar(&sourceHosts, "source-hosts", "", "Host IPs separated by a comma")
-	var targetHosts string
-	flag.StringVar(&targetHosts, "target-hosts", "", "Host IPs separated by a comma")
+	flag.Var(&conf.SourceHosts, "source-hosts", "Host IPs separated by a comma")
+	flag.Var(&conf.TargetHosts, "target-hosts", "Host IPs separated by a comma")
 	flag.IntVar(&conf.Port, "port", 20010, "Control port")
 	flag.IntVar(&conf.GpusPerHost, "gpus-per-host", 4, "Control port")
 	var targetRank int
@@ -37,8 +34,6 @@ func ReadFlags() (*Config, int) {
 
 	flag.Parse()
 
-	conf.SourceHosts = strings.Split(sourceHosts, ",")
-	conf.TargetHosts = strings.Split(targetHosts, ",")
 	conf.SourceDPDegree = conf.SourceSize / (conf.SourcePPDegree * conf.SourceMPDegree)
 	conf.TargetDPDegree = conf.TargetSize / (conf.TargetPPDegree * conf.TargetMPDegree)
 

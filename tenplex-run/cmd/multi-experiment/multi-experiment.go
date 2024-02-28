@@ -13,10 +13,9 @@ import (
 	"github.com/kungfu-team/tenplex/tenplex-run/cluster"
 	"github.com/kungfu-team/tenplex/tenplex-run/job"
 	"github.com/kungfu-team/tenplex/tenplex-run/listflag"
+	"github.com/kungfu-team/tenplex/tenplex-run/para_config"
 	"github.com/kungfu-team/tenplex/tenplex-run/runop"
 )
-
-type MDPConfig = job.ParallelismConfig
 
 type TrainConfig struct {
 	ModelName      string
@@ -29,7 +28,7 @@ type TrainConfig struct {
 type Run struct {
 	// MdpConf   MDPConfig
 	TrainConf TrainConfig
-	Schedule  job.Schedule
+	Schedule  para_config.Schedule
 	Central   bool
 	Redeploy  bool
 }
@@ -70,7 +69,7 @@ func genJobConf(r *Run) *job.JobConfig {
 func genRuns(trains []TrainConfig, scheduleFiles []string, isCentral []bool) []Run {
 	var runs []Run
 	for _, sch := range scheduleFiles {
-		sch, err := job.LoadScheduleFile(sch)
+		sch, err := para_config.LoadScheduleFile(sch)
 		if err != nil {
 			panic(err)
 		}
@@ -89,15 +88,15 @@ func genRuns(trains []TrainConfig, scheduleFiles []string, isCentral []bool) []R
 	return runs
 }
 
-func genMDPs(sizes []int) []MDPConfig {
-	var mdps []MDPConfig
+func genMDPs(sizes []int) []para_config.ParallelismConfig {
+	var mdps []para_config.ParallelismConfig
 	for _, s := range sizes {
 		for pp := 1; pp <= s; pp++ {
 			for mp := 1; mp <= s; mp++ {
 				dp := s / (pp * mp)
 				if pp*mp*dp == s {
 					mdps = append(mdps,
-						MDPConfig{
+						para_config.ParallelismConfig{
 							PPSize: pp,
 							MPSize: mp,
 							Size:   s,

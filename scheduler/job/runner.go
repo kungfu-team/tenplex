@@ -14,6 +14,7 @@ import (
 	"github.com/kungfu-team/tenplex/state_transformer/meta"
 	"github.com/kungfu-team/tenplex/tenplex-run/cluster"
 	"github.com/kungfu-team/tenplex/tenplex-run/job"
+	"github.com/kungfu-team/tenplex/tenplex-run/para_config"
 	"github.com/kungfu-team/tenplex/tenplex-run/runop"
 	"github.com/lgarithm/proc"
 )
@@ -36,7 +37,7 @@ type Runner struct {
 	JobConfig     *job.JobConfig
 	Finished      bool
 	Cluster       *cluster.Cluster
-	ParaConfig    *job.ParallelismConfig
+	ParaConfig    *para_config.ParallelismConfig
 	CurStep       int
 	MLFSPort      int
 	TenplexPrefix string
@@ -160,7 +161,7 @@ func (ru *Runner) TransformStateWithCmd(conf *meta.Config, newNumDev int, newClu
 	return nil
 }
 
-func (ru *Runner) TransformState(newParaConf *job.ParallelismConfig, newSubCluster *cluster.Cluster) {
+func (ru *Runner) TransformState(newParaConf *para_config.ParallelismConfig, newSubCluster *cluster.Cluster) {
 	log.Printf("TransformState ru.CurStep %d", ru.CurStep)
 	conf := meta.Config{
 		CkptStructDir:   path.Join(ru.TenplexPrefix, "transformer-checkpoint"),
@@ -203,7 +204,7 @@ func (ru *Runner) TransformState(newParaConf *job.ParallelismConfig, newSubClust
 	}
 }
 
-func (ru *Runner) TransformAndRun(newParaConf *job.ParallelismConfig, newSubClu *cluster.Cluster, wg *sync.WaitGroup, ch *chan string, schedulerAddr string) {
+func (ru *Runner) TransformAndRun(newParaConf *para_config.ParallelismConfig, newSubClu *cluster.Cluster, wg *sync.WaitGroup, ch *chan string, schedulerAddr string) {
 	start := time.Now()
 	log.Printf("TransformAndRun %s on new cluster: %s", ru.Job.ID, strings.Join(newSubClu.Hosts, ","))
 	ru.TransformState(newParaConf, newSubClu)

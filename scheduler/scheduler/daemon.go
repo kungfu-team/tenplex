@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os/user"
 
-	"github.com/kungfu-team/tenplex/scheduler/deviceallocation"
+	"github.com/kungfu-team/tenplex/tenplex-run/para_config"
 	"github.com/kungfu-team/tenplex/tenplex-run/web"
 )
 
@@ -40,14 +40,14 @@ func (d *Daemon) RegisterFlags(flag *flag.FlagSet) {
 }
 
 func (d Daemon) Run() {
-	devAllos := deviceallocation.GenDeviceAllocations()
+	devAllos := para_config.GenParaConfig()
 	if len(d.DeviceAllocationFile) > 0 {
 		var err error
-		if devAllos, err = deviceallocation.LoadFile(d.DeviceAllocationFile); err != nil {
+		if devAllos, err = para_config.LoadFile(d.DeviceAllocationFile); err != nil {
 			log.Panic(err)
 		}
 	}
-	deviceallocation.Log(devAllos)
+	para_config.Log(devAllos)
 
 	s := NewScheduler(devAllos)
 	s.SelfIP = d.SelfIP

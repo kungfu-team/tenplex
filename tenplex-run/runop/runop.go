@@ -17,7 +17,8 @@ import (
 
 	"github.com/kungfu-team/tenplex/tenplex-run/counter"
 	"github.com/kungfu-team/tenplex/tenplex-run/job"
-	"github.com/kungfu-team/tenplex/tenplex-run/web"
+	"github.com/kungfu-team/tenplex/tenplex-run/para_config"
+	// "github.com/kungfu-team/tenplex/tenplex-run/web"
 	"github.com/lgarithm/proc"
 )
 
@@ -52,7 +53,7 @@ func train(c *job.ContainerCluster, jobConf *job.JobConfig) error {
 	return nil
 }
 
-func RunTraining(jobConf *job.JobConfig, paraConf *job.ParallelismConfig, progress, maxStep int, hosts []string) error {
+func RunTraining(jobConf *job.JobConfig, paraConf *para_config.ParallelismConfig, progress, maxStep int, hosts []string) error {
 	if !jobConf.NoTenplex {
 		// add dataset to MLFS
 		dpSize := paraConf.Size / (paraConf.PPSize * paraConf.MPSize)
@@ -75,7 +76,7 @@ func RunTraining(jobConf *job.JobConfig, paraConf *job.ParallelismConfig, progre
 	return nil
 }
 
-func repartition(from, to *job.ParallelismConfig, step int, jobConf *job.JobConfig) error {
+func repartition(from, to *para_config.ParallelismConfig, step int, jobConf *job.JobConfig) error {
 	var round = RoundID.Next()
 	var home = path.Join("/home", jobConf.User)
 	t0 := time.Now()
@@ -174,8 +175,9 @@ func (ss *StopServer) Start(port int) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/stop", ss.GetStop)
 	hs := http.Server{
-		Addr:    fmt.Sprintf(":%d", port),
-		Handler: web.WithLogReq(mux),
+		Addr: fmt.Sprintf(":%d", port),
+		// Handler: web.WithLogReq(mux),
+		Handler: mux,
 	}
 	go hs.ListenAndServe()
 }
@@ -202,8 +204,9 @@ func ScalingTraining(jobConf *job.JobConfig) {
 	}
 
 	for i, scalingPoint := range schedule {
+		newPara := jobConf.ParaConfigs[scalingPoint.Size]
 		// stop training
-		if scalingPoint.ParaConf.Size == 0 {
+		if scalingPoint.Size == 0 {
 			log.Printf("Stopping training")
 			return
 		}
@@ -229,9 +232,10 @@ func ScalingTraining(jobConf *job.JobConfig) {
 			if !jobConf.NoTenplex {
 				// repartition
 				log.Printf("Start repartition func")
+				curPara := jobConf.ParaConfigs[schedule[i-1].Size]
 				err := repartition(
-					schedule[i-1].ParaConf,
-					scalingPoint.ParaConf,
+					&curPara,
+					&newPara,
 					getStep(jobConf, scalingPoint),
 					jobConf,
 				)
@@ -256,7 +260,7 @@ func ScalingTraining(jobConf *job.JobConfig) {
 		if jobConf.TimeBased {
 			stopSer.FinishWG.Add(1)
 			go func() {
-				if err := RunTraining(jobConf, scalingPoint.ParaConf, progress, maxStep, hosts); err != nil {
+				if err := RunTraining(jobConf, &newPara, progress, maxStep, hosts); err != nil {
 					log.Printf("Training failed. Stopping containers")
 					StopContainers(jobConf.Cluster.Hosts, jobConf.User)
 				}
@@ -272,7 +276,7 @@ func ScalingTraining(jobConf *job.JobConfig) {
 			stopSer.FinishWG.Wait()
 			atomic.StoreInt32(&stopSer.Stopped, 0)
 		} else {
-			if err := RunTraining(jobConf, scalingPoint.ParaConf, progress, maxStep, hosts); err != nil {
+			if err := RunTraining(jobConf, &newPara, progress, maxStep, hosts); err != nil {
 				log.Printf("Training failed. Stopping containers")
 				StopContainers(jobConf.Cluster.Hosts, jobConf.User)
 			}
@@ -314,7 +318,7 @@ func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
 	return nil
 }
 
-func getStep(j *job.JobConfig, sp job.ScalingPoint) int {
+func getStep(j *job.JobConfig, sp para_config.ScalingPoint) int {
 	if j.TimeBased {
 		step, err := QueryIter(j.ID, j.Cluster.Hosts[0], j.MLFSPort)
 		if err != nil {
@@ -326,7 +330,7 @@ func getStep(j *job.JobConfig, sp job.ScalingPoint) int {
 	return *sp.Step
 }
 
-func getMaxStep(i int, timeBased bool, schedule job.Schedule) int {
+func getMaxStep(i int, timeBased bool, schedule para_config.Schedule) int {
 	if timeBased {
 		return 10000
 	} else {

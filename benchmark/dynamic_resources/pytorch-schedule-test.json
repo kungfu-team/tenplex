@@ -1,32 +1,54 @@
 [
     {
         "time": 5,
-        "para_conf": {
-            "size": 8,
-            "pp_size": 2,
-            "mp_size": 2
-        }
+        "size": 16
     },
     {
         "time": 5,
-        "para_conf": {
-            "size": 4,
-            "pp_size": 2,
-            "mp_size": 2
-        }
+        "size": 8
     },
     {
         "time": 5,
-        "para_conf": {
-            "size": 8,
-            "pp_size": 2,
-            "mp_size": 2
-        }
+        "size": 8
+    },
+    {
+        "time": 5,
+        "size": 16
+    },
+    {
+        "time": 5,
+        "size": 8
+    },
+    {
+        "time": 5,
+        "size": 8
+    },
+    {
+        "time": 5,
+        "size": 16
+    },
+    {
+        "time": 5,
+        "size": 8
+    },
+    {
+        "time": 5,
+        "size": 8
+    },
+    {
+        "time": 5,
+        "size": 16
+    },
+    {
+        "time": 5,
+        "size": 8
+    },
+    {
+        "time": 13,
+        "size": 8
     },
     {
         "time": 0,
-        "para_conf": {
-            "size": 0
-        }
+        "size": 0
     }
 ]

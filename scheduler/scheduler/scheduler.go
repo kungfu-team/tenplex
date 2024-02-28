@@ -10,9 +10,9 @@ import (
 	"sync/atomic"
 
 	"github.com/kungfu-team/tenplex/mlfs/mlfs"
-	"github.com/kungfu-team/tenplex/scheduler/deviceallocation"
 	"github.com/kungfu-team/tenplex/scheduler/job"
 	"github.com/kungfu-team/tenplex/tenplex-run/cluster"
+	"github.com/kungfu-team/tenplex/tenplex-run/para_config"
 )
 
 var (
@@ -31,7 +31,7 @@ type Scheduler struct {
 	stopped        int32
 	FinishWG       *sync.WaitGroup
 	DeleteLock     *sync.RWMutex
-	DevAllocations deviceallocation.DeviceAllocations
+	DevAllocations para_config.ParaConfig
 	Runners        []*job.Runner
 	FinishChannel  chan string
 	Admin          string
@@ -39,7 +39,7 @@ type Scheduler struct {
 	StateMigrator  string
 }
 
-func NewScheduler(devAllos deviceallocation.DeviceAllocations) *Scheduler {
+func NewScheduler(devAllos para_config.ParaConfig) *Scheduler {
 	return &Scheduler{
 		SelfPort:       DefaultSchedulerPort,
 		FinishWG:       &sync.WaitGroup{},

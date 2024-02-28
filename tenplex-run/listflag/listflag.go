@@ -9,6 +9,7 @@ import (
 type Strings []string
 
 func (v *Strings) Set(args string) error {
+	*v = nil
 	for _, t := range strings.Split(args, ",") {
 		*v = append(*v, strings.TrimSpace(t))
 	}
@@ -27,6 +28,7 @@ func String(name string, v Strings, usage string) *Strings {
 type Ints []int
 
 func (v *Ints) Set(args string) error {
+	*v = nil
 	for _, t := range strings.Split(args, ",") {
 		s := strings.TrimSpace(t)
 		n, err := strconv.Atoi(s)

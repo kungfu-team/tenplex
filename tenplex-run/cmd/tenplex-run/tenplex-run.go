@@ -16,20 +16,19 @@ import (
 	"github.com/kungfu-team/tenplex/ipv4"
 	"github.com/kungfu-team/tenplex/tenplex-run/job"
 	"github.com/kungfu-team/tenplex/tenplex-run/runop"
+	"github.com/kungfu-team/tenplex/tenplex-run/structflag"
 )
 
 type TenplexRunFlags struct {
 	job.JobConfig
-	DetectIPv4    string
-	mlfsGitCommit string
-	logfile       string
+	DetectIPv4    string `flag:"detect-self-ip"`
+	mlfsGitCommit string `flag:"mlfs-git-commit"`
+	logfile       string `flag:"logfile"`
 }
 
 func (d *TenplexRunFlags) RegisterFlags(flag *flag.FlagSet) {
 	d.JobConfig.RegisterFlags(flag)
-	flag.StringVar(&d.DetectIPv4, `detect-self-ip`, ``, `nic name for detecting IPv4`)
-	flag.StringVar(&d.mlfsGitCommit, "mlfs-git-commit", ``, ``)
-	flag.StringVar(&d.logfile, `logfile`, ``, `path to logfile`)
+	structflag.RegisterFlags(d, flag)
 }
 
 func main() {
@@ -38,6 +37,7 @@ func main() {
 	d.RegisterFlags(flag.CommandLine)
 	flag.Parse()
 	d.ParseSchedule()
+	d.ParseParaConfig()
 	if len(d.logfile) > 0 {
 		if lf, err := os.Create(d.logfile); err == nil {
 			log.Printf("log into %s", d.logfile)
