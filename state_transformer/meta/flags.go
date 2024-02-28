@@ -11,7 +11,6 @@ func ReadFlags() (*Config, int) {
 	structflag.RegisterFlags(&conf, flag.CommandLine)
 	var targetRank int
 	flag.IntVar(&targetRank, "target-rank", 0, "Target rank")
-	flag.BoolVar(&conf.Central, "central", false, "")
 
 	flag.Parse()
 

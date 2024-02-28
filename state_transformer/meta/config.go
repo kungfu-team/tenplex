@@ -27,5 +27,5 @@ type Config struct {
 	ModelSize       string           `flag:"model-size"`
 	VocabSize       int              `flag:"vocab-size"`
 	Step            int              `flag:"step"`
-	Central         bool
+	Central         bool             `flag:"central"`
 }
