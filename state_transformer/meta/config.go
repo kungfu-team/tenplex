@@ -1,6 +1,11 @@
 package meta
 
-import "github.com/kungfu-team/tenplex/tenplex-run/listflag"
+import (
+	"flag"
+
+	"github.com/kungfu-team/tenplex/tenplex-run/listflag"
+	"github.com/kungfu-team/tenplex/tenplex-run/structflag"
+)
 
 type Config struct {
 	CkptStructDir   string `flag:"ckpt-struct-dir"`
@@ -30,4 +35,11 @@ type Config struct {
 	Central         bool             `flag:"central"`
 
 	TargetRank int `flag:"target-rank"`
+}
+
+func (c *Config) RegisterFlags(flag *flag.FlagSet) { structflag.RegisterFlags(&c, flag) }
+
+func (c *Config) Complete() {
+	c.SourceDPDegree = c.SourceSize / (c.SourcePPDegree * c.SourceMPDegree)
+	c.TargetDPDegree = c.TargetSize / (c.TargetPPDegree * c.TargetMPDegree)
 }
