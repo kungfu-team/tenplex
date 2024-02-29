@@ -1,3 +1,4 @@
+import argparse
 import matplotlib.pyplot as plt
 import pandas as pd
 import scipy as sp
@@ -13,9 +14,12 @@ def zero_time(data):
     return data
 
 
-def plot_loss(data, ax, label, linesty, colour):
+def plot_loss(data, ax, label, linesty, colour, use_step=False):
     linewidth = 1.5
-    time = data["wall_time"]
+    if use_step:
+        time = data["step"]
+    else:
+        time = data["wall_time"]
     loss = sp.signal.savgol_filter(data["loss"], window_length=50, polyorder=5)
     ax.plot(
         time,
@@ -27,9 +31,12 @@ def plot_loss(data, ax, label, linesty, colour):
     )
 
 
-def plot_loss_pause(data, ax, label, linesty, colour):
+def plot_loss_pause(data, ax, label, linesty, colour, use_step=False):
     linewidth = 1.5
-    time = data["wall_time"]
+    if use_step:
+        time = data["step"]
+    else:
+        time = data["wall_time"]
     loss = sp.signal.savgol_filter(data["loss"], window_length=50, polyorder=5)
 
     interval = 35
@@ -83,6 +90,11 @@ def add_pause(data, interval=35):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--use-step", action="store_true")
+    args = parser.parse_args()
+    use_step = args.use_step
+
     tenplex = pd.read_csv("./loss_tenplex.csv")
     dp_only = pd.read_csv("./loss_dp_only.csv")
     pytorch = np.load("./loss.npz")
@@ -104,9 +116,9 @@ def main():
     fig, ax = plt.subplots()
 
     # Scaling lines
-    # end = 538
-    for sca in range(35, 800, 35):
-        plt.axvline(sca, c="tab:orange")
+    if not use_step:
+        for sca in range(35, 800, 35):
+            plt.axvline(sca, c="tab:orange")
 
     # Tenplex
     tenplex = zero_time(tenplex)
@@ -127,20 +139,28 @@ def main():
 
     # plot
     print("plot Tenplex")
-    plot_loss(tenplex, ax, "Tenplex", "solid", "black")
+    plot_loss(tenplex, ax, "Tenplex", "solid", "black", use_step=use_step)
     print("plot Tenplex DP only")
-    plot_loss_pause(dp_only, ax, "Tenplex (DP)", "dashed", "tab:red")
+    plot_loss_pause(dp_only, ax, "Tenplex (DP)", "dashed", "tab:red", use_step=use_step)
     print("plot Pytorch")
-    plot_loss(pytorch, ax, "PyTorch", "dotted", "tab:olive")
-    plt.axvline(tenplex_final_time, c="black")
+    plot_loss(pytorch, ax, "PyTorch", "dotted", "tab:olive", use_step=use_step)
+    if not use_step:
+        plt.axvline(tenplex_final_time, c="black")
 
     ax.set_ylim(top=6, bottom=2)
-    ax.set_xlim(left=0, right=pytorch_final_time)
+    if use_step:
+        right = pytorch_final_step
+    else:
+        right = pytorch_final_time
+    ax.set_xlim(left=0, right=right)
     fontsize = 18
     labelsize = 16
     ax.tick_params(labelsize=labelsize)
     ax.legend(loc="upper right", fontsize=labelsize)
-    ax.set_xlabel("Time (minutes)", fontsize=fontsize)
+    if use_step:
+        ax.set_xlabel("Step", fontsize=fontsize)
+    else:
+        ax.set_xlabel("Time (minutes)", fontsize=fontsize)
     ax.set_ylabel("Loss", fontsize=fontsize)
 
     fig.tight_layout()
