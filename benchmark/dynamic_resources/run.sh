@@ -36,7 +36,7 @@ tenplex_flags() {
 pytorch_flags() {
     common_flags
     echo -jobid pytorch-dyn-res
-    echo -schedule-file "$(pwd)/pytorch-schedule-test.json"
+    echo -schedule-file "$(pwd)/pytorch-schedule.json"
     echo -para-config "$(pwd)/pytorch-para-config.json"
     echo -no-tenplex
 }
