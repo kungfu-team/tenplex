@@ -1,8 +1,8 @@
 import argparse
 import os
-import matplotlib.pyplot as plt
-from tensorboard.backend.event_processing import event_accumulator
+
 import numpy as np
+from tensorboard.backend.event_processing import event_accumulator
 
 
 def load_metrics(tb_path):
@@ -40,11 +40,6 @@ def main():
     loss = [x[2] for x in metrics]
 
     np.savez("loss.npz", wall_time=wall_times, step=steps, loss=loss)
-
-    fig, axes = plt.subplots(2,1)
-    axes[0].plot(wall_times, loss)
-    axes[1].plot(steps, loss)
-    fig.savefig("fig.pdf")
 
 
 if __name__ == "__main__":
