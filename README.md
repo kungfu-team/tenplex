@@ -1,17 +1,15 @@
-Python library for Tenplex
+# Tenplex
+Dynamic resources changes for multi-dimensional parallelism training
 
-
-
-Install
+## Install
 
 pip install
 
-    pip3 install tenplex -i https://pkgs.dev.azure.com/gli7/releases/_packaging/nightly/pypi/simple -U
+pip3 install tenplex -i https://pkgs.dev.azure.com/gli7/releases/_packaging/nightly/pypi/simple -U
 
-Releases
+## Releases
 
-    https://dev.azure.com/gli7/releases/_artifacts/feed/nightly
-
+https://dev.azure.com/gli7/releases/_artifacts/feed/nightly
 
 ```
 echo "deb https://europe-west2-apt.pkg.dev/projects/tenplex tenplex main" | sudo tee /etc/apt/sources.list.d/tenplex.list
@@ -20,7 +18,7 @@ sudo apt update
 sudo apt install -y mlfs
 ```
 
-Run benchmarks
+## Run benchmarks
 
 ```
 ./benchmark/run-all.sh
