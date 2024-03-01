@@ -30,7 +30,9 @@ tenplex_flags() {
     common_flags
     echo -jobid tenplex-dyn-res
     echo -schedule-file "$(pwd)/tenplex-schedule-test.json"
+    # echo -schedule-file "$(pwd)/tenplex-schedule.json"
     echo -para-config "$(pwd)/tenplex-para-config.json"
+    # echo -para-config "$(pwd)/tenplex-dp-para-config.json"
 }
 
 pytorch_flags() {
