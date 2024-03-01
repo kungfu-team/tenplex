@@ -36,7 +36,10 @@ jobs:
         sudo dpkg -i $DEB
     - run: sudo systemctl start mlfs
     - run: mlfs info
-    - run: mlfs mount -global-batch-size 23 -dp-size 4 -idx-name squad1 -index-url https://minddata.blob.core.windows.net/data/squad1/squad1.idx.txt
-    - run: mlfs fetch -file 'https://minddata.blob.core.windows.net/data/squad1/train.tf_record' -md5 67eb6da21920dda01ec75cd6e1a5b8d7
+    - run: wget https://tenplex.blob.core.windows.net/public/data/train.tf_record
+    - run: mlfs-build-tf-index train.tf_record
+    - run: mlfs-edit-index -index-url a.idx.txt -o b.idx.txt -from 'train.tf_record' -to 'https://tenplex.blob.core.windows.net/public/data/train.tf_record'
+    - run: mlfs mount -global-batch-size 23 -dp-size 4 -idx-name squad1 -index-url b.idx.txt
+    - run: mlfs fetch -file 'https://tenplex.blob.core.windows.net/public/data/train.tf_record' -md5 67eb6da21920dda01ec75cd6e1a5b8d7
 
     # TODO: run tests
