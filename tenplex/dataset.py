@@ -6,6 +6,7 @@ import torch
 
 
 class MLFSDataset(torch.utils.data.Dataset):
+
     def __init__(self, mlfs_path: str, job_id: str, dp_rank: int):
         self.mlfs_path = mlfs_path
         self.dp_rank = dp_rank
@@ -30,7 +31,8 @@ class MLFSDataset(torch.utils.data.Dataset):
 
     def use_index_file(self, file_idx: int):
         self.current_file_idx = file_idx
-        self.npzs_path =self.mlfs_path + self.data_file_paths[file_idx].strip()
+        self.npzs_path = self.mlfs_path + self.data_file_paths[file_idx].strip(
+        )
 
         self.indices_path = f"{self.npzs_path}.idx"
         with open(self.indices_path, "r", encoding="utf-8") as indices_file:
@@ -52,6 +54,7 @@ class MLFSDataset(torch.utils.data.Dataset):
 
 
 class BERTDataset(MLFSDataset):
+
     def __getitem__(self, idx):
         file_idx = idx - self.offset
         if file_idx >= self.num_samples:
@@ -84,12 +87,27 @@ class BERTDataset(MLFSDataset):
 
 
 class GPTDataset(MLFSDataset):
+
     def __getitem__(self, idx):
+        try:
+            return self.f(idx)
+        except Exception as e:
+            # dump here
+            print(f'self.offset: {self.offset}')
+            print(f'idx: {idx}')
+            file_idx = idx - self.offset
+            print(f'file_idx: {file_idx}')
+            raise e
+
+    def f(self, idx):
         file_idx = idx - self.offset
         if file_idx >= self.num_samples:
+            print(f'moving to next file: f{self.current_file_idx} + 1')
             self.offset = self.offset + self.num_samples
             self.use_index_file(self.current_file_idx + 1)
             file_idx = idx - self.offset
+            if file_idx >= self.num_samples:
+                print('move next is not enough: file_idx >= self.num_samples')
 
         file_indices = self.indices[file_idx]
         size = file_indices[1] - file_indices[0]
