@@ -13,7 +13,7 @@ type Job struct {
 	Config   MDPConfig
 }
 
-func (j Job) createWorkers(jConf *JobConfig, numContainers int, hosts []string, jobID string) []Container {
+func (j Job) createWorkers(jConf *JobConfig, numContainers int, hosts []string) []Container {
 	var workers []Container
 	containersPerHost := jConf.Cluster.GPUsPerHost / jConf.Cluster.GPUsPerContainer
 	for i := 0; i < numContainers; i++ {
@@ -24,26 +24,26 @@ func (j Job) createWorkers(jConf *JobConfig, numContainers int, hosts []string, 
 		for k := l * jConf.Cluster.GPUsPerContainer; k < (l+1)*jConf.Cluster.GPUsPerContainer; k++ {
 			gpus = append(gpus, str(k))
 		}
-		workers = append(workers, j.newWorker(i, jConf, jobID, host, hosts[0], gpus...))
+		workers = append(workers, j.newWorker(i, jConf, host, hosts[0], gpus...))
 	}
 	return workers
 }
 
-func (j Job) newWorker(i int, jConf *JobConfig, jobID string, host string, masterAddr string, gpus ...string) Container {
+func (j Job) newWorker(i int, jConf *JobConfig, host string, masterAddr string, gpus ...string) Container {
 	var cmd []string
 	if jConf.Framework == "megatron-lm" {
 		pyHost := OverwriteHost(host, jConf)
 		if jConf.Model == "bert" {
-			cmd = GenMegatronLMBERTCmd(j.Config, i, jobID, pyHost, jConf)
+			cmd = GenMegatronLMBERTCmd(j.Config, i, jConf.ID, pyHost, jConf)
 		} else if jConf.Model == "gpt" {
-			cmd = GenMegatronLMGPTCmd(j.Config, i, jobID, pyHost, jConf, masterAddr)
+			cmd = GenMegatronLMGPTCmd(j.Config, i, jConf.ID, pyHost, jConf, masterAddr)
 		}
 	} else if jConf.Framework == "deepspeed" {
 		cmd = startSSHD
 	} else if jConf.Framework == "deepspeed-new-repo" {
-		cmd = GenMegatronDeepspeedCommand(j.Config, i, jobID, jConf)
+		cmd = GenMegatronDeepspeedCommand(j.Config, i, jConf)
 	}
-	dockerName := fmt.Sprintf(`trainer-%s-%02d`, jobID, i)
+	dockerName := fmt.Sprintf(`trainer-%s-%02d`, jConf.ID, i)
 	pathMaps := []PathMap{}
 	if jConf.NoTenplex {
 		pathMaps = append(pathMaps,
@@ -59,11 +59,11 @@ func (j Job) newWorker(i int, jConf *JobConfig, jobID string, host string, maste
 	} else {
 		pathMaps = append(pathMaps,
 			PathMap{
-				HostPath:      path.Join("/mnt/mlfs/job", jobID),
+				HostPath:      "/mnt/mlfs",
 				ContainerPath: `/data/mlfs`,
 			},
 			PathMap{
-				HostPath:      path.Join(j.HostPath, jobID, str(i), `ckpt`),
+				HostPath:      path.Join(j.HostPath, jConf.ID, str(i), `ckpt`),
 				ContainerPath: `/data/ckpt`,
 			},
 		)
@@ -87,7 +87,7 @@ func (j Job) NewCluster(hosts []string, size int, jConf *JobConfig) *ContainerCl
 	return &ContainerCluster{
 		Image:     j.Image,
 		trainJob:  j,
-		Workers:   j.createWorkers(jConf, size, hosts, jConf.ID),
+		Workers:   j.createWorkers(jConf, size, hosts),
 		Framework: jConf.Framework,
 		User:      jConf.User,
 	}
