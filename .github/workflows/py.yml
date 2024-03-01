@@ -29,4 +29,13 @@ jobs:
     # - run: pip install --no-index .
     - run: pip install .
 
+    - run: make
+    - run: make deb
+    - run: |
+        DEB=`ls build/*.deb`
+        sudo dpkg -i $DEB
+    - run: sudo systemctl start mlfs
+    - run: mlfs info
+
+
     # TODO: run tests
