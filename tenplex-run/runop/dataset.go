@@ -21,7 +21,6 @@ func mount(cli *mlfs.Client, ds ds.Dataset, jobID string, batchSize, progress, d
 	if err = cli.GetRoot(&s); err != nil {
 		log.Printf("%v", err)
 	}
-	log.Printf("root: %s", s)
 	return err
 }
 
@@ -36,6 +35,7 @@ func addDataset(dpSize, progress int, jobConf *job.JobConfig) error {
 		if err := mount(cli, jobConf.Dataset, jobConf.ID, jobConf.BatchSize, progress, dpSize, seed); err != nil {
 			return fmt.Errorf("%s %v", host, err)
 		}
+		log.Printf("Dataset added: host %s, batch size %d, progress %d, DP size %d", host, jobConf.BatchSize, progress, dpSize)
 	}
 	return nil
 }
