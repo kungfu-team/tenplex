@@ -59,7 +59,7 @@ func (j Job) newWorker(i int, jConf *JobConfig, jobID string, host string, maste
 	} else {
 		pathMaps = append(pathMaps,
 			PathMap{
-				HostPath:      path.Join("/mnt/mlfs/job", jobID),
+				HostPath:      "/mnt/mlfs",
 				ContainerPath: `/data/mlfs`,
 			},
 			PathMap{
