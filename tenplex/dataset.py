@@ -101,13 +101,18 @@ class GPTDataset(MLFSDataset):
 
     def f(self, idx):
         file_idx = idx - self.offset
+        if file_idx < 0:
+            raise ValueError("file index {file_id} < 0, offset {self.offset}")
         if file_idx >= self.num_samples:
-            print(f'moving to next file: f{self.current_file_idx} + 1')
+            print(f'moving to next file: {self.current_file_idx} + 1')
             self.offset = self.offset + self.num_samples
             self.use_index_file(self.current_file_idx + 1)
+            print(f'moved to next file: {self.current_file_idx} with num samples {self.num_samples}')
             file_idx = idx - self.offset
             if file_idx >= self.num_samples:
-                print('move next is not enough: file_idx >= self.num_samples')
+                raise ValueError('move next is not enough: file_idx >= self.num_samples')
+        if file_idx > len(self):
+            raise ValueError(f"file index larger length {len(self)}")
 
         file_indices = self.indices[file_idx]
         size = file_indices[1] - file_indices[0]
