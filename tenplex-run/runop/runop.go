@@ -62,7 +62,7 @@ func RunTraining(jobConf *job.JobConfig, paraConf *para_config.ParallelismConfig
 			log.Printf("add dataset failed but IGNORE: %v", err)
 			// return err
 		}
-		log.Printf("Adding dataset took %s", time.Since(addDataStart))
+		log.Printf("Adding dataset with DP %d took %s", dpSize, time.Since(addDataStart))
 	}
 
 	// train

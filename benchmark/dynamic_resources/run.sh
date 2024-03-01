@@ -29,7 +29,7 @@ common_flags() {
 tenplex_flags() {
     common_flags
     echo -jobid tenplex-dyn-res
-    echo -schedule-file "$(pwd)/tenplex-schedule.json"
+    echo -schedule-file "$(pwd)/tenplex-schedule-test.json"
     echo -para-config "$(pwd)/tenplex-para-config.json"
 }
 
@@ -41,7 +41,7 @@ pytorch_flags() {
     echo -no-tenplex
 }
 
-# tenplex-run $(tenplex_flags) >tenplex-dyn-res.log 2>&1
+tenplex-run $(tenplex_flags) >tenplex-dyn-res.log 2>&1
 
-sudo rm -fr /mnt/k1d2/ckpt/*
-tenplex-run $(pytorch_flags) >pytorch-dyn-res.log 2>&1
+# sudo rm -fr /mnt/k1d2/ckpt/*
+# tenplex-run $(pytorch_flags) >pytorch-dyn-res.log 2>&1
