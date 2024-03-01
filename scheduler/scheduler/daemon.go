@@ -13,13 +13,13 @@ import (
 )
 
 type Daemon struct {
-	Port                 int
-	DeviceAllocationFile string
-	SelfIP               string
-	DetectIPv4           string
-	User                 string
-	ReInstall            bool
-	StateMigrator        string
+	Port           int
+	ParaConfigFile string
+	SelfIP         string
+	DetectIPv4     string
+	User           string
+	ReInstall      bool
+	StateMigrator  string
 }
 
 func defaultUser() string {
@@ -31,7 +31,7 @@ func defaultUser() string {
 
 func (d *Daemon) RegisterFlags(flag *flag.FlagSet) {
 	flag.IntVar(&d.Port, `port`, DefaultSchedulerPort, ``)
-	flag.StringVar(&d.DeviceAllocationFile, `device-allocation`, ``, ``)
+	flag.StringVar(&d.ParaConfigFile, `para-config`, ``, ``)
 	flag.StringVar(&d.SelfIP, `self-ip`, ``, ``)
 	flag.StringVar(&d.DetectIPv4, `detect-self-ip`, ``, ``)
 	flag.StringVar(&d.User, `u`, defaultUser(), `cluster user`)
@@ -40,15 +40,11 @@ func (d *Daemon) RegisterFlags(flag *flag.FlagSet) {
 }
 
 func (d Daemon) Run() {
-	devAllos := para_config.GenParaConfig()
-	if len(d.DeviceAllocationFile) > 0 {
-		var err error
-		if devAllos, err = para_config.LoadFile(d.DeviceAllocationFile); err != nil {
-			log.Panic(err)
-		}
+	devAllos, err := para_config.LoadFile(d.ParaConfigFile)
+	if err != nil {
+		log.Panic(err)
 	}
 	para_config.Log(devAllos)
-
 	s := NewScheduler(devAllos)
 	s.SelfIP = d.SelfIP
 	s.SelfPort = d.Port

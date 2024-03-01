@@ -15,19 +15,6 @@ type ParallelismConfig struct {
 
 type ParaConfig = map[int]ParallelismConfig
 
-func GenParaConfig() ParaConfig {
-	para_conf := make(ParaConfig)
-
-	para_conf[1] = ParallelismConfig{Size: 1, PPSize: 1, MPSize: 1}
-	para_conf[2] = ParallelismConfig{Size: 2, PPSize: 1, MPSize: 2}
-	para_conf[4] = ParallelismConfig{Size: 4, PPSize: 1, MPSize: 2}
-	para_conf[8] = ParallelismConfig{Size: 8, PPSize: 2, MPSize: 2}
-	para_conf[16] = ParallelismConfig{Size: 16, PPSize: 4, MPSize: 2}
-	para_conf[32] = ParallelismConfig{Size: 32, PPSize: 4, MPSize: 2}
-
-	return para_conf
-}
-
 func LoadFile(filename string) (ParaConfig, error) {
 	f, err := os.Open(filename)
 	if err != nil {
