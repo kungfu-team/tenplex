@@ -213,6 +213,7 @@ func GenDeepspeedCommandOld(c MDPConfig, jConf *JobConfig) []string {
 	}...)
 	return cmd
 }
+
 func GenDeepspeedCommand(c MDPConfig, jConf *JobConfig) []string {
 	cmd := []string{
 		`deepspeed`,
@@ -290,7 +291,7 @@ func GenDeepspeedCommand(c MDPConfig, jConf *JobConfig) []string {
 	return cmd
 }
 
-func GenMegatronDeepspeedCommand(c MDPConfig, rank int, jobID string, jConf *JobConfig) []string {
+func GenMegatronDeepspeedCommand(c MDPConfig, rank int, jConf *JobConfig) []string {
 	cmd := []string{
 		`torchrun`,
 	}
@@ -298,7 +299,7 @@ func GenMegatronDeepspeedCommand(c MDPConfig, rank int, jobID string, jConf *Job
 		`--nproc_per_node`, str(c.GPUPerNode),
 		`--nnodes`, str(c.NumNodes),
 		`--node_rank`, str(rank),
-		`--master_addr`, fmt.Sprintf("trainer-%s-00", jobID),
+		`--master_addr`, fmt.Sprintf("trainer-%s-00", jConf.ID),
 		`--master_port`, `6000`,
 	}...)
 	cmd = append(cmd, `/workspace/Megatron-DeepSpeed/pretrain_gpt.py`)

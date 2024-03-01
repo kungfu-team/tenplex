@@ -1,31 +1,25 @@
 import io
 import os
-import re
 
 import numpy as np
 import torch
 
 
 class MLFSDataset(torch.utils.data.Dataset):
-    def __init__(self, mlfs_path: str, dp_rank: int):
+    def __init__(self, mlfs_path: str, job_id: str, dp_rank: int):
         self.mlfs_path = mlfs_path
         self.dp_rank = dp_rank
 
-        path = os.path.join(self.mlfs_path, "head.txt")
+        path = os.path.join(self.mlfs_path, f"job/{job_id}", "head.txt")
         with open(path, "r", encoding="utf-8") as head_file:
             progress_path = head_file.read().strip()
 
-        # remove job and jobID
-        progress_path = re.sub(r"\/job\/[^\/]*", "", progress_path)
-
+        print(f"progress path {progress_path}")
         path = self.mlfs_path + progress_path
         with open(path, "r", encoding="utf-8") as progress_file:
             rank_paths = progress_file.readlines()
 
         rank_path = rank_paths[self.dp_rank].strip()
-
-        # remove job and jobID
-        rank_path = re.sub(r"\/job\/[^\/]*", "", rank_path)
 
         path = self.mlfs_path + os.path.join(rank_path, "list.txt")
         with open(path, "r", encoding="utf-8") as list_file:
@@ -37,9 +31,6 @@ class MLFSDataset(torch.utils.data.Dataset):
     def use_index_file(self, file_idx: int):
         self.current_file_idx = file_idx
         self.npzs_path =self.mlfs_path + self.data_file_paths[file_idx].strip()
-
-        # remove job and jobID
-        self.npzs_path = re.sub(r"\/job\/[^\/]*", "", self.npzs_path)
 
         self.indices_path = f"{self.npzs_path}.idx"
         with open(self.indices_path, "r", encoding="utf-8") as indices_file:
@@ -68,7 +59,8 @@ class BERTDataset(MLFSDataset):
             self.use_index_file(self.current_file_idx + 1)
             file_idx = idx - self.offset
 
-        size = self.indices[file_idx][1] - self.indices[file_idx][0]
+        file_indices = self.indices[file_idx]
+        size = file_indices[1] - file_indices[0]
         with open(self.npzs_path, "rb") as npzs_file:
             npzs_file.seek(self.indices[file_idx][0])
             npz_sample = npzs_file.read(size)
@@ -99,7 +91,8 @@ class GPTDataset(MLFSDataset):
             self.use_index_file(self.current_file_idx + 1)
             file_idx = idx - self.offset
 
-        size = self.indices[file_idx][1] - self.indices[file_idx][0]
+        file_indices = self.indices[file_idx]
+        size = file_indices[1] - file_indices[0]
         with open(self.npzs_path, "rb") as npzs_file:
             npzs_file.seek(self.indices[file_idx][0])
             npz_sample = npzs_file.read(size)
