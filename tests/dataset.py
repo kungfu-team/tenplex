@@ -28,11 +28,11 @@ def main():
 
         mlfs_path = "/mnt/mlfs"
         dataset = TenplexGPTDataset(mlfs_path, job_id, dp_rank)
+        dataset = iter(dataset)
 
-        for i, sample in enumerate(dataset):
+        for _ in range(50_000):
+            sample = next(dataset)
             txt = sample["text"]
-            if i > 10_000:
-                break
 
 
 if __name__ == "__main__":
