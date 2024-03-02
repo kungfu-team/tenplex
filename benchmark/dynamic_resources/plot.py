@@ -95,22 +95,20 @@ def main():
     args = parser.parse_args()
     use_step = args.use_step
 
-    tenplex = pd.read_csv("./loss_tenplex.csv")
-    dp_only = pd.read_csv("./loss_dp_only.csv")
-    pytorch = np.load("./loss.npz")
+    # tenplex = pd.read_csv("./loss_tenplex.csv")
+    tenplex = np.load("./tenplex_loss.npz")
+    tenplex = dict(tenplex)
+    tenplex_dp = pd.read_csv("./loss_dp_only.csv")
+    pytorch = np.load("./pytorch_loss.npz")
     pytorch = dict(pytorch)
 
     time_key = "wall_time"
     loss_key = "loss"
     step_key = "step"
-    tenplex = {time_key: tenplex["Wall time"].to_numpy(),
-               step_key: tenplex["Step"].to_numpy(),
-               loss_key: tenplex["Value"].to_numpy()
-               }
-    dp_only = {time_key: dp_only["Wall time"].to_numpy(),
-               step_key: dp_only["Step"].to_numpy(),
-               loss_key: dp_only["Value"].to_numpy()
-               }
+    tenplex_dp = {time_key: tenplex_dp["Wall time"].to_numpy(),
+           step_key: tenplex_dp["Step"].to_numpy(),
+           loss_key: tenplex_dp["Value"].to_numpy()
+       }
 
     plt.rc("figure", figsize=[8, 3.5])
     fig, ax = plt.subplots()
@@ -126,10 +124,10 @@ def main():
     tenplex_final_step = tenplex[step_key][-1]
 
     # Tenplex DP only
-    dp_only = zero_time(dp_only)
-    dp_only = add_pause(dp_only)
-    dp_only_final_time = dp_only[time_key][-1]
-    dp_only_final_step = dp_only[step_key][-1]
+    tenplex_dp = zero_time(tenplex_dp)
+    tenplex_dp = add_pause(tenplex_dp)
+    tenplex_dp_final_time = tenplex_dp[time_key][-1]
+    tenplex_dp_final_step = tenplex_dp[step_key][-1]
 
     # Pytorch
     pytorch = zero_time(pytorch)
@@ -141,7 +139,7 @@ def main():
     print("plot Tenplex")
     plot_loss(tenplex, ax, "Tenplex", "solid", "black", use_step=use_step)
     print("plot Tenplex DP only")
-    plot_loss_pause(dp_only, ax, "Tenplex (DP)", "dashed", "tab:red", use_step=use_step)
+    plot_loss_pause(tenplex_dp, ax, "Tenplex (DP)", "dashed", "tab:red", use_step=use_step)
     print("plot Pytorch")
     plot_loss(pytorch, ax, "PyTorch", "dotted", "tab:olive", use_step=use_step)
     if not use_step:
@@ -166,10 +164,10 @@ def main():
     fig.tight_layout()
     plt.savefig("./dynamic_resources.pdf")
 
-    print(f"DP only final step {dp_only_final_step}")
+    print(f"DP only final step {tenplex_dp_final_step}")
     print(f"Tenplex final step {tenplex_final_step}")
     print(f"Pytorch final step {pytorch_final_step}")
-    print(f"DP only final time {dp_only_final_time}")
+    print(f"DP only final time {tenplex_dp_final_time}")
     print(f"Tenplex final time {tenplex_final_time}")
     print(f"Pytorch final time {pytorch_final_time}")
 
