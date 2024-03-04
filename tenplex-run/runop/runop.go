@@ -270,13 +270,13 @@ func ScalingTraining(jobConf *job.JobConfig) {
 	}
 }
 
-func runP(p P, finish chan string) {
+func runP(p P, wg *sync.WaitGroup) {
 	r := run(p, &stdio)
 	if r.Err != nil {
 		// log.Panicf("running P failed with %v", r.Err)
 		log.Printf("running P failed with %v", r.Err)
 	}
-	finish <- "finished"
+	wg.Done()
 }
 
 func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
@@ -291,14 +291,14 @@ func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
 	}
 	log.Printf("Making mount directories took %s", time.Since(mkMountDirStart))
 
-	finish := make(chan string)
+	var wg sync.WaitGroup
 	for i, w := range workers {
 		p := c.Run(w)
 		p = job.Tee2Files(fmt.Sprintf("logs/stage-%02d-worker-%02d", stageID, i), p)
-		go runP(p, finish)
+		wg.Add(1)
+		go runP(p, &wg)
 	}
-
-	<-finish
+	wg.Wait()
 
 	return nil
 }
