@@ -24,6 +24,7 @@ type MountRequest struct {
 	ClusterSize       int    `json:"cluster-size"`
 	MinSamplesPerFile int    `json:"min-samples-per-file"`
 	Seed              int    `json:"seed"`
+	NoShuffle         bool   `json:"no-shuffle"`
 }
 
 type FetchRequest struct {

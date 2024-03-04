@@ -6,6 +6,7 @@ import torch
 
 
 class MLFSDataset(torch.utils.data.Dataset):
+
     def __init__(self, mlfs_path: str, job_id: str, dp_rank: int):
         self.mlfs_path = mlfs_path
         self.dp_rank = dp_rank
@@ -30,7 +31,8 @@ class MLFSDataset(torch.utils.data.Dataset):
 
     def use_index_file(self, file_idx: int):
         self.current_file_idx = file_idx
-        self.npzs_path =self.mlfs_path + self.data_file_paths[file_idx].strip()
+        self.npzs_path = self.mlfs_path + self.data_file_paths[file_idx].strip(
+        )
 
         self.indices_path = f"{self.npzs_path}.idx"
         with open(self.indices_path, "r", encoding="utf-8") as indices_file:
@@ -50,21 +52,26 @@ class MLFSDataset(torch.utils.data.Dataset):
     def __len__(self):
         return self.indices[-1][1]
 
-
-class BERTDataset(MLFSDataset):
-    def __getitem__(self, idx):
+    def read_npz(self, idx):
         file_idx = idx - self.offset
-        if file_idx >= self.num_samples:
+        while file_idx >= self.num_samples:
             self.offset = self.offset + self.num_samples
             self.use_index_file(self.current_file_idx + 1)
+            print(f"moved to next index file {self.current_file_idx}")
             file_idx = idx - self.offset
 
         file_indices = self.indices[file_idx]
         size = file_indices[1] - file_indices[0]
         with open(self.npzs_path, "rb") as npzs_file:
-            npzs_file.seek(self.indices[file_idx][0])
+            npzs_file.seek(file_indices[0])
             npz_sample = npzs_file.read(size)
 
+        return npz_sample
+
+
+class BERTDataset(MLFSDataset):
+    def __getitem__(self, idx):
+        npz_sample = self.read_npz(idx)
         buf = io.BytesIO(npz_sample)
         sample = np.load(buf)
 
@@ -85,18 +92,7 @@ class BERTDataset(MLFSDataset):
 
 class GPTDataset(MLFSDataset):
     def __getitem__(self, idx):
-        file_idx = idx - self.offset
-        if file_idx >= self.num_samples:
-            self.offset = self.offset + self.num_samples
-            self.use_index_file(self.current_file_idx + 1)
-            file_idx = idx - self.offset
-
-        file_indices = self.indices[file_idx]
-        size = file_indices[1] - file_indices[0]
-        with open(self.npzs_path, "rb") as npzs_file:
-            npzs_file.seek(self.indices[file_idx][0])
-            npz_sample = npzs_file.read(size)
-
+        npz_sample = self.read_npz(idx)
         buf = io.BytesIO(npz_sample)
         sample = np.load(buf)
 

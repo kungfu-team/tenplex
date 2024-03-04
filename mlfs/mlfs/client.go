@@ -91,7 +91,7 @@ func (c *Client) FetchPart(name string, i, n int) error {
 	return c.call("Proxy.FetchPart", req, &Void{})
 }
 
-func (c *Client) Mount(jobID string, name string, progress int64, globalBatchSize int, clusterSize int, seed int) error {
+func (c *Client) Mount(jobID string, name string, progress int64, globalBatchSize int, clusterSize int, seed int, noShuffle bool) error {
 	req := MountRequest{
 		JobID:             jobID,
 		Name:              name,
@@ -100,6 +100,7 @@ func (c *Client) Mount(jobID string, name string, progress int64, globalBatchSiz
 		ClusterSize:       clusterSize,
 		MinSamplesPerFile: 8192,
 		Seed:              seed,
+		NoShuffle:         noShuffle,
 	}
 	return c.call("Proxy.Mount", req, &Void{})
 }

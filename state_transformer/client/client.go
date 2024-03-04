@@ -268,14 +268,7 @@ func (c *CheckpointClient) DeleteTargetDir(device int, timestamp string) error {
 	return nil
 }
 
-var uploadedTensors []string
-
 func (c *CheckpointClient) UploadTensor(ten *tensor.Tensor, pa string, device int) error {
-	if slices.Contains(uploadedTensors, pa) {
-		panic("already uploaded")
-	} else {
-		uploadedTensors = append(uploadedTensors, pa)
-	}
 	ip := c.getTargetHostIP(device)
 	buf := bytes.NewBuffer(ten.Data)
 	queryPath := path.Join("/job", c.Conf.JobID, pa)

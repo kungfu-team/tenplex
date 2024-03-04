@@ -65,6 +65,7 @@ type MountCmd struct {
 	DpSize          int    `flag:"dp-size" default:"1"`
 	GlobalBatchSize int    `flag:"global-batch-size" default:"1"`
 	Seed            int    `flag:"seed"`
+	NoShuffle       bool   `flag:"no-shuffle"`
 }
 
 func (c *MountCmd) RegisterFlags(flag *flag.FlagSet) {
@@ -83,7 +84,7 @@ func (m MountCmd) Run() error {
 	if err := cli.AddIndex(m.IdxName, m.IdxFile); err != nil {
 		return err
 	}
-	if err := cli.Mount(m.JobID, m.IdxName, int64(m.Progress), m.GlobalBatchSize, m.DpSize, m.Seed); err != nil {
+	if err := cli.Mount(m.JobID, m.IdxName, int64(m.Progress), m.GlobalBatchSize, m.DpSize, m.Seed, m.NoShuffle); err != nil {
 		return err
 	}
 	var s string

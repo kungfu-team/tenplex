@@ -71,7 +71,7 @@ func (c E2eTest) Run() {
 		utils.ExitErr(err)
 	}
 	bs := 100
-	if err := cli.Mount(t.JobID, ds.Name, int64(0), bs, 1, 0); err != nil {
+	if err := cli.Mount(t.JobID, ds.Name, int64(0), bs, 1, 0, false); err != nil {
 		utils.ExitErr(err)
 	}
 	go func() {

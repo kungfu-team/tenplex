@@ -41,6 +41,8 @@ type JobConfig struct {
 	TenplexPrefix     string `flag:"tenplex-prefix"`
 	TimeBased         bool   `flag:"time-based"`
 	User              string `flag:"user"`
+	Seed              int    `flag:"seed" default:"1234"`
+	NoShuffle         bool   `flag:"no-shuffle" default:"false"`
 }
 
 func genJobID() string {

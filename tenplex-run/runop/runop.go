@@ -39,20 +39,6 @@ type (
 	Proc = proc.Proc
 )
 
-func train(c *job.ContainerCluster, jobConf *job.JobConfig) error {
-	if r := run(c.Stop(), &stdio); r.Err != nil {
-		// log.Panic(r.Err)
-		return r.Err
-	}
-	log.Printf("old containers cleaned")
-	log.Printf("starting train workers")
-	if r := run(c.RunTrain(jobConf), &stdio); r.Err != nil {
-		// log.Panic(r.Err)
-		return r.Err
-	}
-	return nil
-}
-
 func RunTraining(jobConf *job.JobConfig, paraConf *para_config.ParallelismConfig, progress, maxStep int, hosts []string) error {
 	if !jobConf.NoTenplex {
 		// add dataset to MLFS
@@ -62,7 +48,7 @@ func RunTraining(jobConf *job.JobConfig, paraConf *para_config.ParallelismConfig
 			log.Printf("add dataset failed but IGNORE: %v", err)
 			// return err
 		}
-		log.Printf("Adding dataset took %s", time.Since(addDataStart))
+		log.Printf("Adding dataset with DP %d took %s", dpSize, time.Since(addDataStart))
 	}
 
 	// train
@@ -284,13 +270,13 @@ func ScalingTraining(jobConf *job.JobConfig) {
 	}
 }
 
-func runP(p P, finish chan string) {
+func runP(p P, wg *sync.WaitGroup) {
 	r := run(p, &stdio)
 	if r.Err != nil {
 		// log.Panicf("running P failed with %v", r.Err)
 		log.Printf("running P failed with %v", r.Err)
 	}
-	finish <- "finished"
+	wg.Done()
 }
 
 func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
@@ -305,15 +291,14 @@ func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
 	}
 	log.Printf("Making mount directories took %s", time.Since(mkMountDirStart))
 
-	finish := make(chan string)
+	var wg sync.WaitGroup
 	for i, w := range workers {
 		p := c.Run(w)
 		p = job.Tee2Files(fmt.Sprintf("logs/stage-%02d-worker-%02d", stageID, i), p)
-		go runP(p, finish)
+		wg.Add(1)
+		go runP(p, &wg)
 	}
-
-	<-finish
-	StopContainers(jobConf.Cluster.Hosts, jobConf.User)
+	wg.Wait()
 
 	return nil
 }
