@@ -62,9 +62,9 @@ type MountCmd struct {
 	IdxFile         string `flag:"index-url"`
 	JobID           string `flag:"job" default:"0"`
 	Progress        int    `flag:"progress"`
-	DpSize          int    `flag:"global-batch-size"`
-	GlobalBatchSize int    `flag:"dp-size" default:"1"`
-	Seed            int    `flag:"seed" default:"0"`
+	DpSize          int    `flag:"dp-size" default:"1"`
+	GlobalBatchSize int    `flag:"global-batch-size" default:"1"`
+	Seed            int    `flag:"seed"`
 }
 
 func (c *MountCmd) RegisterFlags(flag *flag.FlagSet) {
