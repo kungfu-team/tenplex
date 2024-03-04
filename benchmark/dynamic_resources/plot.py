@@ -145,7 +145,7 @@ def main():
     if not use_step:
         plt.axvline(tenplex_final_time, c="black")
 
-    ax.set_ylim(top=6, bottom=2)
+    # ax.set_ylim(top=6, bottom=2)
     if use_step:
         right = pytorch_final_step
     else:

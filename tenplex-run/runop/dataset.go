@@ -9,12 +9,12 @@ import (
 	"github.com/kungfu-team/tenplex/tenplex-run/job"
 )
 
-func mount(cli *mlfs.Client, ds ds.Dataset, jobID string, batchSize, progress, dpSize, seed int) error {
+func mount(cli *mlfs.Client, ds ds.Dataset, jobID string, batchSize, progress, dpSize, seed int, noShuffle bool) error {
 	var err error
 	if err = cli.AddIndex(ds.Name, ds.IndexURL); err != nil {
 		log.Printf("%v", err)
 	}
-	if err = cli.Mount(jobID, ds.Name, int64(progress), batchSize, dpSize, seed); err != nil {
+	if err = cli.Mount(jobID, ds.Name, int64(progress), batchSize, dpSize, seed, noShuffle); err != nil {
 		log.Printf("%v", err)
 	}
 	var s string
@@ -30,7 +30,7 @@ func addDataset(dpSize, progress int, jobConf *job.JobConfig) error {
 		if err != nil {
 			return fmt.Errorf("%s %v", host, err)
 		}
-		if err := mount(cli, jobConf.Dataset, jobConf.ID, jobConf.BatchSize, progress, dpSize, jobConf.Seed); err != nil {
+		if err := mount(cli, jobConf.Dataset, jobConf.ID, jobConf.BatchSize, progress, dpSize, jobConf.Seed, jobConf.NoShuffle); err != nil {
 			return fmt.Errorf("%s %v", host, err)
 		}
 		log.Printf("Dataset added: host %s, batch size %d, progress %d, DP size %d", host, jobConf.BatchSize, progress, dpSize)

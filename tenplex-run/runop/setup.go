@@ -39,7 +39,7 @@ func createCluster(jobConf *job.JobConfig, paraConf *para_config.ParallelismConf
 
 		TrainIters: maxTrainStep,
 
-		LogInterval:  50,
+		LogInterval:  10,
 		SaveInterval: 5000,
 		EvalInterval: 10000,
 

@@ -78,7 +78,7 @@ func (dt DistTest) Run() {
 			utils.ExitErr(err)
 		}
 		bs := 100
-		if err := cli.Mount(dt.JobID, ds.Name, int64(0), bs, dt.DP, 0); err != nil {
+		if err := cli.Mount(dt.JobID, ds.Name, int64(0), bs, dt.DP, 0, false); err != nil {
 			utils.ExitErr(err)
 		}
 	}
