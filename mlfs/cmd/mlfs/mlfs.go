@@ -12,9 +12,8 @@ import (
 
 	"github.com/kungfu-team/tenplex/mlfs/buildinfo"
 	"github.com/kungfu-team/tenplex/mlfs/mlfs"
+	"github.com/kungfu-team/tenplex/tenplex-run/structflag"
 )
-
-var config = flag.String("config", ``, ``)
 
 func main() {
 	flag.Parse()
@@ -59,26 +58,19 @@ func usage(prog string) {
 
 type MountCmd struct {
 	ClientFlags
-	IdxName         string
-	IdxFile         string
-	JobID           string
-	Progress        int
-	DpSize          int
-	GlobalBatchSize int
-	Seed            int
-	NoShuffle       bool
+	IdxName         string `flag:"idx-name"`
+	IdxFile         string `flag:"index-url"`
+	JobID           string `flag:"job" default:"0"`
+	Progress        int    `flag:"progress"`
+	DpSize          int    `flag:"dp-size" default:"1"`
+	GlobalBatchSize int    `flag:"global-batch-size" default:"1"`
+	Seed            int    `flag:"seed"`
+	NoShuffle       bool   `flag:"no-shuffle"`
 }
 
 func (c *MountCmd) RegisterFlags(flag *flag.FlagSet) {
 	c.ClientFlags.RegisterFlags(flag)
-	flag.StringVar(&c.IdxName, `idx-name`, ``, ``)
-	flag.StringVar(&c.IdxFile, `index-url`, ``, ``)
-	flag.StringVar(&c.JobID, `job`, `0`, ``)
-	flag.IntVar(&c.Progress, `progress`, 0, ``)
-	flag.IntVar(&c.GlobalBatchSize, `global-batch-size`, 1, ``)
-	flag.IntVar(&c.DpSize, `dp-size`, 1, ``)
-	flag.IntVar(&c.Seed, `seed`, 0, ``)
-	flag.BoolVar(&c.NoShuffle, `no-shuffle`, false, ``)
+	structflag.RegisterFlags(c, flag)
 }
 
 func (m MountCmd) Run() error {
@@ -105,14 +97,13 @@ func (m MountCmd) Run() error {
 
 type FetchCmd struct {
 	ClientFlags
-	File string
-	MD5  string
+	File string `flag:"file"`
+	MD5  string `flag:"md5"`
 }
 
 func (c *FetchCmd) RegisterFlags(flag *flag.FlagSet) {
 	c.ClientFlags.RegisterFlags(flag)
-	flag.StringVar(&c.File, `file`, ``, ``)
-	flag.StringVar(&c.MD5, `md5`, ``, ``)
+	structflag.RegisterFlags(c, flag)
 }
 
 func (c FetchCmd) Run() error {
@@ -124,13 +115,13 @@ func (c FetchCmd) Run() error {
 }
 
 type ClientFlags struct {
-	Host     string
-	CtrlPort int
+	Host     string `flag:"host"`
+	CtrlPort int    `flag:"ctrl-port"`
 }
 
 func (c *ClientFlags) RegisterFlags(flag *flag.FlagSet) {
-	flag.StringVar(&c.Host, `host`, ``, ``)
-	flag.IntVar(&c.CtrlPort, `ctrl-port`, mlfs.DefaultCtrlPort, ``)
+	structflag.RegisterFlags(c, flag)
+	c.CtrlPort = mlfs.DefaultCtrlPort
 }
 
 func info(args []string) {

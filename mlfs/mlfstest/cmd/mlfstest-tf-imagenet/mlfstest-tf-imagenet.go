@@ -76,7 +76,7 @@ func addIndex() P {
 		progress = relu(imagenet.Size - n)
 	}
 	return seq(
-		dockerExec(`mlfs-cli`,
+		dockerExec(`mlfs`, `mount`,
 			`-ctrl-port`, str(20000),
 			`-idx-name`, imagenet.Name,
 			`-index-url`, imagenet.IndexURL,
