@@ -54,11 +54,14 @@ class MLFSDataset(torch.utils.data.Dataset):
 
     def read_npz(self, idx):
         file_idx = idx - self.offset
-        while file_idx >= self.num_samples:
+        if file_idx >= self.num_samples:
             self.offset = self.offset + self.num_samples
             self.use_index_file(self.current_file_idx + 1)
             print(f"moved to next index file {self.current_file_idx}")
             file_idx = idx - self.offset
+
+        if file_idx >= self.num_samples:
+            raise ValueError("Index {idx} out of bounds. Probably wrong reading order.")
 
         file_indices = self.indices[file_idx]
         size = file_indices[1] - file_indices[0]
