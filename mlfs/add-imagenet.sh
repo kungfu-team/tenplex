@@ -17,4 +17,4 @@ flags() {
     echo -m 64
 }
 
-./bin/mlfs-cli $(flags)
+./bin/mlfs mount $(flags)

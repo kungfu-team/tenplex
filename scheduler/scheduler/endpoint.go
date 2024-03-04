@@ -120,13 +120,7 @@ func (sch *Scheduler) restartMLFS(h string) P {
 		pc(`sudo`, `systemctl`, `start`, `mlfs`),
 		pc(`sudo`, `systemctl`, `status`, `mlfs`),
 		proc.Echo(`started mlfs `+h),
-		proc.If(false, proc.Lambda(func() P {
-			sas, err := loadSAS()
-			if err != nil {
-				log.Panic(err)
-			}
-			return pc(`mlfs-cli`, `-sas`, strings.ReplaceAll("tenplex:"+sas, `&`, `\&`))
-		})),
+		// TODO: set SAS for private data
 		pc(`mlfs`, `info`),
 	)
 	ps1 := h + ` % `

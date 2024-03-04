@@ -8,7 +8,7 @@ make reload
 
 ./bin/mlfs info
 
-./bin/mlfs-cli -sas "minddata:$(cat $HOME/.az/minddata.sas)"
+# ./bin/mlfs-cli -sas "minddata:$(cat $HOME/.az/minddata.sas)"
 
 ./bin/mlfs mount -global-batch-size 23 -dp-size 4 \
     -idx-name squad1 \
