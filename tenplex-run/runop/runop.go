@@ -39,20 +39,6 @@ type (
 	Proc = proc.Proc
 )
 
-func train(c *job.ContainerCluster, jobConf *job.JobConfig) error {
-	if r := run(c.Stop(), &stdio); r.Err != nil {
-		// log.Panic(r.Err)
-		return r.Err
-	}
-	log.Printf("old containers cleaned")
-	log.Printf("starting train workers")
-	if r := run(c.RunTrain(jobConf), &stdio); r.Err != nil {
-		// log.Panic(r.Err)
-		return r.Err
-	}
-	return nil
-}
-
 func RunTraining(jobConf *job.JobConfig, paraConf *para_config.ParallelismConfig, progress, maxStep int, hosts []string) error {
 	if !jobConf.NoTenplex {
 		// add dataset to MLFS
@@ -313,7 +299,6 @@ func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
 	}
 
 	<-finish
-	StopContainers(jobConf.Cluster.Hosts, jobConf.User)
 
 	return nil
 }
