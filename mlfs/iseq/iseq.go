@@ -46,8 +46,8 @@ func Iota(n int) []int {
 }
 
 func Shuffle(s []int, seed int) {
-	rand.Seed(int64(seed))
-	rand.Shuffle(len(s), func(i, j int) {
+	r := rand.New(rand.NewSource(int64(seed)))
+	r.Shuffle(len(s), func(i, j int) {
 		s[i], s[j] = s[j], s[i]
 	})
 }
