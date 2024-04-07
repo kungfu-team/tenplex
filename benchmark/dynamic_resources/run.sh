@@ -4,7 +4,7 @@ set -e
 . $(pwd)/../common.sh
 
 list_hosts() {
-    cat $(pwd)/../hosts.txt
+    cat $(pwd)/hosts.txt
 }
 
 common_flags() {
@@ -24,18 +24,18 @@ common_flags() {
     echo -seq-length 1024
     echo -time-based
     echo -detect-self-ip ib0
+    echo -seed 1234
     echo -no-shuffle
 }
 
 tenplex_flags() {
     common_flags
     echo -jobid dyn-res-ten
-    echo -schedule-file "$(pwd)/tenplex-schedule-test.json"
-    # echo -schedule-file "$(pwd)/tenplex-schedule.json"
+    echo -schedule-file "$(pwd)/tenplex-schedule.json"
     echo -para-config "$(pwd)/tenplex-para-config.json"
 }
 
-tenplex_dp__flags() {
+tenplex_dp_flags() {
     common_flags
     echo -jobid dyn-res-tdp
     echo -schedule-file "$(pwd)/pytorch-schedule.json"
