@@ -14,8 +14,12 @@ type ParallelismConfig struct {
 	MPSize int `json:"mp_size"`
 }
 
-func (p ParallelismConfig) String() string {
-	return fmt.Sprintf("size: %d, pp: %d, mp: %d", p.Size, p.PPSize, p.MPSize)
+func (c ParallelismConfig) DPSize() int {
+	return c.Size / (c.PPSize * c.MPSize)
+}
+
+func (c ParallelismConfig) String() string {
+	return fmt.Sprintf("size: %d, pp: %d, mp: %d", c.Size, c.PPSize, c.MPSize)
 }
 
 type ParaConfig map[int]ParallelismConfig
