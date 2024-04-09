@@ -25,6 +25,7 @@ flags() {
     echo -gpu-per-host 4
     echo -gpu-per-container 4
     echo -seq-length 1024
+    echo -jobid bert
 }
 
-tenplex-run $(flags)
+tenplex-run $(flags) >bert.log 2>&1

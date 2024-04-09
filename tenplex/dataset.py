@@ -26,8 +26,10 @@ class MLFSDataset(torch.utils.data.Dataset):
         with open(path, "r", encoding="utf-8") as list_file:
             self.data_file_paths = list_file.readlines()
 
+        self.index_files_cache = {}
         self.offset = 0
         self.use_index_file(0)
+        self.samples_per_file = self.num_samples
 
     def use_index_file(self, file_idx: int):
         self.current_file_idx = file_idx
@@ -49,24 +51,25 @@ class MLFSDataset(torch.utils.data.Dataset):
             splitted = line.split(" ")
             self.indices.append((int(splitted[0]), int(splitted[1])))
 
+        self.index_files_cache[file_idx] = self.indices
+
     def __len__(self):
         return self.indices[-1][1]
 
     def read_npz(self, idx):
-        file_idx = idx - self.offset
-        if file_idx >= self.num_samples:
-            self.offset = self.offset + self.num_samples
-            self.use_index_file(self.current_file_idx + 1)
-            print(f"moved to next index file {self.current_file_idx}")
-            file_idx = idx - self.offset
+        file_idx = idx // self.samples_per_file
+        sample_idx = idx % self.samples_per_file
 
-        if file_idx >= self.num_samples:
-            raise ValueError("Index {idx} out of bounds. Probably wrong reading order.")
+        if file_idx in self.index_files_cache:
+            indices = self.index_files_cache[file_idx]
+        else:
+            self.use_index_file(file_idx)
+            indices = self.indices
 
-        file_indices = self.indices[file_idx]
-        size = file_indices[1] - file_indices[0]
+        sample_indices = indices[sample_idx]
+        size = sample_indices[1] - sample_indices[0]
         with open(self.npzs_path, "rb") as npzs_file:
-            npzs_file.seek(file_indices[0])
+            npzs_file.seek(sample_indices[0])
             npz_sample = npzs_file.read(size)
 
         return npz_sample
