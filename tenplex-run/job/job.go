@@ -24,7 +24,7 @@ func (j Job) createWorkers(jConf *JobConfig, numContainers int, hosts []string) 
 		for k := l * jConf.Cluster.GPUsPerContainer; k < (l+1)*jConf.Cluster.GPUsPerContainer; k++ {
 			gpus = append(gpus, str(k))
 		}
-		workers = append(workers, j.newWorker(i, jConf, host, hosts[0], gpus))
+		workers = append(workers, j.newWorker(i, jConf, host, gpus))
 	}
 	return workers
 }
@@ -49,7 +49,7 @@ func (j Job) genCmd(i int, jConf *JobConfig, host string) []string {
 	return nil
 }
 
-func (j Job) newWorker(i int, jConf *JobConfig, host string, masterAddr string, gpus []string) Container {
+func (j Job) newWorker(i int, jConf *JobConfig, host string, gpus []string) Container {
 	dockerName := fmt.Sprintf(`trainer-%s-%02d`, jConf.ID, i)
 	var pathMaps []PathMap
 	if jConf.NoTenplex {
@@ -88,8 +88,9 @@ func (j Job) newWorker(i int, jConf *JobConfig, host string, masterAddr string, 
 }
 
 func (j Job) NewCluster(hosts []string, size int, jConf *JobConfig) *ContainerCluster {
-	if size > len(hosts)*jConf.Cluster.GPUsPerHost {
-		log.Panicf("size %d > num hosts %d * %d gpus per host", size, len(hosts), jConf.Cluster.GPUsPerHost)
+	c := jConf.Cluster
+	if size*c.GPUsPerContainer > len(hosts)*c.GPUsPerHost {
+		log.Panicf("#Nodes %d * GPUs per Container %d > #Hosts %d * %d GPUs per host", size, c.GPUsPerContainer, len(hosts), c.GPUsPerHost)
 	}
 	return &ContainerCluster{
 		Image:     j.Image,
