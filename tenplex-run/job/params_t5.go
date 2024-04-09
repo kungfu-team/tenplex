@@ -26,8 +26,10 @@ func t5Args(c MDPConfig, jConf *JobConfig) []string {
 	t5_args := []string{
 		`--micro-batch-size`, str(jConf.MicroBatchSize),
 		`--global-batch-size`, str(jConf.BatchSize),
-		`--seq-length`, `1024`,
-		`--max-position-embeddings`, `1024`,
+		`--seq-length`, str(1024),
+		`--encoder-seq-length`, str(512),
+		`--decoder-seq-length`, str(128),
+		`--max-position-embeddings`, str(512),
 		`--train-iters`, str(c.TrainIters),
 		`--lr-decay-iters`, `10000`,
 		`--lr-warmup-fraction`, `0.01`,
@@ -42,6 +44,8 @@ func t5Args(c MDPConfig, jConf *JobConfig) []string {
 		`--clip-grad`, `1.0`,
 		`--lr-warmup-fraction`, `.01`,
 		`--kv-channels`, str(64),
+		`--ffn-hidden-size`, str(3072),
+		// `--pipeline-model-parallel-split-rank`
 	}
 
 	size_args := []string{
