@@ -1,6 +1,19 @@
 package job
 
-import "fmt"
+import "log"
+
+var bertSizeArgs = map[string][]string{
+	`base`: []string{
+		`--num-layers`, str(12),
+		`--hidden-size`, str(768),
+		`--num-attention-heads`, str(12),
+	},
+	`large`: []string{
+		`--num-layers`, str(24),
+		`--hidden-size`, str(1024),
+		`--num-attention-heads`, str(16),
+	},
+}
 
 func GenMegatronLMBERTCmd(c MDPConfig, rank int, jobID string, host string, jConf *JobConfig) []string {
 	cmd := []string{
@@ -9,20 +22,10 @@ func GenMegatronLMBERTCmd(c MDPConfig, rank int, jobID string, host string, jCon
 	cmd = append(cmd, jConf.DistFlags(c, rank)...)
 	cmd = append(cmd, `/workspace/Megatron-LM/pretrain_bert.py`)
 	var bert_args []string
-	if jConf.ModelSize == "base" {
-		bert_args = append(bert_args,
-			`--num-layers`, `12`,
-			`--hidden-size`, `768`,
-			`--num-attention-heads`, `12`,
-		)
-	} else if jConf.ModelSize == "large" {
-		bert_args = append(bert_args,
-			`--num-layers`, `24`,
-			`--hidden-size`, `1024`,
-			`--num-attention-heads`, `16`,
-		)
+	if sizeArgs := bertSizeArgs[jConf.ModelSize]; sizeArgs != nil {
+		bert_args = append(bert_args, sizeArgs...)
 	} else {
-		panic(fmt.Sprintf("Model size not matching %v", jConf.ModelSize))
+		log.Fatalf("Model size not matching %s", jConf.ModelSize)
 	}
 	bert_args = append(bert_args, []string{
 		`--seq-length`, `1024`, // default: 512
