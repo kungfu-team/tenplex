@@ -4,7 +4,7 @@ set -e
 . $(dirname $0)/common.sh
 
 list_hosts() {
-    # echo "10.10.10.1"
+    echo "10.10.10.1"
     echo "10.10.10.3"
 }
 
