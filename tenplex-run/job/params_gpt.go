@@ -2,7 +2,7 @@ package job
 
 import "fmt"
 
-func GenMegatronLMGPTCmd(c MDPConfig, rank int, jobID string, host string, jConf *JobConfig, masterAddr string) []string {
+func GenMegatronLMGPTCmd(c MDPConfig, rank int, jobID string, host string, jConf *JobConfig) []string {
 	cmd := []string{
 		`torchrun`,
 	}

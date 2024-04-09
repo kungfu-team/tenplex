@@ -18,3 +18,5 @@ type MDPConfig struct {
 
 	Precision string
 }
+
+type GenCmdFunc func(c MDPConfig, rank int, jobID string, host string, jConf *JobConfig) []string

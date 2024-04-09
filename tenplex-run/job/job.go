@@ -24,27 +24,34 @@ func (j Job) createWorkers(jConf *JobConfig, numContainers int, hosts []string) 
 		for k := l * jConf.Cluster.GPUsPerContainer; k < (l+1)*jConf.Cluster.GPUsPerContainer; k++ {
 			gpus = append(gpus, str(k))
 		}
-		workers = append(workers, j.newWorker(i, jConf, host, hosts[0], gpus...))
+		workers = append(workers, j.newWorker(i, jConf, host, hosts[0], gpus))
 	}
 	return workers
 }
 
-func (j Job) newWorker(i int, jConf *JobConfig, host string, masterAddr string, gpus ...string) Container {
-	var cmd []string
+func (j Job) genCmd(i int, jConf *JobConfig, host string) []string {
 	if jConf.Framework == "megatron-lm" {
 		pyHost := OverwriteHost(host, jConf)
-		if jConf.Model == "bert" {
-			cmd = GenMegatronLMBERTCmd(j.Config, i, jConf.ID, pyHost, jConf)
-		} else if jConf.Model == "gpt" {
-			cmd = GenMegatronLMGPTCmd(j.Config, i, jConf.ID, pyHost, jConf, masterAddr)
+		gf := map[string]GenCmdFunc{
+			`bert`: GenMegatronLMBERTCmd,
+			`gpt`:  GenMegatronLMGPTCmd,
+			`t5`:   GenMegatronLMT5Cmd,
+		}
+		if g := gf[jConf.Model]; g != nil {
+			return g(j.Config, i, jConf.ID, pyHost, jConf)
 		}
 	} else if jConf.Framework == "deepspeed" {
-		cmd = startSSHD
+		return startSSHD
 	} else if jConf.Framework == "deepspeed-new-repo" {
-		cmd = GenMegatronDeepspeedCommand(j.Config, i, jConf)
+		return GenMegatronDeepspeedCommand(j.Config, i, jConf)
 	}
+	log.Fatalf("invalid framework or model: (%s, %s)", jConf.Framework, jConf.Model)
+	return nil
+}
+
+func (j Job) newWorker(i int, jConf *JobConfig, host string, masterAddr string, gpus []string) Container {
 	dockerName := fmt.Sprintf(`trainer-%s-%02d`, jConf.ID, i)
-	pathMaps := []PathMap{}
+	var pathMaps []PathMap
 	if jConf.NoTenplex {
 		pathMaps = append(pathMaps,
 			PathMap{
@@ -74,7 +81,7 @@ func (j Job) newWorker(i int, jConf *JobConfig, host string, masterAddr string, 
 		IP:       dockerName,
 		GPUs:     gpus,
 		Host:     host,
-		Cmd:      cmd,
+		Cmd:      j.genCmd(i, jConf, host),
 		Rank:     i,
 		PathMaps: pathMaps,
 	}
