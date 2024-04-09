@@ -18,7 +18,8 @@ flags() {
     echo -batch-size 128
     echo -micro-batch-size 8
     echo -precision "fp16"
-    echo -index-url "/data/megatron-lm/gpt-2/enwiki/npzs_seq1024/indices.txt"
+    # echo -index-url "/data/megatron-lm/gpt-2/enwiki/npzs_seq1024/indices.txt"
+    echo -index-url "/data/megatron-lm/bert/openwebtext/npzs_seq1024/indices.txt"
     echo -hosts "$(join $(list_hosts))"
     echo -schedule-file "$(dirname $0)/schedule.json"
     echo -para-config "$(dirname $0)/para-config.json"
