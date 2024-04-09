@@ -130,6 +130,7 @@ func (j *JobConfig) OtherFlags(c MDPConfig) []string {
 		`--tensor-model-parallel-size`, str(c.ModelParallelSize),
 		`--pipeline-model-parallel-size`, str(c.PipelineParallelSize),
 		`--tensorboard-dir`, path.Join(checkpoint_path, `tensorboard`),
+		`--seed`, str(j.Seed),
 	}
 	cmd = append(cmd, args...)
 	if len(j.SchedulerEndpoint) > 0 {
