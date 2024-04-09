@@ -2,19 +2,6 @@ package job
 
 import "log"
 
-var bertSizeArgs = map[string][]string{
-	`base`: []string{
-		`--num-layers`, str(12),
-		`--hidden-size`, str(768),
-		`--num-attention-heads`, str(12),
-	},
-	`large`: []string{
-		`--num-layers`, str(24),
-		`--hidden-size`, str(1024),
-		`--num-attention-heads`, str(16),
-	},
-}
-
 func GenMegatronLMBERTCmd(c MDPConfig, rank int, jobID string, host string, jConf *JobConfig) []string {
 	cmd := []string{
 		`torchrun`,
@@ -22,8 +9,12 @@ func GenMegatronLMBERTCmd(c MDPConfig, rank int, jobID string, host string, jCon
 	cmd = append(cmd, jConf.DistFlags(c, rank)...)
 	cmd = append(cmd, `/workspace/Megatron-LM/pretrain_bert.py`)
 	var bert_args []string
-	if sizeArgs := bertSizeArgs[jConf.ModelSize]; sizeArgs != nil {
-		bert_args = append(bert_args, sizeArgs...)
+	var bertSizeArgs = map[string]TransformerSize{
+		`base`:  TFSize(12, 768, 12),
+		`large`: TFSize(24, 1024, 16),
+	}
+	if ts, ok := bertSizeArgs[jConf.ModelSize]; ok {
+		bert_args = append(bert_args, ts.ToPyArgs()...)
 	} else {
 		log.Fatalf("Model size not matching %s", jConf.ModelSize)
 	}
@@ -40,6 +31,7 @@ func GenMegatronLMBERTCmd(c MDPConfig, rank int, jobID string, host string, jCon
 		`--vocab-file`, `/workspace/Megatron-LM/vocab/bert-large-uncased-vocab.txt`,
 		`--split`, `949,50,1`,
 		`--data-path`, `/data/dataset/bert_text_sentence`,
+		`--distributed-backend`, `nccl`,
 	}...)
 	cmd = append(cmd, bert_args...)
 	cmd = append(cmd, jConf.LogFlags(c)...)

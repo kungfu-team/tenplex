@@ -23,7 +23,7 @@ flags() {
     echo -schedule-file "$(dirname $0)/schedule.json"
     echo -para-config "$(dirname $0)/para-config.json"
     echo -gpu-per-host 4
-    echo -gpu-per-container 1
+    echo -gpu-per-container 4
     echo -seq-length 1024
 }
 
