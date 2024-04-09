@@ -61,16 +61,14 @@ func (j *JobConfig) RegisterFlags(flag *flag.FlagSet) {
 }
 
 func (j *JobConfig) ParseParaConfig() {
-	paraConfigs, err := para_config.LoadFile(j.ParaConfigFile)
+	var err error
+	j.ParaConfigs, err = para_config.LoadFile(j.ParaConfigFile)
 	if err != nil {
-		log.Panic(err)
+		log.Panicf("%s: %v", `ParseParaConfig`, err)
 	}
-	j.ParaConfigs = paraConfigs
-	log.Printf("ParaConfigs start")
-	for size, para := range j.ParaConfigs {
-		log.Printf("%d: %v", size, para)
+	for i, size := range j.ParaConfigs.Sizes() {
+		log.Printf("ParaConfig[%d/%d]: %s", i+1, len(j.ParaConfigs), j.ParaConfigs[size])
 	}
-	log.Printf("ParaConfigs end")
 }
 
 func (j *JobConfig) ParseSchedule() {
@@ -141,4 +139,12 @@ func (j *JobConfig) OtherFlags(c MDPConfig) []string {
 		cmd = append(cmd, `--fp16`)
 	}
 	return cmd
+}
+
+func (j *JobConfig) Validate() {
+	for _, scalingPoint := range j.Schedule {
+		if _, ok := j.ParaConfigs[scalingPoint.Size]; !ok {
+			log.Printf("schedule not defined for size %d", scalingPoint.Size)
+		}
+	}
 }
