@@ -39,7 +39,7 @@ tenplex_dp_flags() {
     common_flags
     echo -jobid dyn-res-tdp
     echo -schedule-file "$(pwd)/pytorch-schedule.json"
-    echo -para-config "$(pwd)/tenplex-dp-para-config.json"
+    echo -para-config "$(pwd)/pytorch-para-config.json"
 }
 
 pytorch_flags() {
