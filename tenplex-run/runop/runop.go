@@ -18,6 +18,7 @@ import (
 	"github.com/kungfu-team/tenplex/tenplex-run/counter"
 	"github.com/kungfu-team/tenplex/tenplex-run/job"
 	"github.com/kungfu-team/tenplex/tenplex-run/para_config"
+
 	// "github.com/kungfu-team/tenplex/tenplex-run/web"
 	"github.com/lgarithm/proc"
 )
@@ -42,7 +43,7 @@ type (
 func RunTraining(jobConf *job.JobConfig, paraConf *para_config.ParallelismConfig, progress, maxStep int, hosts []string) error {
 	if !jobConf.NoTenplex {
 		// add dataset to MLFS
-		dpSize := paraConf.Size / (paraConf.PPSize * paraConf.MPSize)
+		dpSize := paraConf.DPSize()
 		addDataStart := time.Now()
 		if err := addDataset(dpSize, progress, jobConf); err != nil {
 			log.Printf("add dataset failed but IGNORE: %v", err)
