@@ -44,5 +44,12 @@ func t5Args(c MDPConfig, jConf *JobConfig) []string {
 		`--kv-channels`, str(64),
 	}
 
+	size_args := []string{
+		`--num-layers`, str(12),
+		`--hidden-size`, str(768),
+		`--num-attention-heads`, str(12),
+	}
+
+	t5_args = append(t5_args, size_args...)
 	return t5_args
 }
