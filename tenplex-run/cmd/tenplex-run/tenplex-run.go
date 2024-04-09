@@ -33,11 +33,13 @@ func (d *TenplexRunFlags) RegisterFlags(flag *flag.FlagSet) {
 
 func main() {
 	log.SetPrefix(fmt.Sprintf(`[%s] `, os.Args[0]))
+	log.SetFlags(0)
 	var d TenplexRunFlags
 	d.RegisterFlags(flag.CommandLine)
 	flag.Parse()
 	d.ParseSchedule()
 	d.ParseParaConfig()
+	d.Validate()
 	if len(d.logfile) > 0 {
 		if lf, err := os.Create(d.logfile); err == nil {
 			log.Printf("log into %s", d.logfile)

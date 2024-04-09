@@ -2,6 +2,7 @@ package para_config
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"sort"
@@ -13,7 +14,20 @@ type ParallelismConfig struct {
 	MPSize int `json:"mp_size"`
 }
 
-type ParaConfig = map[int]ParallelismConfig
+func (p ParallelismConfig) String() string {
+	return fmt.Sprintf("size: %d, pp: %d, mp: %d", p.Size, p.PPSize, p.MPSize)
+}
+
+type ParaConfig map[int]ParallelismConfig
+
+func (p ParaConfig) Sizes() []int {
+	var ss []int
+	for k := range p {
+		ss = append(ss, k)
+	}
+	sort.Ints(ss)
+	return ss
+}
 
 func LoadFile(filename string) (ParaConfig, error) {
 	f, err := os.Open(filename)
