@@ -9,11 +9,11 @@ func GenMegatronLMBERTCmd(c MDPConfig, rank int, jobID string, host string, jCon
 	cmd = append(cmd, jConf.DistFlags(c, rank)...)
 	cmd = append(cmd, `/workspace/Megatron-LM/pretrain_bert.py`)
 	var bert_args []string
-	var bertSizeArgs = map[string]TransformerSize{
+	var sizes = map[string]TransformerSize{
 		`base`:  TFSize(12, 768, 12),
 		`large`: TFSize(24, 1024, 16),
 	}
-	if ts, ok := bertSizeArgs[jConf.ModelSize]; ok {
+	if ts, ok := sizes[jConf.ModelSize]; ok {
 		bert_args = append(bert_args, ts.ToPyArgs()...)
 	} else {
 		log.Fatalf("Model size not matching %s", jConf.ModelSize)

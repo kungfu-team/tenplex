@@ -27,14 +27,14 @@ func GenMegatronLMGPTCmd(c MDPConfig, rank int, jobID string, host string, jConf
 		`--clip-grad`, `1.0`,
 		`--lr-warmup-fraction`, `.01`,
 	}
-	var gptSizeArgs = map[string]TransformerSize{
+	var sizes = map[string]TransformerSize{
 		`medium`: TFSize(24, 1024, 16),
 		`large`:  TFSize(24, 1536, 16),
 		`xl`:     TFSize(24, 2064, 24), // should be 2048 but hidden_size % num_attention_heads == 0
 		`2.7B`:   TFSize(32, 2560, 32),
 		`6.7B`:   TFSize(32, 4096, 32),
 	}
-	if ts, ok := gptSizeArgs[jConf.ModelSize]; ok {
+	if ts, ok := sizes[jConf.ModelSize]; ok {
 		gpt_args = append(gpt_args, ts.ToPyArgs()...)
 	} else {
 		log.Fatalf("Model size not matching %s", jConf.ModelSize)
