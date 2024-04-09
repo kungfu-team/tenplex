@@ -98,7 +98,7 @@ func PrepareVMs(jobConf *job.JobConfig) {
 	var ps []P
 	for _, host := range jobConf.Cluster.Hosts {
 		prefix := fmt.Sprintf("[%s]/%s ", host, `parepare--machines`)
-		rpc := at(host, jobConf.User).PC
+		rpc := at(jobConf.User, host).PC
 		s := seq(
 			ignore(rpc(`rm`, `-r`, tenplexBinDir)),
 			rpc(`mkdir`, `-p`, tenplexBinDir),
@@ -130,7 +130,7 @@ func CleanMachines(jobConf *job.JobConfig) {
 	var ps []P
 	for _, host := range jobConf.Cluster.Hosts {
 		prefix := fmt.Sprintf("[%s]/%s ", host, `clean-machines`)
-		rpc := at(host, jobConf.User).PC
+		rpc := at(jobConf.User, host).PC
 		ps = append(ps,
 			// clean training directory
 			term(prefix, ignore(rpc(`sudo`, `rm`, `-r`, `~/.tenplex/training/*`))),
