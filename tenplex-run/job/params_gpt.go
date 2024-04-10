@@ -1,6 +1,6 @@
 package job
 
-import "fmt"
+import "log"
 
 func GenMegatronLMGPTCmd(c MDPConfig, rank int, jobID string, host string, jConf *JobConfig) []string {
 	cmd := []string{
@@ -27,39 +27,17 @@ func GenMegatronLMGPTCmd(c MDPConfig, rank int, jobID string, host string, jConf
 		`--clip-grad`, `1.0`,
 		`--lr-warmup-fraction`, `.01`,
 	}
-
-	if jConf.ModelSize == "medium" {
-		gpt_args = append(gpt_args,
-			`--num-layers`, `24`,
-			`--hidden-size`, `1024`,
-			`--num-attention-heads`, `16`,
-		)
-	} else if jConf.ModelSize == "large" {
-		gpt_args = append(gpt_args,
-			`--num-layers`, `24`,
-			`--hidden-size`, `1536`,
-			`--num-attention-heads`, `16`,
-		)
-	} else if jConf.ModelSize == "xl" {
-		gpt_args = append(gpt_args,
-			`--num-layers`, `24`,
-			`--hidden-size`, `2064`, // should be 2048 but hidden_size % num_attention_heads == 0
-			`--num-attention-heads`, `24`,
-		)
-	} else if jConf.ModelSize == "2.7B" {
-		gpt_args = append(gpt_args,
-			`--num-layers`, `32`,
-			`--hidden-size`, `2560`,
-			`--num-attention-heads`, `32`,
-		)
-	} else if jConf.ModelSize == "6.7B" {
-		gpt_args = append(gpt_args,
-			`--num-layers`, `32`,
-			`--hidden-size`, `4096`,
-			`--num-attention-heads`, `32`,
-		)
+	var sizes = map[string]TransformerSize{
+		`medium`: TFSize(24, 1024, 16),
+		`large`:  TFSize(24, 1536, 16),
+		`xl`:     TFSize(24, 2064, 24), // should be 2048 but hidden_size % num_attention_heads == 0
+		`2.7B`:   TFSize(32, 2560, 32),
+		`6.7B`:   TFSize(32, 4096, 32),
+	}
+	if ts, ok := sizes[jConf.ModelSize]; ok {
+		gpt_args = append(gpt_args, ts.ToPyArgs()...)
 	} else {
-		panic(fmt.Sprintf("Model size not matching %v", jConf.ModelSize))
+		log.Fatalf("Model size not matching %s", jConf.ModelSize)
 	}
 	cmd = append(cmd, gpt_args...)
 	args := []string{
