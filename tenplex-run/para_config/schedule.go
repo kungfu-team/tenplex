@@ -1,6 +1,7 @@
 package para_config
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -26,7 +27,18 @@ func (s ScalingPoint) String() string {
 
 var Empty ParallelismConfig // Size == PPSize == MPSize == 0
 
-type Schedule = []ScalingPoint
+type Schedule []ScalingPoint
+
+func (s Schedule) String() string {
+	buf := &bytes.Buffer{}
+	for i, sp := range s {
+		if i > 0 {
+			fmt.Fprintf(buf, ", ")
+		}
+		fmt.Fprintf(buf, "%s", sp)
+	}
+	return `Schedule{` + buf.String() + `}`
+}
 
 func GenSchedule(scheduleFile string) Schedule {
 	s, err := LoadScheduleFile(scheduleFile)

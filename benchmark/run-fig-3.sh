@@ -5,9 +5,9 @@ set -e
 
 hosts() {
     echo "10.10.10.1"
-    echo "10.10.10.2"
+    # echo "10.10.10.2"
     echo "10.10.10.3"
-    echo "10.10.10.4"
+    # echo "10.10.10.4"
 }
 
 model_sizes() {
@@ -27,7 +27,8 @@ micro_batch_sizes() {
 }
 
 mdp_sizes() {
-    echo 16
+    echo 8
+    # echo 16
 }
 
 schedules() {

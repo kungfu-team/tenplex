@@ -37,7 +37,7 @@ type Run struct {
 }
 
 func (r Run) String() string {
-	return fmt.Sprintf("#%s %s {%s} %s", r.ID, r.TrainConf, r.Schedule, r.ParaConfigs)
+	return fmt.Sprintf("#%s %s %s %s", r.ID, r.TrainConf, r.Schedule, r.ParaConfigs)
 }
 
 func toJobConf(r *Run) *job.JobConfig {
@@ -74,11 +74,11 @@ func ptr[T any](x T) *T { return &x }
 func oneStageSchedule(size int) para_config.Schedule {
 	return para_config.Schedule{
 		{
-			Step: ptr(50),
+			Step: ptr(0),
 			Size: size,
 		},
 		{
-			Step: ptr(100),
+			Step: ptr(50),
 			Size: 0,
 		},
 	}
@@ -162,11 +162,11 @@ func main() {
 		trains = genTrainings(cfg.ModelSizes, cfg.BatchSizes, cfg.MicroBatchSizes)
 		runs   = genRuns(trains, cfg.MDPSizes)
 	)
-	log.Printf("will run %d experiments", len(runs))
-	runAll(runs)
+	runAll(runs[:1])
 }
 
 func runAll(runs []Run) {
+	log.Printf("will run %d experiments", len(runs))
 	t0 := time.Now()
 	defer func() { log.Printf("Multi experiment took %s", time.Since(t0)) }()
 

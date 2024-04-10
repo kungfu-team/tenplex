@@ -20,7 +20,7 @@ func (c ParallelismConfig) GetDPSize() int {
 }
 
 func (c ParallelismConfig) String() string {
-	return fmt.Sprintf("size: %d, pp: %d, mp: %d, dp: %d", c.Size, c.PPSize, c.MPSize, c.GetDPSize())
+	return fmt.Sprintf("size:%d = pp:%d x mp:%d x dp:%d", c.Size, c.PPSize, c.MPSize, c.GetDPSize())
 }
 
 type ParaConfig map[int]ParallelismConfig
@@ -30,7 +30,7 @@ func (pc ParaConfig) String() string {
 	for i, s := range pc.Sizes() {
 		mdp := pc[s]
 		if i > 0 {
-			fmt.Fprintf(buf, ",")
+			fmt.Fprintf(buf, ", ")
 		}
 		fmt.Fprintf(buf, "%s", mdp)
 	}
