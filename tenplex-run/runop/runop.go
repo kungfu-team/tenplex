@@ -33,6 +33,8 @@ var (
 	str   = strconv.Itoa
 	ssh   = proc.SSH
 	term  = proc.Term
+
+	ps1 = func(msg, host string) string { return fmt.Sprintf("$%s@%s ", msg, host) }
 )
 
 type (
@@ -43,7 +45,7 @@ type (
 func RunTraining(jobConf *job.JobConfig, paraConf *para_config.ParallelismConfig, progress, maxStep int, hosts []string) error {
 	if !jobConf.NoTenplex {
 		// add dataset to MLFS
-		dpSize := paraConf.DPSize()
+		dpSize := paraConf.GetDPSize()
 		addDataStart := time.Now()
 		if err := addDataset(dpSize, progress, jobConf); err != nil {
 			log.Printf("add dataset failed but IGNORE: %v", err)

@@ -5,9 +5,9 @@ set -e
 
 hosts() {
     echo "10.10.10.1"
-    # echo "10.10.10.2"
+    echo "10.10.10.2"
     echo "10.10.10.3"
-    # echo "10.10.10.4"
+    echo "10.10.10.4"
 }
 
 model_sizes() {
@@ -56,7 +56,7 @@ comb_flags() {
     echo -micro-batch-sizes $(join $(micro_batch_sizes))
 
     echo -mdp-sizes $(join $(mdp_sizes))
-    echo -dryrun
+    # echo -dryrun
 }
 
 run_bert() {

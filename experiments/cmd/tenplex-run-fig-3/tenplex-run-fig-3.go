@@ -25,6 +25,10 @@ type TrainConfig struct {
 	MicroBatchSize int
 }
 
+func (tc TrainConfig) String() string {
+	return fmt.Sprintf("%s[%s]/%d/%d", tc.ModelName, tc.ModelSize, tc.BatchSize, tc.MicroBatchSize)
+}
+
 type Run struct {
 	TrainConf   TrainConfig
 	Schedule    para_config.Schedule
@@ -32,7 +36,11 @@ type Run struct {
 	ID          string
 }
 
-func genJobConf(r *Run) *job.JobConfig {
+func (r Run) String() string {
+	return fmt.Sprintf("#%s %s {%s} %s", r.ID, r.TrainConf, r.Schedule, r.ParaConfigs)
+}
+
+func toJobConf(r *Run) *job.JobConfig {
 	return &job.JobConfig{
 		ID:             r.ID,
 		Framework:      "megatron-lm",
@@ -50,7 +58,6 @@ func genJobConf(r *Run) *job.JobConfig {
 			GPUsPerContainer: 4,
 			Hosts:            cfg.Hosts,
 		},
-		// SchedulerIP: "10.10.10.10",
 		Schedule:    r.Schedule,
 		MLFSPort:    cfg.MLFSPort,
 		User:        cfg.User,
@@ -88,7 +95,7 @@ func genRuns(trains []TrainConfig, MDPSizes []int) []Run {
 				ParaConfigs: para_config.ParaConfig{
 					pc.Size: pc,
 				},
-				ID: str(runID),
+				ID: `fig-3-` + str(runID),
 			}
 			runID++
 			runs = append(runs, r)
@@ -102,13 +109,13 @@ func genTrainings(modelSizes []string, batchSizes []int, microBatchSizes []int) 
 	for _, modelSize := range modelSizes {
 		for _, batchSize := range batchSizes {
 			for _, uBatchSize := range microBatchSizes {
-				trains = append(trains,
-					TrainConfig{
-						ModelName:      cfg.Model,
-						ModelSize:      modelSize,
-						BatchSize:      batchSize,
-						MicroBatchSize: uBatchSize,
-					})
+				tc := TrainConfig{
+					ModelName:      cfg.Model,
+					ModelSize:      modelSize,
+					BatchSize:      batchSize,
+					MicroBatchSize: uBatchSize,
+				}
+				trains = append(trains, tc)
 			}
 		}
 	}
@@ -132,6 +139,13 @@ type MultiRunConfig struct {
 	DryRun bool `flag:"dryrun"`
 }
 
+func (c MultiRunConfig) Print() {
+	log.Printf("Using %d hosts: %q", len(c.Hosts), c.Hosts)
+	log.Printf("Using %d model sizes: %q", len(c.ModelSizes), c.ModelSizes)
+	log.Printf("Using %d batch sizes: %v", len(c.BatchSizes), c.BatchSizes)
+	log.Printf("Using %d micro batch sizes: %v", len(c.MicroBatchSizes), c.MicroBatchSizes)
+}
+
 var cfg MultiRunConfig
 
 func init() {
@@ -143,20 +157,12 @@ func main() {
 	structflag.RegisterFlags(&cfg, flag.CommandLine)
 	structflag.RegisterFlags(&cfg.Dataset, flag.CommandLine)
 	flag.Parse()
-	// cfg.ParseParaConfig()
-
-	log.Printf("Using %d hosts: %q", len(cfg.Hosts), cfg.Hosts)
-	log.Printf("Using %d model sizes: %q", len(cfg.ModelSizes), cfg.ModelSizes)
-	log.Printf("Using %d batch sizes: %v", len(cfg.BatchSizes), cfg.BatchSizes)
-	log.Printf("Using %d micro batch sizes: %v", len(cfg.MicroBatchSizes), cfg.MicroBatchSizes)
-
+	cfg.Print()
 	var (
 		trains = genTrainings(cfg.ModelSizes, cfg.BatchSizes, cfg.MicroBatchSizes)
 		runs   = genRuns(trains, cfg.MDPSizes)
 	)
-
 	log.Printf("will run %d experiments", len(runs))
-
 	runAll(runs)
 }
 
@@ -179,8 +185,8 @@ func runAll(runs []Run) {
 }
 
 func runOne(n string, r Run) {
-	log.Printf("%s(%s, ?)", `runOne`, n)
-	jc := genJobConf(&r)
+	log.Printf("%s(%s, %s)", `runOne`, n, r)
+	jc := toJobConf(&r)
 	if cfg.DryRun {
 		log.Printf("would run %s", n)
 		return
@@ -199,14 +205,13 @@ func genMDPs(sizes []int) []para_config.ParallelismConfig {
 	for _, s := range sizes {
 		for pp := 1; pp <= s; pp++ {
 			for mp := 1; mp <= s; mp++ {
-				dp := s / (pp * mp)
-				if pp*mp*dp == s {
-					mdps = append(mdps,
-						para_config.ParallelismConfig{
-							PPSize: pp,
-							MPSize: mp,
-							Size:   s,
-						})
+				if dp := s / (pp * mp); pp*mp*dp == s {
+					mdp := para_config.ParallelismConfig{
+						PPSize: pp,
+						MPSize: mp,
+						Size:   s,
+					}
+					mdps = append(mdps, mdp)
 				}
 			}
 		}

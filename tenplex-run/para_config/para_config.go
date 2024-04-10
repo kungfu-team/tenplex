@@ -1,6 +1,7 @@
 package para_config
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -14,15 +15,27 @@ type ParallelismConfig struct {
 	MPSize int `json:"mp_size"`
 }
 
-func (c ParallelismConfig) DPSize() int {
+func (c ParallelismConfig) GetDPSize() int {
 	return c.Size / (c.PPSize * c.MPSize)
 }
 
 func (c ParallelismConfig) String() string {
-	return fmt.Sprintf("size: %d, pp: %d, mp: %d", c.Size, c.PPSize, c.MPSize)
+	return fmt.Sprintf("size: %d, pp: %d, mp: %d, dp: %d", c.Size, c.PPSize, c.MPSize, c.GetDPSize())
 }
 
 type ParaConfig map[int]ParallelismConfig
+
+func (pc ParaConfig) String() string {
+	buf := &bytes.Buffer{}
+	for i, s := range pc.Sizes() {
+		mdp := pc[s]
+		if i > 0 {
+			fmt.Fprintf(buf, ",")
+		}
+		fmt.Fprintf(buf, "%s", mdp)
+	}
+	return `ParaConf{` + buf.String() + `}`
+}
 
 func (p ParaConfig) Sizes() []int {
 	var ss []int

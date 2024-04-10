@@ -1,7 +1,6 @@
 package runop
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path"
@@ -97,14 +96,13 @@ func PrepareVMs(jobConf *job.JobConfig) {
 	tenplexBinDir := path.Join(tenplexDir, "bin")
 	var ps []P
 	for _, host := range jobConf.Cluster.Hosts {
-		prefix := fmt.Sprintf("[%s]/%s ", host, `parepare--machines`)
 		rpc := at(jobConf.User, host).PC
 		s := seq(
 			ignore(rpc(`rm`, `-r`, tenplexBinDir)),
 			rpc(`mkdir`, `-p`, tenplexBinDir),
 			term(`clone: `, cloneTransformerCkpts(rpc)),
 		)
-		ps = append(ps, term(prefix, s))
+		ps = append(ps, term(ps1(`PrepareVMs`, host), s))
 	}
 
 	if r := run(par(ps...), &stdio); r.Err != nil {
@@ -115,10 +113,9 @@ func PrepareVMs(jobConf *job.JobConfig) {
 func StopContainers(hosts []string, user string) {
 	var ps []P
 	for _, host := range hosts {
-		prefix := fmt.Sprintf("[%s]/%s ", host, `stop-containers`)
 		script := `docker ps -f 'name=trainer' -q | xargs docker stop`
 		p := runScript(at(user, host), script, `stop-container.sh`, false)
-		ps = append(ps, term(prefix, ignore(p)))
+		ps = append(ps, term(ps1(`StopContainers`, host), ignore(p)))
 	}
 	if r := run(par(ps...), &stdio); r.Err != nil {
 		panic(r.Err)
@@ -129,7 +126,7 @@ func CleanMachines(jobConf *job.JobConfig) {
 	StopContainers(jobConf.Cluster.Hosts, jobConf.User)
 	var ps []P
 	for _, host := range jobConf.Cluster.Hosts {
-		prefix := fmt.Sprintf("[%s]/%s ", host, `clean-machines`)
+		prefix := ps1(`CleanMachines`, host)
 		rpc := at(jobConf.User, host).PC
 		ps = append(ps,
 			// clean training directory
