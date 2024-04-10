@@ -49,7 +49,7 @@ func genJobConf(r *Run) *job.JobConfig {
 		Cluster: cluster.Cluster{
 			GPUsPerHost:      4,
 			GPUsPerContainer: 4,
-			Hosts:            *hosts,
+			Hosts:            cfg.Hosts,
 		},
 		// SchedulerIP: "10.10.10.10",
 		Schedule:    r.Schedule,
@@ -78,7 +78,7 @@ func genRuns(trains []TrainConfig, scheduleFiles []string, isCentral []bool) []R
 					TrainConf: t,
 					Schedule:  sch,
 					Central:   central,
-					Redeploy:  *redeploy,
+					Redeploy:  cfg.Redeploy,
 					ID:        str(runID),
 				}
 				runID++
@@ -116,6 +116,15 @@ type MultiRunConfig struct {
 	Dataset        ds.Dataset
 	ParaConfigFile string `flag:"para-config"`
 	ParaConfigs    para_config.ParaConfig
+
+	Hosts           listflag.Strings `flag:"hosts"`
+	ScheduleFiles   listflag.Strings `flag:"schedule"`
+	ModelSizes      listflag.Strings `flag:"model-sizes"`
+	BatchSizes      listflag.Ints    `flag:"batch-sizes"`
+	MicroBatchSizes listflag.Ints    `flag:"micro-batch-sizes"`
+
+	DryRun   bool `flag:"dryrun"`
+	Redeploy bool `flag:"redeploy"`
 }
 
 func (j *MultiRunConfig) ParseParaConfig() {
@@ -131,16 +140,6 @@ func (j *MultiRunConfig) ParseParaConfig() {
 
 var cfg MultiRunConfig
 
-var (
-	hosts           = listflag.String("hosts", nil, "comma separated list of hosts")
-	scheduleFiles   = listflag.String("schedule", nil, "comma separated list of file names")
-	modelSizes      = listflag.String("model-sizes", nil, "comma separated list of file model sizes: medium | large | xl | 2.7B | 6.7B")
-	batchSizes      = listflag.Int("batch-sizes", nil, `comma separated list of ints`)
-	microBatchSizes = listflag.Int("micro-batch-sizes", nil, `comma separated list of ints`)
-	dryrun          = flag.Bool(`dryrun`, false, ``)
-	redeploy        = flag.Bool(`redeploy`, false, ``)
-)
-
 // var log = golog.New(os.Stderr, `[multi-run] `, 0)
 
 func init() {
@@ -154,19 +153,19 @@ func main() {
 	flag.Parse()
 	cfg.ParseParaConfig()
 
-	log.Printf("Using %d hosts: %q", len(*hosts), *hosts)
-	log.Printf("Using %d schedules: %q", len(*scheduleFiles), *scheduleFiles)
-	log.Printf("Using %d model sizes: %q", len(*modelSizes), *modelSizes)
-	log.Printf("Using %d batch sizes: %v", len(*batchSizes), *batchSizes)
-	log.Printf("Using %d micro batch sizes: %v", len(*microBatchSizes), *microBatchSizes)
+	log.Printf("Using %d hosts: %q", len(cfg.Hosts), cfg.Hosts)
+	log.Printf("Using %d schedules: %q", len(cfg.ScheduleFiles), cfg.ScheduleFiles)
+	log.Printf("Using %d model sizes: %q", len(cfg.ModelSizes), cfg.ModelSizes)
+	log.Printf("Using %d batch sizes: %v", len(cfg.BatchSizes), cfg.BatchSizes)
+	log.Printf("Using %d micro batch sizes: %v", len(cfg.MicroBatchSizes), cfg.MicroBatchSizes)
 
 	var (
 		isCentral = []bool{
 			false,
 			true,
 		}
-		trains = genTrainings(*modelSizes, *batchSizes, *microBatchSizes)
-		runs   = genRuns(trains, *scheduleFiles, isCentral)
+		trains = genTrainings(cfg.ModelSizes, cfg.BatchSizes, cfg.MicroBatchSizes)
+		runs   = genRuns(trains, cfg.ScheduleFiles, isCentral)
 	)
 
 	log.Printf("will run %d experiments", len(runs))
@@ -195,7 +194,7 @@ func runAll(runs []Run) {
 func runOne(n string, r Run) {
 	log.Printf("%s(%s, ?)", `runOne`, n)
 	jc := genJobConf(&r)
-	if *dryrun {
+	if cfg.DryRun {
 		log.Printf("would run %s", n)
 		return
 	}
