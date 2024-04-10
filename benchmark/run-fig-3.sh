@@ -1,5 +1,4 @@
 #!/bin/sh
-
 set -e
 
 . $(dirname $0)/common.sh
@@ -27,6 +26,10 @@ micro_batch_sizes() {
     echo 8
 }
 
+mdp_sizes() {
+    echo 16
+}
+
 schedules() {
     # ls data/schedule-*.json | sort
     echo "$(dirname $0)/schedules/schedule-redeploy.json"
@@ -48,26 +51,21 @@ openwebtext_flags() {
 comb_flags() {
     echo -hosts $(join $(hosts))
 
-    echo -schedule $(join $(schedules))
     echo -model-sizes $(join $(model_sizes))
     echo -batch-sizes $(join $(batch_sizes))
     echo -micro-batch-sizes $(join $(micro_batch_sizes))
-    # echo -redeploy
 
-    echo -para-config "$(dirname $0)/para-config.json"
-
-    # echo -dryrun
+    echo -mdp-sizes $(join $(mdp_sizes))
+    echo -dryrun
 }
 
 run_bert() {
-    ./bin/multi-experiment $(base_flags) $(bert_flags) $(openwebtext_flags) $(comb_flags)
+    ./bin/tenplex-run-fig-3 $(base_flags) $(bert_flags) $(openwebtext_flags) $(comb_flags)
 }
 
 run_gpt() {
-    ./bin/multi-experiment $(base_flags) $(gpt_flags) $(openwebtext_flags) $(comb_flags)
+    ./bin/tenplex-run-fig-3 $(base_flags) $(gpt_flags) $(openwebtext_flags) $(comb_flags)
 }
 
 run_bert
 run_gpt
-
-# >multi-experiment.log 2>&1
