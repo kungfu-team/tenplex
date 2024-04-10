@@ -48,7 +48,7 @@ gpt_flags() {
     echo -model "gpt"
 }
 
-ds_flags() {
+openwebtext_flags() {
     echo -dataset "openwebtext"
     echo -index-url "/data/megatron-lm/bert/openwebtext/npzs_seq1024/indices.txt"
 }
@@ -68,11 +68,11 @@ comb_flags() {
 }
 
 run_bert() {
-    ./bin/multi-experiment $(base_flags) $(bert_flags) $(ds_flags) $(comb_flags)
+    ./bin/multi-experiment $(base_flags) $(bert_flags) $(openwebtext_flags) $(comb_flags)
 }
 
 run_gpt() {
-    ./bin/multi-experiment $(base_flags) $(gpt_flags) $(ds_flags) $(comb_flags)
+    ./bin/multi-experiment $(base_flags) $(gpt_flags) $(openwebtext_flags) $(comb_flags)
 }
 
 run_bert
