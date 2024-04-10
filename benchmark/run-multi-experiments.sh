@@ -40,14 +40,21 @@ schedules() {
     echo "$(dirname $0)/schedules/schedule-redeploy.json"
 }
 
-flags() {
-    base_flags
-
-    echo -hosts $(join $(hosts))
-
+bert_flags() {
     echo -model "bert"
+}
+
+gpt_flags() {
+    echo -model "gpt"
+}
+
+ds_flags() {
     echo -dataset "openwebtext"
     echo -index-url "/data/megatron-lm/bert/openwebtext/npzs_seq1024/indices.txt"
+}
+
+comb_flags() {
+    echo -hosts $(join $(hosts))
 
     echo -schedule $(join $(schedules))
     echo -model-sizes $(join $(model_sizes))
@@ -60,5 +67,15 @@ flags() {
     # echo -dryrun
 }
 
-./bin/multi-experiment $(flags)
+run_bert() {
+    ./bin/multi-experiment $(base_flags) $(bert_flags) $(ds_flags) $(comb_flags)
+}
+
+run_gpt() {
+    ./bin/multi-experiment $(base_flags) $(gpt_flags) $(ds_flags) $(comb_flags)
+}
+
+run_bert
+run_gpt
+
 # >multi-experiment.log 2>&1
