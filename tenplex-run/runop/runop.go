@@ -185,6 +185,7 @@ func (ss *StopServer) GetStop(w http.ResponseWriter, req *http.Request) {
 func ScalingTraining(jobConf *job.JobConfig) {
 	var stopSer StopServer
 	schedule := jobConf.Schedule
+	log.Printf("%s(?, %v, ?)", `ScalingTraining`, schedule)
 	if jobConf.TimeBased {
 		port := DefaultSchedulerPort
 		stopSer.Start(port)
