@@ -53,7 +53,7 @@ flags() {
     echo -model-sizes $(join $(model_sizes))
     echo -batch-sizes $(join $(batch_sizes))
     echo -micro-batch-sizes $(join $(micro_batch_sizes))
-    echo -redeploy
+    # echo -redeploy
 
     echo -para-config "$(dirname $0)/para-config.json"
 

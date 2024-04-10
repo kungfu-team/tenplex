@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -29,10 +30,12 @@ type Run struct {
 	Schedule  para_config.Schedule
 	Central   bool
 	Redeploy  bool
+	ID        string
 }
 
 func genJobConf(r *Run) *job.JobConfig {
 	return &job.JobConfig{
+		ID:             r.ID,
 		Framework:      "megatron-lm",
 		Precision:      "fp16",
 		BatchSize:      r.TrainConf.BatchSize,
@@ -55,8 +58,12 @@ func genJobConf(r *Run) *job.JobConfig {
 		Central:     r.Central,
 		Redeploy:    r.Redeploy,
 		ParaConfigs: cfg.ParaConfigs,
+		Seed:        1234,
 	}
 }
+
+var runID int
+var str = strconv.Itoa
 
 func genRuns(trains []TrainConfig, scheduleFiles []string, isCentral []bool) []Run {
 	var runs []Run
@@ -72,7 +79,9 @@ func genRuns(trains []TrainConfig, scheduleFiles []string, isCentral []bool) []R
 					Schedule:  sch,
 					Central:   central,
 					Redeploy:  *redeploy,
+					ID:        str(runID),
 				}
+				runID++
 				runs = append(runs, r)
 			}
 		}
