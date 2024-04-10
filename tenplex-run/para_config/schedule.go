@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 )
 
 type ScalingPoint struct {
@@ -16,13 +15,15 @@ type ScalingPoint struct {
 }
 
 func (s ScalingPoint) String() string {
-	showIntPtr := func(p *int) string {
-		if p == nil {
-			return `nil`
-		}
-		return strconv.Itoa(*p)
+	buf := &bytes.Buffer{}
+	if s.Step != nil {
+		fmt.Fprintf(buf, "step: %d", *s.Step)
 	}
-	return fmt.Sprintf("Step: %s, time: %s, size: %d", showIntPtr(s.Step), showIntPtr(s.Time), s.Size)
+	if s.Time != nil {
+		fmt.Fprintf(buf, "time: %d", *s.Time)
+	}
+	fmt.Fprintf(buf, "size: %d", s.Size)
+	return buf.String()
 }
 
 var Empty ParallelismConfig // Size == PPSize == MPSize == 0
