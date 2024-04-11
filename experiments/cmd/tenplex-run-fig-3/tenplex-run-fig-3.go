@@ -173,18 +173,21 @@ func runAll(runs []Run) {
 	t0 := time.Now()
 	defer func() { log.Printf("Multi experiment took %s", time.Since(t0)) }()
 
+	var failed int
 	for i, r := range runs {
 		n := logName("logs", fmt.Sprintf("%04d", i+1), r.TrainConf.ModelName, r.TrainConf.ModelSize, cfg.Dataset.Name)
 		func() {
 			defer func() {
 				if err := recover(); err != nil {
 					log.Panicf("recovered %s", n)
+					failed++
 				}
 			}()
 			runOne(n, r)
 		}()
 		log.Printf("finished %d/%d, took %s", i+1, len(runs), time.Since(t0))
 	}
+	log.Printf("finished %d, %d failed", len(runs), failed)
 }
 
 func runOne(n string, r Run) {
@@ -195,6 +198,7 @@ func runOne(n string, r Run) {
 		return
 	}
 	runop.Main(jc)
+	os.RemoveAll(n)
 	err := os.Rename("logs", n)
 	if err != nil {
 		log.Panic(err)
