@@ -179,7 +179,9 @@ func runAll(runs []Run) {
 		func() {
 			defer func() {
 				if err := recover(); err != nil {
-					log.Panicf("recovered %s", n)
+					log.Panicf("can't recover %s", n)
+				} else {
+					log.Printf("recovered %s", n)
 					failed++
 				}
 			}()
@@ -212,9 +214,9 @@ func genMDPs(sizes []int) []para_config.ParallelismConfig {
 	for _, s := range sizes {
 		for pp := 1; pp <= s; pp++ {
 			for mp := 1; mp <= s; mp++ {
-				if pp == 1 || mp == 1 {
-					continue
-				}
+				// if pp == 1 || mp == 1 {
+				// 	continue
+				// }
 				if dp := s / (pp * mp); pp*mp*dp == s {
 					mdp := para_config.ParallelismConfig{
 						PPSize: pp,

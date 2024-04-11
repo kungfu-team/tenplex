@@ -273,15 +273,6 @@ func ScalingTraining(jobConf *job.JobConfig) {
 	}
 }
 
-func runP(p P, wg *sync.WaitGroup) {
-	r := run(p, &stdio)
-	if r.Err != nil {
-		// log.Panicf("running P failed with %v", r.Err)
-		log.Printf("running P failed with %v", r.Err)
-	}
-	wg.Done()
-}
-
 func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
 	stageID := job.GetStageId()
 	workers := c.Workers
@@ -294,16 +285,14 @@ func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
 	}
 	log.Printf("Making mount directories took %s", time.Since(mkMountDirStart))
 
-	var wg sync.WaitGroup
+	var ps []P
 	for i, w := range workers {
 		p := c.Run(w)
 		p = job.Tee2Files(fmt.Sprintf("logs/stage-%02d-worker-%02d", stageID, i), p)
-		wg.Add(1)
-		go runP(p, &wg)
+		ps = append(ps, p)
 	}
-	wg.Wait()
-
-	return nil
+	r = run(par(ps...), &stdio)
+	return r.Err
 }
 
 func getStep(j *job.JobConfig, sp para_config.ScalingPoint) int {
