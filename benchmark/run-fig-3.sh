@@ -4,8 +4,8 @@ set -e
 . $(dirname $0)/common.sh
 
 hosts() {
-    echo "10.10.10.1"
-    # echo "10.10.10.2"
+    # echo "10.10.10.1"
+    echo "10.10.10.2"
     echo "10.10.10.3"
     # echo "10.10.10.4"
 }
@@ -29,11 +29,6 @@ micro_batch_sizes() {
 mdp_sizes() {
     echo 8
     # echo 16
-}
-
-schedules() {
-    # ls data/schedule-*.json | sort
-    echo "$(dirname $0)/schedules/schedule-redeploy.json"
 }
 
 bert_flags() {
@@ -68,5 +63,14 @@ run_gpt() {
     ./bin/tenplex-run-fig-3 $(base_flags) $(gpt_flags) $(openwebtext_flags) $(comb_flags)
 }
 
-run_bert
-run_gpt
+main() {
+    run_bert
+    run_gpt
+}
+
+with_nohup() {
+    nohup $@ >out.log 2>err.log &
+}
+
+# with_nohup
+main

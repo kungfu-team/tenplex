@@ -162,7 +162,7 @@ func main() {
 		trains = genTrainings(cfg.ModelSizes, cfg.BatchSizes, cfg.MicroBatchSizes)
 		runs   = genRuns(trains, cfg.MDPSizes)
 	)
-	runAll(runs[:1])
+	runAll(runs)
 }
 
 func runAll(runs []Run) {
@@ -205,6 +205,9 @@ func genMDPs(sizes []int) []para_config.ParallelismConfig {
 	for _, s := range sizes {
 		for pp := 1; pp <= s; pp++ {
 			for mp := 1; mp <= s; mp++ {
+				if pp == 1 && mp == 1 {
+					continue // (1,1) doesn't work
+				}
 				if dp := s / (pp * mp); pp*mp*dp == s {
 					mdp := para_config.ParallelismConfig{
 						PPSize: pp,
