@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -27,6 +26,10 @@ type TrainConfig struct {
 
 func (tc TrainConfig) String() string {
 	return fmt.Sprintf("%s[%s]/%d/%d", tc.ModelName, tc.ModelSize, tc.BatchSize, tc.MicroBatchSize)
+}
+
+func (tc TrainConfig) ID() string { // a valid filename
+	return fmt.Sprintf("%s-%s-%d-%d", tc.ModelName, tc.ModelSize, tc.BatchSize, tc.MicroBatchSize)
 }
 
 type Run struct {
@@ -66,9 +69,6 @@ func toJobConf(r *Run) *job.JobConfig {
 	}
 }
 
-var runID int
-var str = strconv.Itoa
-
 func ptr[T any](x T) *T { return &x }
 
 func oneStageSchedule(size int) para_config.Schedule {
@@ -95,9 +95,12 @@ func genRuns(trains []TrainConfig, MDPSizes []int) []Run {
 				ParaConfigs: para_config.ParaConfig{
 					pc.Size: pc,
 				},
-				ID: `fig-3-` + str(runID),
+				ID: strings.Join([]string{
+					`fig3`,
+					t.ID(),
+					pc.ID(),
+				}, `-`),
 			}
-			runID++
 			runs = append(runs, r)
 		}
 	}
@@ -205,8 +208,8 @@ func genMDPs(sizes []int) []para_config.ParallelismConfig {
 	for _, s := range sizes {
 		for pp := 1; pp <= s; pp++ {
 			for mp := 1; mp <= s; mp++ {
-				if pp == 1 && mp == 1 {
-					continue // (1,1) doesn't work
+				if pp == 1 || mp == 1 {
+					continue
 				}
 				if dp := s / (pp * mp); pp*mp*dp == s {
 					mdp := para_config.ParallelismConfig{

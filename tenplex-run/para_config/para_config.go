@@ -19,6 +19,10 @@ func (c ParallelismConfig) GetDPSize() int {
 	return c.Size / (c.PPSize * c.MPSize)
 }
 
+func (c ParallelismConfig) ID() string {
+	return fmt.Sprintf("mp%d-dp%d-pp%d", c.MPSize, c.GetDPSize(), c.PPSize)
+}
+
 func (c ParallelismConfig) String() string {
 	return fmt.Sprintf("size:%d = pp:%d x mp:%d x dp:%d", c.Size, c.PPSize, c.MPSize, c.GetDPSize())
 }
