@@ -15,6 +15,7 @@ import (
 	"github.com/kungfu-team/tenplex/tenplex-run/para_config"
 	"github.com/kungfu-team/tenplex/tenplex-run/runop"
 	"github.com/kungfu-team/tenplex/tenplex-run/structflag"
+	"github.com/lgarithm/go/tr"
 )
 
 type TrainConfig struct {
@@ -95,11 +96,7 @@ func genRuns(trains []TrainConfig, MDPSizes []int) []Run {
 				ParaConfigs: para_config.ParaConfig{
 					pc.Size: pc,
 				},
-				ID: strings.Join([]string{
-					`fig3`,
-					t.ID(),
-					pc.ID(),
-				}, `-`),
+				ID: join(t.ID(), pc.ID()),
 			}
 			runs = append(runs, r)
 		}
@@ -169,6 +166,7 @@ func main() {
 }
 
 func runAll(runs []Run) {
+	defer tr.Patient(`run-all`, 300*time.Second).Done()
 	log.Printf("will run %d experiments", len(runs))
 	t0 := time.Now()
 	defer func() { log.Printf("Multi experiment took %s", time.Since(t0)) }()
@@ -176,12 +174,12 @@ func runAll(runs []Run) {
 	var failed int
 	for i, r := range runs {
 		t1 := time.Now()
-		n := logName("logs", fmt.Sprintf("%04d", i+1), r.TrainConf.ModelName, r.TrainConf.ModelSize, cfg.Dataset.Name)
+		n := logName("logs", fmt.Sprintf("%04d", i+1), r.ID)
 		func() {
 			defer func() {
 				if err := recover(); err != nil {
-					log.Panicf("recovered %s", n)
 					failed++
+					log.Panicf("recovered %s", n)
 				}
 			}()
 			runOne(n, r)
@@ -192,7 +190,8 @@ func runAll(runs []Run) {
 }
 
 func runOne(n string, r Run) {
-	log.Printf("%s(%s, %s)", `runOne`, n, r)
+	defer tr.Patient(`runOne(`+n+`)`, 10*time.Second).Done()
+	log.Printf("%s(%s, %s)...", `runOne`, n, r)
 	jc := toJobConf(&r)
 	if cfg.DryRun {
 		log.Printf("would run %s", n)
@@ -200,13 +199,15 @@ func runOne(n string, r Run) {
 	}
 	runop.Main(jc)
 	os.RemoveAll(n)
-	err := os.Rename("logs", n)
-	if err != nil {
+	if err := os.Rename("logs", n); err != nil {
 		log.Panic(err)
 	}
+	log.Printf("%s(%s, %s).", `runOne`, n, r)
 }
 
-func logName(ss ...string) string { return strings.Join(ss, `-`) + `.log` }
+func logName(ss ...string) string { return join(ss...) + `.log` }
+
+func join(ss ...string) string { return strings.Join(ss, `-`) }
 
 func genMDPs(sizes []int) []para_config.ParallelismConfig {
 	var mdps []para_config.ParallelismConfig
