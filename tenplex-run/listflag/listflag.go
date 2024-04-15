@@ -11,7 +11,9 @@ type Strings []string
 func (v *Strings) Set(args string) error {
 	*v = nil
 	for _, t := range strings.Split(args, ",") {
-		*v = append(*v, strings.TrimSpace(t))
+		if s := strings.TrimSpace(t); len(s) > 0 {
+			*v = append(*v, s)
+		}
 	}
 	return nil
 }
