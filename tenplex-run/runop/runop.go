@@ -250,8 +250,9 @@ func ScalingTraining(jobConf *job.JobConfig) {
 			stopSer.FinishWG.Add(1)
 			go func() {
 				if err := RunTraining(jobConf, &newPara, progress, maxStep, hosts); err != nil {
-					log.Printf("Training failed. Stopping containers")
+					log.Printf("Training failed: %v. Stopping containers", err)
 					StopContainers(jobConf.Cluster.Hosts, jobConf.User)
+					// TODO: make it fail
 				}
 				stopSer.FinishWG.Done()
 			}()
@@ -266,8 +267,9 @@ func ScalingTraining(jobConf *job.JobConfig) {
 			atomic.StoreInt32(&stopSer.Stopped, 0)
 		} else {
 			if err := RunTraining(jobConf, &newPara, progress, maxStep, hosts); err != nil {
-				log.Printf("Training failed. Stopping containers")
+				log.Printf("Training failed: %v. Stopping containers", err)
 				StopContainers(jobConf.Cluster.Hosts, jobConf.User)
+				break // TODO: make it fail
 			}
 		}
 	}
