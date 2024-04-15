@@ -25,9 +25,13 @@ func RegisterFlags(v interface{}, flag *flag.FlagSet) {
 
 type FlagValue = flag.Value
 
+var Log bool
+
 func registerFlag(v *reflect.Value, name string, def string, flag *flag.FlagSet) {
-	// log.Printf("registerFlag %s with defval: %q", name, def)
-	switch v.Kind() {
+	if Log {
+		log.Printf("registerFlag %s with defval: %q", name, def)
+	}
+	switch k := v.Kind(); k {
 	case reflect.String:
 		p := (*string)(v.Addr().UnsafePointer())
 		flag.StringVar(p, name, def, ``)
@@ -49,25 +53,29 @@ func registerFlag(v *reflect.Value, name string, def string, flag *flag.FlagSet)
 			p.Set(def)
 			return
 		}
-		log.Panicf("can't register flag for %s", name)
+		log.Panicf("can't register flag for %s of %s", name, k)
 	}
 }
 
-func ToArgs(v interface{}) []string {
+func ToGoArgs(v interface{}) []string {
+	return ToArgs(v, ShortFlagName)
+}
+
+func ToArgs(v interface{}, toFlag flagName) []string {
 	var args []string
 	val := reflect.Indirect(reflect.ValueOf(v))
 	for i := 0; i < val.NumField(); i++ {
 		field := reflect.TypeOf(v).Elem().Field(i)
 		if t := field.Tag.Get(flagTag); len(t) > 0 {
 			vi := val.Field(i)
-			args = append(args, toArg(&vi, t)...)
+			args = append(args, toArg(&vi, t, toFlag)...)
 		}
 	}
 	return args
 }
 
-func toArg(v *reflect.Value, name string) []string {
-	flg := `-` + name
+func toArg(v *reflect.Value, name string, toFlag flagName) []string {
+	flg := toFlag(name)
 	switch v.Kind() {
 	case reflect.String:
 		p := (*string)(v.Addr().UnsafePointer())
@@ -87,4 +95,10 @@ func toArg(v *reflect.Value, name string) []string {
 	}
 }
 
+func ShortFlagName(name string) string { return `-` + name }
+
+func LongFlagName(name string) string { return `--` + name }
+
 var str = strconv.Itoa
+
+type flagName func(string) string
