@@ -132,7 +132,7 @@ func (ru *Runner) TransformStateWithCmd(conf *meta.Config, newNumDev int, newClu
 		c.VocabSize = ru.Job.VocabSize // remove?
 		p := Proc{
 			Prog: "tenplex-state-transformer",
-			Args: structflag.ToArgs(&c),
+			Args: structflag.ToGoArgs(&c),
 			Host: host,
 		}
 		prefix := fmt.Sprintf("[%s %d Transform] ", host, i)
