@@ -22,7 +22,7 @@ func (s ScalingPoint) String() string {
 	if s.Time != nil {
 		fmt.Fprintf(buf, "time: %d", *s.Time)
 	}
-	fmt.Fprintf(buf, "size: %d", s.Size)
+	fmt.Fprintf(buf, ", size: %d", s.Size)
 	return buf.String()
 }
 

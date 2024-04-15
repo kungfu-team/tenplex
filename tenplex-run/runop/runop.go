@@ -48,8 +48,8 @@ func RunTraining(jobConf *job.JobConfig, paraConf *para_config.ParallelismConfig
 		dpSize := paraConf.GetDPSize()
 		addDataStart := time.Now()
 		if err := addDataset(dpSize, progress, jobConf); err != nil {
-			log.Printf("add dataset failed but IGNORE: %v", err)
-			// return err
+			// log.Printf("add dataset failed but IGNORE: %v", err)
+			return err
 		}
 		log.Printf("Adding dataset with DP %d took %s", dpSize, time.Since(addDataStart))
 	}
