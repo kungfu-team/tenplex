@@ -33,6 +33,8 @@ var (
 	str   = strconv.Itoa
 	ssh   = proc.SSH
 	term  = proc.Term
+
+	ps1 = func(msg, host string) string { return fmt.Sprintf("$%s@%s ", msg, host) }
 )
 
 type (
@@ -43,11 +45,11 @@ type (
 func RunTraining(jobConf *job.JobConfig, paraConf *para_config.ParallelismConfig, progress, maxStep int, hosts []string) error {
 	if !jobConf.NoTenplex {
 		// add dataset to MLFS
-		dpSize := paraConf.DPSize()
+		dpSize := paraConf.GetDPSize()
 		addDataStart := time.Now()
 		if err := addDataset(dpSize, progress, jobConf); err != nil {
-			log.Printf("add dataset failed but IGNORE: %v", err)
-			// return err
+			// log.Printf("add dataset failed but IGNORE: %v", err)
+			return err
 		}
 		log.Printf("Adding dataset with DP %d took %s", dpSize, time.Since(addDataStart))
 	}
@@ -248,8 +250,9 @@ func ScalingTraining(jobConf *job.JobConfig) {
 			stopSer.FinishWG.Add(1)
 			go func() {
 				if err := RunTraining(jobConf, &newPara, progress, maxStep, hosts); err != nil {
-					log.Printf("Training failed. Stopping containers")
+					log.Printf("Training failed: %v. Stopping containers", err)
 					StopContainers(jobConf.Cluster.Hosts, jobConf.User)
+					// TODO: make it fail
 				}
 				stopSer.FinishWG.Done()
 			}()
@@ -264,20 +267,12 @@ func ScalingTraining(jobConf *job.JobConfig) {
 			atomic.StoreInt32(&stopSer.Stopped, 0)
 		} else {
 			if err := RunTraining(jobConf, &newPara, progress, maxStep, hosts); err != nil {
-				log.Printf("Training failed. Stopping containers")
+				log.Printf("Training failed: %v. Stopping containers", err)
 				StopContainers(jobConf.Cluster.Hosts, jobConf.User)
+				break // TODO: make it fail
 			}
 		}
 	}
-}
-
-func runP(p P, wg *sync.WaitGroup) {
-	r := run(p, &stdio)
-	if r.Err != nil {
-		// log.Panicf("running P failed with %v", r.Err)
-		log.Printf("running P failed with %v", r.Err)
-	}
-	wg.Done()
 }
 
 func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
@@ -292,16 +287,14 @@ func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
 	}
 	log.Printf("Making mount directories took %s", time.Since(mkMountDirStart))
 
-	var wg sync.WaitGroup
+	var ps []P
 	for i, w := range workers {
 		p := c.Run(w)
 		p = job.Tee2Files(fmt.Sprintf("logs/stage-%02d-worker-%02d", stageID, i), p)
-		wg.Add(1)
-		go runP(p, &wg)
+		ps = append(ps, p)
 	}
-	wg.Wait()
-
-	return nil
+	r = run(par(ps...), &stdio)
+	return r.Err
 }
 
 func getStep(j *job.JobConfig, sp para_config.ScalingPoint) int {

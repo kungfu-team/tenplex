@@ -20,18 +20,6 @@ func mkdir(h string, user string, d string) P {
 	return Ssh(p)
 }
 
-func rmdir(h string, d string) P {
-	p := Proc{
-		Prog: `sudo`,
-		Args: []string{`rm`, `-fr`, d},
-		Host: h,
-	}
-	return Seq(
-		Echo(fmt.Sprintf("rm -fr %s:%s", h, d)),
-		Ssh(p),
-	)
-}
-
 // Options graveyard
 // `--env`, `NCCL_DEBUG=INFO`,
 // `--env`, `NCCL_DEBUG_SUBSYS=ALL`,
