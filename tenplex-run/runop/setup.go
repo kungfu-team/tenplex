@@ -159,6 +159,7 @@ func collectLogs(jobConf *job.JobConfig) {
 
 func Main(jobConf *job.JobConfig) {
 	RoundID.Reset()
+	job.Stage.Reset()
 	CleanMachines(jobConf)
 	// SetupSwarm(jobConf)
 	PrepareVMs(jobConf)

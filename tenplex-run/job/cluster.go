@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/kungfu-team/tenplex/tenplex-run/counter"
 	"github.com/lgarithm/proc"
 	"github.com/lgarithm/proc/experimental"
 	"github.com/lgarithm/proc/iostream"
@@ -99,12 +100,10 @@ func (c *ContainerCluster) RunTrain(jConf *JobConfig) P {
 	return nil
 }
 
-func genCounter() func() int {
-	var id int
-	return func() int { x := id; id++; return x }
-}
-
-var GetStageId = genCounter()
+var (
+	Stage      = counter.New()
+	GetStageId = Stage.Next
+)
 
 func (c *ContainerCluster) RunTrainMegatronLM() P {
 	stageID := GetStageId()
