@@ -18,6 +18,7 @@ import (
 	"github.com/kungfu-team/tenplex/tenplex-run/counter"
 	"github.com/kungfu-team/tenplex/tenplex-run/job"
 	"github.com/kungfu-team/tenplex/tenplex-run/para_config"
+	"github.com/kungfu-team/tenplex/tenplex-run/timeout"
 
 	// "github.com/kungfu-team/tenplex/tenplex-run/web"
 	"github.com/lgarithm/proc"
@@ -42,7 +43,14 @@ type (
 	Proc = proc.Proc
 )
 
+var DefaultTimeout time.Duration
+
 func RunTraining(jobConf *job.JobConfig, paraConf *para_config.ParallelismConfig, progress, maxStep int, hosts []string) error {
+	if DefaultTimeout > 0 {
+		defer timeout.New(DefaultTimeout, func() {
+			StopContainers(jobConf.Cluster.Hosts, jobConf.User)
+		}).Done()
+	}
 	if !jobConf.NoTenplex {
 		// add dataset to MLFS
 		dpSize := paraConf.GetDPSize()

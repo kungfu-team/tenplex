@@ -137,6 +137,8 @@ type MultiRunConfig struct {
 	MDPSizes        listflag.Ints    `flag:"mdp-sizes"`
 
 	DryRun bool `flag:"dryrun"`
+
+	StageTimeoutMinite int `flag:"timeout"`
 }
 
 func (c MultiRunConfig) Print() {
@@ -158,6 +160,7 @@ func main() {
 	structflag.RegisterFlags(&cfg.Dataset, flag.CommandLine)
 	flag.Parse()
 	cfg.Print()
+	runop.DefaultTimeout = time.Duration(cfg.StageTimeoutMinite) * time.Minute
 	var (
 		trains = genTrainings(cfg.ModelSizes, cfg.BatchSizes, cfg.MicroBatchSizes)
 		runs   = genRuns(trains, cfg.MDPSizes)
@@ -212,21 +215,28 @@ func join(ss ...string) string { return strings.Join(ss, `-`) }
 func genMDPs(sizes []int) []para_config.ParallelismConfig {
 	var mdps []para_config.ParallelismConfig
 	for _, s := range sizes {
-		for pp := 1; pp <= s; pp++ {
-			for mp := 1; mp <= s; mp++ {
-				// if pp == 1 || mp == 1 {
-				// 	continue
-				// }
-				if dp := s / (pp * mp); pp*mp*dp == s {
-					mdp := para_config.ParallelismConfig{
-						PPSize: pp,
-						MPSize: mp,
-						Size:   s,
-					}
-					mdps = append(mdps, mdp)
+		mdps = append(mdps, genMDP(s)...)
+	}
+	return mdps
+}
+
+func genMDP(size int) []para_config.ParallelismConfig {
+	var mdps []para_config.ParallelismConfig
+	for pp := 1; pp <= size; pp++ {
+		for mp := 1; mp <= size; mp++ {
+			// if pp == 1 || mp == 1 {
+			// 	continue
+			// }
+			if dp := size / (pp * mp); pp*mp*dp == size {
+				mdp := para_config.ParallelismConfig{
+					PPSize: pp,
+					MPSize: mp,
+					Size:   size,
 				}
+				mdps = append(mdps, mdp)
 			}
 		}
 	}
+	log.Printf("%d combinations for total parallelism %d", len(mdps), size)
 	return mdps
 }

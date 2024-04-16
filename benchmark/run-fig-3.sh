@@ -4,10 +4,10 @@ set -e
 . $(dirname $0)/common.sh
 
 hosts() {
-    # echo "10.10.10.1"
+    echo "10.10.10.1"
     echo "10.10.10.2"
     echo "10.10.10.3"
-    # echo "10.10.10.4"
+    echo "10.10.10.4"
 }
 
 model_sizes() {
@@ -27,8 +27,8 @@ micro_batch_sizes() {
 }
 
 mdp_sizes() {
-    echo 8
-    # echo 16
+    # echo 8
+    echo 16
 }
 
 bert_flags() {
@@ -52,15 +52,21 @@ comb_flags() {
     echo -micro-batch-sizes $(join $(micro_batch_sizes))
 
     echo -mdp-sizes $(join $(mdp_sizes))
-    # echo -dryrun
+}
+
+common_flags() {
+    base_flags
+    openwebtext_flags
+    comb_flags
+    echo -timeout 10
 }
 
 run_bert() {
-    ./bin/tenplex-run-fig-3 $(base_flags) $(bert_flags) $(openwebtext_flags) $(comb_flags)
+    ./bin/tenplex-run-fig-3 $(common_flags) $(bert_flags)
 }
 
 run_gpt() {
-    ./bin/tenplex-run-fig-3 $(base_flags) $(gpt_flags) $(openwebtext_flags) $(comb_flags)
+    ./bin/tenplex-run-fig-3 $(common_flags) $(gpt_flags)
 }
 
 main() {
