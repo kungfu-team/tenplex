@@ -1,0 +1,10 @@
+logs-0001-gpt-large-128-8-mp1-dp8-pp1.log
+logs-0002-gpt-large-128-8-mp2-dp4-pp1.log
+logs-0003-gpt-large-128-8-mp4-dp2-pp1.log
+logs-0004-gpt-large-128-8-mp8-dp1-pp1.log
+logs-0005-gpt-large-128-8-mp1-dp4-pp2.log
+logs-0006-gpt-large-128-8-mp2-dp2-pp2.log
+logs-0007-gpt-large-128-8-mp4-dp1-pp2.log
+logs-0008-gpt-large-128-8-mp1-dp2-pp4.log
+logs-0009-gpt-large-128-8-mp2-dp1-pp4.log
+logs-0010-gpt-large-128-8-mp1-dp1-pp8.log

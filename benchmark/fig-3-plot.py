@@ -121,8 +121,10 @@ def plot_jobs(jobnames):
     # plot(records, 'bert_large.pdf')
     print()
 
+
 def main():
-    plot_jobs('benchmark/bert.txt')
-    plot_jobs('benchmark/gpt.txt')
+    plot_jobs('benchmark/bert-8.txt')
+    plot_jobs('benchmark/gpt-8.txt')
+
 
 main()
