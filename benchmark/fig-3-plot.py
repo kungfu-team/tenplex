@@ -110,14 +110,19 @@ def plot(records, name):
     plt.savefig(name)
 
 
-def main():
+def plot_jobs(jobnames):
     records = []
-    for f in open('benchmark/jobs.txt'):
+    for f in open(jobnames):
         records.append(parse_job_log(f.strip()))
 
-    for ((m, d, p), value) in records:
-        print('{}-{}-{} {}'.format(m, d, p, value))
+    # for ((m, d, p), value) in records:
+    #     print('{}-{}-{} {}'.format(m, d, p, value))
 
-    plot(records, 'bert_large.pdf')
+    # plot(records, 'bert_large.pdf')
+    print()
+
+def main():
+    plot_jobs('benchmark/bert.txt')
+    plot_jobs('benchmark/gpt.txt')
 
 main()

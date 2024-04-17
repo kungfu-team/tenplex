@@ -1,6 +1,7 @@
 package runop
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -284,6 +285,9 @@ func ScalingTraining(jobConf *job.JobConfig) {
 }
 
 func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
+	ctx := context.TODO()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	stageID := job.GetStageId()
 	workers := c.Workers
 
@@ -297,9 +301,29 @@ func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
 
 	var ps []P
 	for i, w := range workers {
-		p := c.Run(w)
+		p := c.RunCtx(w, ctx)
 		p = job.Tee2Files(fmt.Sprintf("logs/stage-%02d-worker-%02d", stageID, i), p)
-		ps = append(ps, p)
+		var err error = errors.New(`failed`)
+		i := i
+		ps = append(ps,
+			seq(
+				proc.FnOk(func() {
+					log.Printf("RUNNING: %d", i)
+				}),
+				proc.Ignore(
+					seq(
+						p,
+						proc.FnOk(func() { err = nil }),
+					),
+				),
+				proc.Fn(func() error {
+					log.Printf("one worker (%d) finished with %v", i, err)
+					if err != nil {
+						cancel()
+					}
+					return err
+				}),
+			))
 	}
 	r = run(par(ps...), &stdio)
 	return r.Err

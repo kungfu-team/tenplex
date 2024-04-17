@@ -27,7 +27,7 @@ micro_batch_sizes() {
 }
 
 mdp_sizes() {
-    # echo 8
+    echo 8
     echo 16
 }
 
@@ -58,7 +58,7 @@ common_flags() {
     base_flags
     openwebtext_flags
     comb_flags
-    echo -timeout 10
+    echo -timeout 30
 }
 
 run_bert() {
