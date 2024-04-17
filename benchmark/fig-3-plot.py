@@ -39,7 +39,7 @@ def have_failed(filename):
     for line in open(filename):
         for e in errs:
             if e in line:
-                print('%s detected' % (e))
+                print(line.strip())
                 failed = True
                 # break
     return failed
