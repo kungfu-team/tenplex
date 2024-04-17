@@ -36,6 +36,7 @@ def have_failed(filename):
             failed = True
             break
         if 'IndexError' in line:
+            print('IndexError detected')
             failed = True
             break
     return failed
@@ -82,7 +83,7 @@ def parse_job_log(name):
 
 
 def plot(records, name):
-    size = "xl"
+    # size = "xl"
     # batch_size = 128
     plt.rcParams["hatch.linewidth"] = 3
     linewidth = 2
@@ -114,7 +115,7 @@ def plot(records, name):
 
 def plot_jobs(jobnames):
     records = []
-    for f in open(jobnames):
+    for f in jobnames:
         records.append(parse_job_log(f.strip()))
 
     # for ((m, d, p), value) in records:
@@ -124,9 +125,24 @@ def plot_jobs(jobnames):
     print()
 
 
+def select_logs(log_dirs, name, size):
+    for f in log_dirs:
+        m, d, p = parse_mdp(f)
+        if m * d * p == size and name in f:
+            yield f
+
 def main():
-    plot_jobs('benchmark/bert-8.txt')
-    plot_jobs('benchmark/gpt-8.txt')
+    log_dirs = list(glob.glob('logs-*'))
+    # bert16 = list(sorted(select_logs(log_dirs, 'bert', 16)))
+    # print(bert16)
+    plot_jobs(sorted(select_logs(log_dirs, 'bert', 16)))
+    plot_jobs(sorted(select_logs(log_dirs, 'gpt', 16)))
+    # for d in bert16:
+    #     print(d)
+        # m,d,p = parse_mdp(f)
+        # print('{}-{}-{}'.format(m,d,p))
+    # plot_jobs(open('benchmark/bert-8.txt'))
+    # plot_jobs(open('benchmark/gpt-8.txt'))
 
 
 main()
