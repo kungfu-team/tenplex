@@ -2,7 +2,9 @@ package job
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path"
 
@@ -90,6 +92,7 @@ func (cluster *ContainerCluster) SendHostFile(c Container) P {
 }
 
 func (c *ContainerCluster) RunTrain(jConf *JobConfig) P {
+	log.Printf("%s(...)", `RunTrain`)
 	if jConf.Framework == "megatron-lm" {
 		return c.RunTrainMegatronLM()
 	} else if jConf.Framework == "deepspeed" {
@@ -106,13 +109,37 @@ var (
 )
 
 func (c *ContainerCluster) RunTrainMegatronLM() P {
+	ctx := context.TODO()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	stageID := GetStageId()
 	workers := c.Workers
 	var runs []P
 	for i, w := range workers {
-		p := c.Run(w)
+		p := c.RunCtx(w, ctx)
 		p = Tee2Files(fmt.Sprintf("logs/stage-%02d-worker-%02d", stageID, i), p)
-		runs = append(runs, p)
+		var err error = errors.New("worker failed")
+		i := i
+		log.Printf("adding worker %d", i)
+		runs = append(runs,
+			Seq(
+				proc.FnOk(func() {
+					log.Printf("RUNNING: %d", i)
+				}),
+				proc.Ignore(
+					Seq(
+						p,
+						proc.FnOk(func() { err = nil }),
+					),
+				),
+				proc.Fn(func() error {
+					log.Printf("one worker (%d) finished with %v", i, err)
+					if err != nil {
+						cancel()
+					}
+					return err
+				}),
+			))
 	}
 	var cmds []P
 	cmds = append(cmds, Par(Cmap(c.MkMountDirs, workers...)...))
