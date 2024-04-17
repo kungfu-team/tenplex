@@ -16,6 +16,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/kungfu-team/tenplex/tenplex-run/cancelgroup"
 	"github.com/kungfu-team/tenplex/tenplex-run/counter"
 	"github.com/kungfu-team/tenplex/tenplex-run/job"
 	"github.com/kungfu-team/tenplex/tenplex-run/para_config"
@@ -298,34 +299,14 @@ func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
 		return r.Err
 	}
 	log.Printf("Making mount directories took %s", time.Since(mkMountDirStart))
-
 	var ps []P
 	for i, w := range workers {
 		p := c.RunCtx(w, ctx)
 		p = job.Tee2Files(fmt.Sprintf("logs/stage-%02d-worker-%02d", stageID, i), p)
-		var err error = errors.New(`failed`)
-		i := i
-		ps = append(ps,
-			seq(
-				proc.FnOk(func() {
-					log.Printf("RUNNING: %d", i)
-				}),
-				proc.Ignore(
-					seq(
-						p,
-						proc.FnOk(func() { err = nil }),
-					),
-				),
-				proc.Fn(func() error {
-					log.Printf("one worker (%d) finished with %v", i, err)
-					if err != nil {
-						cancel()
-					}
-					return err
-				}),
-			))
+		ps = append(ps, p)
 	}
-	r = run(par(ps...), &stdio)
+	var err error = errors.New(`failed`)
+	r = run(cancelgroup.CancelGroup(ps, err, cancel), &stdio)
 	return r.Err
 }
 

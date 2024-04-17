@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/kungfu-team/tenplex/tenplex-run/cancelgroup"
 	"github.com/kungfu-team/tenplex/tenplex-run/counter"
 	"github.com/lgarithm/proc"
 	"github.com/lgarithm/proc/experimental"
@@ -118,35 +119,14 @@ func (c *ContainerCluster) RunTrainMegatronLM() P {
 	for i, w := range workers {
 		p := c.RunCtx(w, ctx)
 		p = Tee2Files(fmt.Sprintf("logs/stage-%02d-worker-%02d", stageID, i), p)
-		var err error = errors.New("worker failed")
-		i := i
-		log.Printf("adding worker %d", i)
-		runs = append(runs,
-			Seq(
-				proc.FnOk(func() {
-					log.Printf("RUNNING: %d", i)
-				}),
-				proc.Ignore(
-					Seq(
-						p,
-						proc.FnOk(func() { err = nil }),
-					),
-				),
-				proc.Fn(func() error {
-					log.Printf("one worker (%d) finished with %v", i, err)
-					if err != nil {
-						cancel()
-					}
-					return err
-				}),
-			))
+		runs = append(runs, p)
 	}
 	var cmds []P
 	cmds = append(cmds, Par(Cmap(c.MkMountDirs, workers...)...))
 	// cmds = append(cmds, Par(cmap(CopyBERTVocab, workers...)...))
 	cmds = append(cmds,
 		Term(`[*] `, Echo(`starting containers ...`)),
-		Par(runs...),
+		cancelgroup.CancelGroup(runs, errors.New("worker failed"), cancel),
 		Term(`[*] `, Echo(`started containers`)),
 	)
 	return Seq(cmds...)
