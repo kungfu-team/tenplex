@@ -35,7 +35,9 @@ def have_failed(filename):
         if 'RuntimeError' in line:
             failed = True
             break
-
+        if 'IndexError' in line:
+            failed = True
+            break
     return failed
 
 
