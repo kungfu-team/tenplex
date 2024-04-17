@@ -5,7 +5,9 @@ set -e
 
 list_hosts() {
     echo "10.10.10.1"
+    echo "10.10.10.2"
     echo "10.10.10.3"
+    echo "10.10.10.4"
 }
 
 flags() {
