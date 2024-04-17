@@ -4,10 +4,10 @@ set -e
 . $(dirname $0)/common.sh
 
 hosts() {
-    # echo "10.10.10.1"
+    echo "10.10.10.1"
     echo "10.10.10.2"
     echo "10.10.10.3"
-    # echo "10.10.10.4"
+    echo "10.10.10.4"
 }
 
 model_sizes() {
@@ -27,21 +27,22 @@ micro_batch_sizes() {
 }
 
 mdp_sizes() {
-    echo 8
-    # echo 16
+    # echo 8
+    echo 16
 }
 
 bert_flags() {
     echo -model "bert"
+
+    echo -dataset "openwebtext"
+    echo -index-url "/data/megatron-lm/bert/openwebtext/npzs_seq1024/indices.txt"
 }
 
 gpt_flags() {
     echo -model "gpt"
-}
 
-openwebtext_flags() {
-    echo -dataset "openwebtext"
-    echo -index-url "/data/megatron-lm/bert/openwebtext/npzs_seq1024/indices.txt"
+    echo -dataset "enwiki"
+    echo -index-url "/data/megatron-lm/gpt-2/enwiki/npzs_seq1024/indices.txt"
 }
 
 comb_flags() {
@@ -56,7 +57,6 @@ comb_flags() {
 
 common_flags() {
     base_flags
-    openwebtext_flags
     comb_flags
     echo -timeout 30
 }
@@ -70,7 +70,7 @@ run_gpt() {
 }
 
 main() {
-    run_bert
+    # run_bert
     run_gpt
 }
 
