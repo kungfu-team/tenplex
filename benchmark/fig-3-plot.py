@@ -31,14 +31,17 @@ def parse_mdp(line):
 def have_failed(filename):
     # print(filename)
     failed = False
+    errs  = [
+        'RuntimeError',
+        'OutOfMemoryError',
+        'IndexError',
+    ]
     for line in open(filename):
-        if 'RuntimeError' in line:
-            failed = True
-            break
-        if 'IndexError' in line:
-            print('IndexError detected')
-            failed = True
-            break
+        for e in errs:
+            if e in line:
+                print('%s detected' % (e))
+                failed = True
+                # break
     return failed
 
 
