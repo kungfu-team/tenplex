@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path"
 
@@ -93,7 +92,6 @@ func (cluster *ContainerCluster) SendHostFile(c Container) P {
 }
 
 func (c *ContainerCluster) RunTrain(jConf *JobConfig) P {
-	log.Printf("%s(...)", `RunTrain`)
 	if jConf.Framework == "megatron-lm" {
 		return c.RunTrainMegatronLM()
 	} else if jConf.Framework == "deepspeed" {
