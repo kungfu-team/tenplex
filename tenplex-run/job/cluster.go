@@ -119,28 +119,7 @@ func (c *ContainerCluster) RunTrainMegatronLM() P {
 	for i, w := range workers {
 		p := c.RunCtx(w, ctx)
 		p = Tee2Files(fmt.Sprintf("logs/stage-%02d-worker-%02d", stageID, i), p)
-		var err error = errors.New("worker failed")
-		i := i
-		log.Printf("adding worker %d", i)
-		runs = append(runs,
-			Seq(
-				proc.FnOk(func() {
-					log.Printf("RUNNING: %d", i)
-				}),
-				proc.Ignore(
-					Seq(
-						p,
-						proc.FnOk(func() { err = nil }),
-					),
-				),
-				proc.Fn(func() error {
-					log.Printf("one worker (%d) finished with %v", i, err)
-					if err != nil {
-						cancel()
-					}
-					return err
-				}),
-			))
+		runs = append(runs, p)
 	}
 	var cmds []P
 	cmds = append(cmds, Par(Cmap(c.MkMountDirs, workers...)...))

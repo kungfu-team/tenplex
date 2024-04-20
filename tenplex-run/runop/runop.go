@@ -303,27 +303,7 @@ func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
 	for i, w := range workers {
 		p := c.RunCtx(w, ctx)
 		p = job.Tee2Files(fmt.Sprintf("logs/stage-%02d-worker-%02d", stageID, i), p)
-		var err error = errors.New(`failed`)
-		i := i
-		ps = append(ps,
-			seq(
-				proc.FnOk(func() {
-					log.Printf("RUNNING: %d", i)
-				}),
-				proc.Ignore(
-					seq(
-						p,
-						proc.FnOk(func() { err = nil }),
-					),
-				),
-				proc.Fn(func() error {
-					log.Printf("one worker (%d) finished with %v", i, err)
-					if err != nil {
-						cancel()
-					}
-					return err
-				}),
-			))
+		ps = append(ps, p)
 	}
 	var err error = errors.New(`failed`)
 	r = run(cancelgroup.CancelGroup(ps, err, cancel), &stdio)
