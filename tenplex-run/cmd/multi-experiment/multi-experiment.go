@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	golog "log"
+	"log"
 	"os"
-	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -15,56 +15,55 @@ import (
 	"github.com/kungfu-team/tenplex/tenplex-run/listflag"
 	"github.com/kungfu-team/tenplex/tenplex-run/para_config"
 	"github.com/kungfu-team/tenplex/tenplex-run/runop"
+	"github.com/kungfu-team/tenplex/tenplex-run/structflag"
 )
 
 type TrainConfig struct {
 	ModelName      string
 	ModelSize      string
-	Dataset        string
 	BatchSize      int
 	MicroBatchSize int
 }
 
 type Run struct {
-	// MdpConf   MDPConfig
 	TrainConf TrainConfig
 	Schedule  para_config.Schedule
 	Central   bool
 	Redeploy  bool
+	ID        string
 }
-
-// func (r Run) MdpConf() MDPConfig {
-// 	return *r.Schedule[0].ParaConf
-// }
 
 func genJobConf(r *Run) *job.JobConfig {
 	return &job.JobConfig{
+		ID:             r.ID,
 		Framework:      "megatron-lm",
 		Precision:      "fp16",
 		BatchSize:      r.TrainConf.BatchSize,
 		MicroBatchSize: r.TrainConf.MicroBatchSize,
 		SequenceLength: 1024,
-		Dataset: ds.Dataset{
-			Name:     "enwiki",
-			IndexURL: "/data/megatron-lm/gpt-2/enwiki/npzs_seq1024/indices.txt",
-		},
-		Image:         *image,
-		Model:         r.TrainConf.ModelName,
-		ModelSize:     r.TrainConf.ModelSize,
-		TenplexPrefix: path.Join(`/home`, *user, `.tenplex`),
+		Dataset:        cfg.Dataset,
+		Image:          cfg.Image,
+		Model:          r.TrainConf.ModelName,
+		ModelSize:      r.TrainConf.ModelSize,
+		TenplexPrefix:  cfg.TenplexPrefix,
 		Cluster: cluster.Cluster{
 			GPUsPerHost:      4,
 			GPUsPerContainer: 4,
-			Hosts:            *hosts,
+			Hosts:            cfg.Hosts,
 		},
 		// SchedulerIP: "10.10.10.10",
-		Schedule: r.Schedule,
-		MLFSPort: 20010,
-		User:     *user,
-		Central:  r.Central,
-		Redeploy: r.Redeploy,
+		Schedule:    r.Schedule,
+		MLFSPort:    cfg.MLFSPort,
+		User:        cfg.User,
+		Central:     r.Central,
+		Redeploy:    r.Redeploy,
+		ParaConfigs: cfg.ParaConfigs,
+		Seed:        1234,
 	}
 }
+
+var runID int
+var str = strconv.Itoa
 
 func genRuns(trains []TrainConfig, scheduleFiles []string, isCentral []bool) []Run {
 	var runs []Run
@@ -79,8 +78,10 @@ func genRuns(trains []TrainConfig, scheduleFiles []string, isCentral []bool) []R
 					TrainConf: t,
 					Schedule:  sch,
 					Central:   central,
-					Redeploy:  *redeploy,
+					Redeploy:  cfg.Redeploy,
+					ID:        str(runID),
 				}
+				runID++
 				runs = append(runs, r)
 			}
 		}
@@ -88,70 +89,83 @@ func genRuns(trains []TrainConfig, scheduleFiles []string, isCentral []bool) []R
 	return runs
 }
 
-func genMDPs(sizes []int) []para_config.ParallelismConfig {
-	var mdps []para_config.ParallelismConfig
-	for _, s := range sizes {
-		for pp := 1; pp <= s; pp++ {
-			for mp := 1; mp <= s; mp++ {
-				dp := s / (pp * mp)
-				if pp*mp*dp == s {
-					mdps = append(mdps,
-						para_config.ParallelismConfig{
-							PPSize: pp,
-							MPSize: mp,
-							Size:   s,
-						})
-				}
-			}
-		}
-	}
-	return mdps
-}
-
 func genTrainings(modelSizes []string, batchSizes []int, microBatchSizes []int) []TrainConfig {
 	var trains []TrainConfig
-	for _, m := range modelSizes {
-		for _, b := range batchSizes {
-			for _, mb := range microBatchSizes {
+	for _, modelSize := range modelSizes {
+		for _, batchSize := range batchSizes {
+			for _, uBatchSize := range microBatchSizes {
 				trains = append(trains,
-					TrainConfig{"gpt", m, "enwiki", b, mb})
+					TrainConfig{
+						ModelName:      cfg.Model,
+						ModelSize:      modelSize,
+						BatchSize:      batchSize,
+						MicroBatchSize: uBatchSize,
+					})
 			}
 		}
 	}
 	return trains
 }
 
-var (
-	user  = flag.String(`u`, os.Getenv(`USER`), ``)
-	image = flag.String(`image`, ``, ``)
+type MultiRunConfig struct {
+	User           string `flag:"user"`
+	MLFSPort       int    `flag:"mlfs-port"`
+	TenplexPrefix  string `flag:"tenplex-prefix"`
+	Model          string `flag:"model"`
+	Image          string `flag:"image"`
+	Dataset        ds.Dataset
+	ParaConfigFile string `flag:"para-config"`
+	ParaConfigs    para_config.ParaConfig
 
-	hosts           = listflag.String("hosts", nil, "comma separated list of hosts")
-	scheduleFiles   = listflag.String("schedule", nil, "comma separated list of file names")
-	modelSizes      = listflag.String("model-sizes", nil, "comma separated list of file model sizes: medium | large | xl | 2.7B | 6.7B")
-	batchSizes      = listflag.Int("batch-sizes", nil, `comma separated list of ints`)
-	microBatchSizes = listflag.Int("micro-batch-sizes", nil, `comma separated list of ints`)
-	dryrun          = flag.Bool(`dryrun`, false, ``)
-	redeploy        = flag.Bool(`redeploy`, false, ``)
-)
+	Hosts           listflag.Strings `flag:"hosts"`
+	ScheduleFiles   listflag.Strings `flag:"schedule"`
+	ModelSizes      listflag.Strings `flag:"model-sizes"`
+	BatchSizes      listflag.Ints    `flag:"batch-sizes"`
+	MicroBatchSizes listflag.Ints    `flag:"micro-batch-sizes"`
 
-var log = golog.New(os.Stderr, `[multi-run] `, 0)
+	DryRun   bool `flag:"dryrun"`
+	Redeploy bool `flag:"redeploy"`
+}
+
+func (j *MultiRunConfig) ParseParaConfig() {
+	var err error
+	j.ParaConfigs, err = para_config.LoadFile(j.ParaConfigFile)
+	if err != nil {
+		log.Panicf("%s: %v", `ParseParaConfig`, err)
+	}
+	for i, size := range j.ParaConfigs.Sizes() {
+		log.Printf("ParaConfig[%d/%d]: %s", i+1, len(j.ParaConfigs), j.ParaConfigs[size])
+	}
+}
+
+var cfg MultiRunConfig
+
+// var log = golog.New(os.Stderr, `[multi-run] `, 0)
+
+func init() {
+	log.SetPrefix(`[multi-run] `)
+	log.SetFlags(0)
+}
 
 func main() {
+	structflag.RegisterFlags(&cfg, flag.CommandLine)
+	structflag.RegisterFlags(&cfg.Dataset, flag.CommandLine)
 	flag.Parse()
+	cfg.ParseParaConfig()
 
-	log.Printf("Using %d hosts: %q", len(*hosts), *hosts)
-	log.Printf("Using %d schedules: %q", len(*scheduleFiles), *scheduleFiles)
-	log.Printf("Using %d model sizes: %q", len(*modelSizes), *modelSizes)
-	log.Printf("Using %d batch sizes: %v", len(*batchSizes), *batchSizes)
-	log.Printf("Using %d micro batch sizes: %v", len(*microBatchSizes), *microBatchSizes)
+	log.Printf("Using %d hosts: %q", len(cfg.Hosts), cfg.Hosts)
+	log.Printf("Using %d schedules: %q", len(cfg.ScheduleFiles), cfg.ScheduleFiles)
+	log.Printf("Using %d model sizes: %q", len(cfg.ModelSizes), cfg.ModelSizes)
+	log.Printf("Using %d batch sizes: %v", len(cfg.BatchSizes), cfg.BatchSizes)
+	log.Printf("Using %d micro batch sizes: %v", len(cfg.MicroBatchSizes), cfg.MicroBatchSizes)
 
 	var (
 		isCentral = []bool{
 			false,
 			true,
 		}
-		trains = genTrainings(*modelSizes, *batchSizes, *microBatchSizes)
-		runs   = genRuns(trains, *scheduleFiles, isCentral)
+		trains = genTrainings(cfg.ModelSizes, cfg.BatchSizes, cfg.MicroBatchSizes)
+		runs   = genRuns(trains, cfg.ScheduleFiles, isCentral)
 	)
 
 	log.Printf("will run %d experiments", len(runs))
@@ -164,7 +178,7 @@ func runAll(runs []Run) {
 	defer func() { log.Printf("Multi experiment took %s", time.Since(t0)) }()
 
 	for i, r := range runs {
-		n := logName("logs", fmt.Sprintf("%04d", i+1), r.TrainConf.ModelName, r.TrainConf.ModelSize, r.TrainConf.Dataset)
+		n := logName("logs", fmt.Sprintf("%04d", i+1), r.TrainConf.ModelName, r.TrainConf.ModelSize, cfg.Dataset.Name)
 		func() {
 			defer func() {
 				if err := recover(); err != nil {
@@ -178,8 +192,9 @@ func runAll(runs []Run) {
 }
 
 func runOne(n string, r Run) {
+	log.Printf("%s(%s, ?)", `runOne`, n)
 	jc := genJobConf(&r)
-	if *dryrun {
+	if cfg.DryRun {
 		log.Printf("would run %s", n)
 		return
 	}
