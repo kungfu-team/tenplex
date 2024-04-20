@@ -1,6 +1,7 @@
 package runop
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -15,9 +16,11 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/kungfu-team/tenplex/tenplex-run/cancelgroup"
 	"github.com/kungfu-team/tenplex/tenplex-run/counter"
 	"github.com/kungfu-team/tenplex/tenplex-run/job"
 	"github.com/kungfu-team/tenplex/tenplex-run/para_config"
+	"github.com/kungfu-team/tenplex/tenplex-run/timeout"
 
 	// "github.com/kungfu-team/tenplex/tenplex-run/web"
 	"github.com/lgarithm/proc"
@@ -42,7 +45,14 @@ type (
 	Proc = proc.Proc
 )
 
+var DefaultTimeout time.Duration
+
 func RunTraining(jobConf *job.JobConfig, paraConf *para_config.ParallelismConfig, progress, maxStep int, hosts []string) error {
+	if DefaultTimeout > 0 {
+		defer timeout.New(DefaultTimeout, func() {
+			StopContainers(jobConf.Cluster.Hosts, jobConf.User)
+		}).Done()
+	}
 	if !jobConf.NoTenplex {
 		// add dataset to MLFS
 		dpSize := paraConf.GetDPSize()
@@ -276,6 +286,9 @@ func ScalingTraining(jobConf *job.JobConfig) {
 }
 
 func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
+	ctx := context.TODO()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	stageID := job.GetStageId()
 	workers := c.Workers
 
@@ -286,14 +299,14 @@ func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
 		return r.Err
 	}
 	log.Printf("Making mount directories took %s", time.Since(mkMountDirStart))
-
 	var ps []P
 	for i, w := range workers {
-		p := c.Run(w)
+		p := c.RunCtx(w, ctx)
 		p = job.Tee2Files(fmt.Sprintf("logs/stage-%02d-worker-%02d", stageID, i), p)
 		ps = append(ps, p)
 	}
-	r = run(par(ps...), &stdio)
+	var err error = errors.New(`failed`)
+	r = run(cancelgroup.CancelGroup(ps, err, cancel), &stdio)
 	return r.Err
 }
 
