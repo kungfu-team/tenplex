@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/kungfu-team/tenplex/tenplex-run/cancelgroup"
 	"github.com/kungfu-team/tenplex/tenplex-run/counter"
 	"github.com/lgarithm/proc"
 	"github.com/lgarithm/proc/experimental"
@@ -146,7 +147,7 @@ func (c *ContainerCluster) RunTrainMegatronLM() P {
 	// cmds = append(cmds, Par(cmap(CopyBERTVocab, workers...)...))
 	cmds = append(cmds,
 		Term(`[*] `, Echo(`starting containers ...`)),
-		Par(runs...),
+		cancelgroup.CancelGroup(runs, errors.New("worker failed"), cancel),
 		Term(`[*] `, Echo(`started containers`)),
 	)
 	return Seq(cmds...)

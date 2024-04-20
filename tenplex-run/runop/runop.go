@@ -16,6 +16,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/kungfu-team/tenplex/tenplex-run/cancelgroup"
 	"github.com/kungfu-team/tenplex/tenplex-run/counter"
 	"github.com/kungfu-team/tenplex/tenplex-run/job"
 	"github.com/kungfu-team/tenplex/tenplex-run/para_config"
@@ -298,7 +299,6 @@ func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
 		return r.Err
 	}
 	log.Printf("Making mount directories took %s", time.Since(mkMountDirStart))
-
 	var ps []P
 	for i, w := range workers {
 		p := c.RunCtx(w, ctx)
@@ -325,7 +325,8 @@ func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
 				}),
 			))
 	}
-	r = run(par(ps...), &stdio)
+	var err error = errors.New(`failed`)
+	r = run(cancelgroup.CancelGroup(ps, err, cancel), &stdio)
 	return r.Err
 }
 
