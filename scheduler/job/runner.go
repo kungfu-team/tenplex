@@ -38,7 +38,7 @@ type Runner struct {
 	JobConfig     *job.JobConfig
 	Finished      bool
 	Cluster       *cluster.Cluster
-	ParaConfig    *para_config.ParallelismConfig
+	ParaConfig    *para_config.MDP
 	CurStep       int
 	MLFSPort      int
 	TenplexPrefix string
@@ -146,7 +146,7 @@ func (ru *Runner) TransformStateWithCmd(conf *meta.Config, newNumDev int, newClu
 	return nil
 }
 
-func (ru *Runner) TransformState(newParaConf *para_config.ParallelismConfig, newSubCluster *cluster.Cluster) {
+func (ru *Runner) TransformState(newParaConf *para_config.MDP, newSubCluster *cluster.Cluster) {
 	log.Printf("TransformState ru.CurStep %d", ru.CurStep)
 	conf := meta.Config{
 		CkptStructDir:   path.Join(ru.TenplexPrefix, "transformer-checkpoint"),
@@ -154,10 +154,10 @@ func (ru *Runner) TransformState(newParaConf *para_config.ParallelismConfig, new
 		TargetMPDegree:  newParaConf.MPSize,
 		SourcePPDegree:  ru.ParaConfig.PPSize,
 		TargetPPDegree:  newParaConf.PPSize,
-		SourceSize:      ru.ParaConfig.Size,
-		TargetSize:      newParaConf.Size,
-		SourceDPDegree:  ru.ParaConfig.GetDPSize(),
-		TargetDPDegree:  newParaConf.GetDPSize(),
+		SourceSize:      ru.ParaConfig.GetTotalSize(),
+		TargetSize:      newParaConf.GetTotalSize(),
+		SourceDPDegree:  ru.ParaConfig.DPSize,
+		TargetDPDegree:  newParaConf.DPSize,
 		Precision:       ru.Job.Precision,
 		OutputTimestamp: "load",
 		InputTimestamp:  "save",
@@ -175,7 +175,7 @@ func (ru *Runner) TransformState(newParaConf *para_config.ParallelismConfig, new
 		Step:            ru.CurStep,
 	}
 
-	newNumDev := newParaConf.Size
+	newNumDev := newParaConf.GetTotalSize()
 	if err := ru.TransformStateWithCmd(&conf, newNumDev, newSubCluster); err != nil {
 		log.Panicf("TransformStateWithCmd failed: %v", err)
 	}
@@ -189,7 +189,7 @@ func (ru *Runner) TransformState(newParaConf *para_config.ParallelismConfig, new
 	}
 }
 
-func (ru *Runner) TransformAndRun(newParaConf *para_config.ParallelismConfig, newSubClu *cluster.Cluster, wg *sync.WaitGroup, ch *chan string, schedulerAddr string) {
+func (ru *Runner) TransformAndRun(newParaConf *para_config.MDP, newSubClu *cluster.Cluster, wg *sync.WaitGroup, ch *chan string, schedulerAddr string) {
 	start := time.Now()
 	log.Printf("TransformAndRun %s on new cluster: %s", ru.Job.ID, strings.Join(newSubClu.Hosts, ","))
 	ru.TransformState(newParaConf, newSubClu)

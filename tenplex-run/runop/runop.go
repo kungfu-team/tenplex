@@ -47,7 +47,7 @@ type (
 
 var DefaultTimeout time.Duration
 
-func RunTraining(jobConf *job.JobConfig, paraConf *para_config.ParallelismConfig, progress, maxStep int, hosts []string) error {
+func RunTraining(jobConf *job.JobConfig, paraConf *para_config.MDP, progress, maxStep int, hosts []string) error {
 	if DefaultTimeout > 0 {
 		defer timeout.New(DefaultTimeout, func() {
 			StopContainers(jobConf.Cluster.Hosts, jobConf.User)
@@ -55,7 +55,7 @@ func RunTraining(jobConf *job.JobConfig, paraConf *para_config.ParallelismConfig
 	}
 	if !jobConf.NoTenplex {
 		// add dataset to MLFS
-		dpSize := paraConf.GetDPSize()
+		dpSize := paraConf.DPSize
 		addDataStart := time.Now()
 		if err := addDataset(dpSize, progress, jobConf); err != nil {
 			// log.Printf("add dataset failed but IGNORE: %v", err)
@@ -75,14 +75,14 @@ func RunTraining(jobConf *job.JobConfig, paraConf *para_config.ParallelismConfig
 	return nil
 }
 
-func repartition(from, to *para_config.ParallelismConfig, step int, jobConf *job.JobConfig) error {
+func repartition(from, to *para_config.MDP, step int, jobConf *job.JobConfig) error {
 	var round = RoundID.Next()
 	var home = path.Join("/home", jobConf.User)
 	t0 := time.Now()
 	defer func() { log.Printf("State transformation took %s", time.Since(t0)) }()
 	// run state transformation
 	var transformPs []P
-	for i := 0; i < to.Size; i++ {
+	for i := 0; i < to.GetTotalSize(); i++ {
 		hostIdx := i / jobConf.Cluster.GPUsPerHost
 		hostIdx = job.OverwriteHostIdx(hostIdx, jobConf)
 		host := jobConf.Cluster.Hosts[hostIdx]
@@ -128,8 +128,8 @@ func repartition(from, to *para_config.ParallelismConfig, step int, jobConf *job
 			"--target-pp-degree", str(to.PPSize),
 			"--source-mp-degree", str(from.MPSize),
 			"--target-mp-degree", str(to.MPSize),
-			"--source-size", str(from.Size),
-			"--target-size", str(to.Size),
+			"--source-size", str(from.GetTotalSize()),
+			"--target-size", str(to.GetTotalSize()),
 			"--target-rank", str(i),
 			"--source-hosts", srcHo,
 			"--target-hosts", trgHo,
