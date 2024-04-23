@@ -1,9 +1,12 @@
 package job
 
 import (
+	"context"
 	"fmt"
 	"path"
 	"strings"
+
+	"github.com/lgarithm/proc/remote"
 )
 
 const network = `host`
@@ -20,18 +23,6 @@ func mkdir(h string, user string, d string) P {
 	return Ssh(p)
 }
 
-func rmdir(h string, d string) P {
-	p := Proc{
-		Prog: `sudo`,
-		Args: []string{`rm`, `-fr`, d},
-		Host: h,
-	}
-	return Seq(
-		Echo(fmt.Sprintf("rm -fr %s:%s", h, d)),
-		Ssh(p),
-	)
-}
-
 // Options graveyard
 // `--env`, `NCCL_DEBUG=INFO`,
 // `--env`, `NCCL_DEBUG_SUBSYS=ALL`,
@@ -44,6 +35,10 @@ func rmdir(h string, d string) P {
 // `--cap-add`, `IPC_LOCK`,
 
 func (cluster *ContainerCluster) Run(c Container) P {
+	return cluster.RunCtx(c, context.TODO())
+}
+
+func (cluster *ContainerCluster) RunCtx(c Container, ctx context.Context) P {
 	args := []string{`run`}
 	args = append(args, c.MapFlags()...)
 	if cluster.Framework == "deepspeed" {
@@ -73,7 +68,7 @@ func (cluster *ContainerCluster) Run(c Container) P {
 	ps1 := fmt.Sprintf("%s %s ", c.Host, c.IP)
 	return Term(ps1, Seq(
 		Echo(fmt.Sprintf("docker %s", strings.Join(args, ` `))),
-		Ssh(p),
+		remote.SSHCtx(p, ctx),
 	))
 }
 

@@ -26,10 +26,10 @@ type TRDS struct {
 	cache *cache.Cache
 }
 
-func New(idx vfile.IndexedFiles, seed int) *TRDS {
+func New(idx vfile.IndexedFiles, shuffle bool, seed int) *TRDS {
 	n := idx.NumRange()
 	seq := iseq.Iota(n)
-	if seed >= 0 {
+	if shuffle {
 		iseq.Shuffle(seq, seed)
 	}
 	t := &TRDS{

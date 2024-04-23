@@ -1,7 +1,9 @@
 package para_config
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 )
@@ -12,20 +14,41 @@ type ScalingPoint struct {
 	Size int  `json:"size"`
 }
 
+func (s ScalingPoint) String() string {
+	buf := &bytes.Buffer{}
+	if s.Step != nil {
+		fmt.Fprintf(buf, "step: %d", *s.Step)
+	}
+	if s.Time != nil {
+		fmt.Fprintf(buf, "time: %d", *s.Time)
+	}
+	fmt.Fprintf(buf, ", size: %d", s.Size)
+	return buf.String()
+}
+
 var Empty ParallelismConfig // Size == PPSize == MPSize == 0
 
-type Schedule = []ScalingPoint
+type Schedule []ScalingPoint
+
+func (s Schedule) String() string {
+	buf := &bytes.Buffer{}
+	for i, sp := range s {
+		if i > 0 {
+			fmt.Fprintf(buf, ", ")
+		}
+		fmt.Fprintf(buf, "%s", sp)
+	}
+	return `Schedule{` + buf.String() + `}`
+}
 
 func GenSchedule(scheduleFile string) Schedule {
 	s, err := LoadScheduleFile(scheduleFile)
 	if err != nil {
 		log.Panicf("LoadScheduleFile: %v", err)
 	}
-	log.Printf("schedule")
-	for _, p := range s {
-		log.Printf("schedule step %#v", p)
+	for i, p := range s {
+		log.Printf("schedule[%d/%d]: %s", i+1, len(s), p)
 	}
-	log.Printf("schedule end")
 	return s
 }
 

@@ -1,7 +1,6 @@
 package runop
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path"
@@ -16,8 +15,6 @@ import (
 
 var (
 	seq    = proc.Seq
-	echo   = proc.Echo
-	psh    = proc.Psh
 	ignore = proc.Ignore
 	at     = proc.At
 
@@ -39,9 +36,9 @@ func createCluster(jobConf *job.JobConfig, paraConf *para_config.ParallelismConf
 
 		TrainIters: maxTrainStep,
 
-		LogInterval:  5,
-		SaveInterval: 500,
-		EvalInterval: 500,
+		LogInterval:  10,
+		SaveInterval: 5000,
+		EvalInterval: 10000,
 
 		Precision: jobConf.Precision,
 	}
@@ -57,7 +54,7 @@ func createCluster(jobConf *job.JobConfig, paraConf *para_config.ParallelismConf
 
 func dockerPull(image, user string) func(string) P {
 	return func(h string) P {
-		pc := proc.At(user, h).PC // TODO: add admin user
+		pc := at(user, h).PC // TODO: add admin user
 		pc = proc.WithTerm(pc)
 		pc = experimental.WithLog(pc)
 		return pc(`docker`, `pull`, image)
@@ -85,32 +82,12 @@ func SetupSwarm(jobConf *job.JobConfig) {
 	}
 }
 
-func copyDir(uh proc.UserHost, local, remote string) P {
-	p0 := Proc{
-		Prog: `rsync`,
-		Args: []string{`-r`, `--exclude=.git`, local, uh.User + `@` + uh.Host + ":" + remote},
-	}
-	return seq(
-		psh(p0),
-		echo("done rsync: "+local+" to "+uh.Host+":"+remote),
-	)
-}
-
-func cloneTransformerCkpts(host, user string) P {
+func cloneTransformerCkpts(rpc proc.CreatePFn) P {
 	dir := "~/.tenplex/transformer-checkpoint"
-	pRm := Proc{
-		Prog: `rm`,
-		Args: []string{`-rf`, dir},
-		Host: host,
-		User: user,
-	}
-	pClone := Proc{
-		Prog: `git`,
-		Args: []string{`clone`, `git@github.com:kungfu-team/transformer-checkpoint.git`, dir},
-		Host: host,
-		User: user,
-	}
-	return seq(ignore(ssh(pRm)), ssh(pClone))
+	return seq(
+		ignore(rpc(`rm`, `-rf`, dir)),
+		rpc(`git`, `clone`, `git@github.com:kungfu-team/transformer-checkpoint.git`, dir),
+	)
 }
 
 func PrepareVMs(jobConf *job.JobConfig) {
@@ -119,25 +96,13 @@ func PrepareVMs(jobConf *job.JobConfig) {
 	tenplexBinDir := path.Join(tenplexDir, "bin")
 	var ps []P
 	for _, host := range jobConf.Cluster.Hosts {
-		prefix := fmt.Sprintf("[%s]/%s ", host, `parepare--machines`)
-		rm := Proc{
-			Prog: `rm`,
-			Args: []string{`-r`, tenplexBinDir},
-			Host: host,
-			User: jobConf.User,
-		}
-		mk := Proc{
-			Prog: `mkdir`,
-			Args: []string{`-p`, tenplexBinDir},
-			Host: host,
-			User: jobConf.User,
-		}
+		rpc := at(jobConf.User, host).PC
 		s := seq(
-			ignore(ssh(rm)),
-			ssh(mk),
-			term(`clone: `, cloneTransformerCkpts(host, jobConf.User)),
+			ignore(rpc(`rm`, `-r`, tenplexBinDir)),
+			rpc(`mkdir`, `-p`, tenplexBinDir),
+			term(`clone: `, cloneTransformerCkpts(rpc)),
 		)
-		ps = append(ps, term(prefix, s))
+		ps = append(ps, term(ps1(`PrepareVMs`, host), s))
 	}
 
 	if r := run(par(ps...), &stdio); r.Err != nil {
@@ -148,10 +113,9 @@ func PrepareVMs(jobConf *job.JobConfig) {
 func StopContainers(hosts []string, user string) {
 	var ps []P
 	for _, host := range hosts {
-		prefix := fmt.Sprintf("[%s]/%s ", host, `stop-containers`)
 		script := `docker ps -f 'name=trainer' -q | xargs docker stop`
 		p := runScript(at(user, host), script, `stop-container.sh`, false)
-		ps = append(ps, term(prefix, ignore(p)))
+		ps = append(ps, term(ps1(`StopContainers`, host), ignore(p)))
 	}
 	if r := run(par(ps...), &stdio); r.Err != nil {
 		panic(r.Err)
@@ -162,27 +126,15 @@ func CleanMachines(jobConf *job.JobConfig) {
 	StopContainers(jobConf.Cluster.Hosts, jobConf.User)
 	var ps []P
 	for _, host := range jobConf.Cluster.Hosts {
-		prefix := fmt.Sprintf("[%s]/%s ", host, `clean-machines`)
-
-		// clean training directory
-		p := Proc{
-			Prog: `sudo`,
-			Args: []string{`rm -r ~/.tenplex/training/*`},
-			Host: host,
-			User: jobConf.User,
-		}
-		ps = append(ps, term(prefix, ignore(ssh(p))))
-
-		// restart MLFSd
-		p = Proc{
-			Prog: `sudo`,
-			Args: []string{`systemctl restart mlfs`},
-			Host: host,
-			User: jobConf.User,
-		}
-		ps = append(ps, term(prefix, ignore(ssh(p))))
+		prefix := ps1(`CleanMachines`, host)
+		rpc := at(jobConf.User, host).PC
+		ps = append(ps,
+			// clean training directory
+			term(prefix, ignore(rpc(`sudo`, `rm`, `-r`, `~/.tenplex/training/*`))),
+			// restart MLFSd
+			term(prefix, ignore(rpc(`sudo`, `systemctl`, `restart`, `mlfs`))),
+		)
 	}
-
 	if r := run(par(ps...), &stdio); r.Err != nil {
 		panic(r.Err)
 	}
@@ -207,6 +159,7 @@ func collectLogs(jobConf *job.JobConfig) {
 
 func Main(jobConf *job.JobConfig) {
 	RoundID.Reset()
+	job.Stage.Reset()
 	CleanMachines(jobConf)
 	// SetupSwarm(jobConf)
 	PrepareVMs(jobConf)

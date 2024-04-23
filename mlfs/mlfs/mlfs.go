@@ -226,7 +226,7 @@ func (e *MLFS) Mount(req *MountRequest) error {
 	if !ok {
 		return errNotFound
 	}
-	ds := trds.New(dsidx.idx, req.Seed)
+	ds := trds.New(dsidx.idx, !req.NoShuffle, req.Seed)
 	ds.SetCache(e.cache)
 	if err := ds.Mount(e.tree, req.JobID, req.Progress, req.GlobalBatchSize, req.ClusterSize, req.MinSamplesPerFile); err != nil {
 		return err

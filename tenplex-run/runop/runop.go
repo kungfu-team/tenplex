@@ -1,6 +1,7 @@
 package runop
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -15,9 +16,12 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/kungfu-team/tenplex/tenplex-run/cancelgroup"
 	"github.com/kungfu-team/tenplex/tenplex-run/counter"
 	"github.com/kungfu-team/tenplex/tenplex-run/job"
 	"github.com/kungfu-team/tenplex/tenplex-run/para_config"
+	"github.com/kungfu-team/tenplex/tenplex-run/timeout"
+
 	// "github.com/kungfu-team/tenplex/tenplex-run/web"
 	"github.com/lgarithm/proc"
 )
@@ -32,6 +36,8 @@ var (
 	str   = strconv.Itoa
 	ssh   = proc.SSH
 	term  = proc.Term
+
+	ps1 = func(msg, host string) string { return fmt.Sprintf("$%s@%s ", msg, host) }
 )
 
 type (
@@ -39,28 +45,21 @@ type (
 	Proc = proc.Proc
 )
 
-func train(c *job.ContainerCluster, jobConf *job.JobConfig) error {
-	if r := run(c.Stop(), &stdio); r.Err != nil {
-		// log.Panic(r.Err)
-		return r.Err
-	}
-	log.Printf("old containers cleaned")
-	log.Printf("starting train workers")
-	if r := run(c.RunTrain(jobConf), &stdio); r.Err != nil {
-		// log.Panic(r.Err)
-		return r.Err
-	}
-	return nil
-}
+var DefaultTimeout time.Duration
 
 func RunTraining(jobConf *job.JobConfig, paraConf *para_config.ParallelismConfig, progress, maxStep int, hosts []string) error {
+	if DefaultTimeout > 0 {
+		defer timeout.New(DefaultTimeout, func() {
+			StopContainers(jobConf.Cluster.Hosts, jobConf.User)
+		}).Done()
+	}
 	if !jobConf.NoTenplex {
 		// add dataset to MLFS
-		dpSize := paraConf.Size / (paraConf.PPSize * paraConf.MPSize)
+		dpSize := paraConf.GetDPSize()
 		addDataStart := time.Now()
 		if err := addDataset(dpSize, progress, jobConf); err != nil {
-			log.Printf("add dataset failed but IGNORE: %v", err)
-			// return err
+			// log.Printf("add dataset failed but IGNORE: %v", err)
+			return err
 		}
 		log.Printf("Adding dataset with DP %d took %s", dpSize, time.Since(addDataStart))
 	}
@@ -261,8 +260,9 @@ func ScalingTraining(jobConf *job.JobConfig) {
 			stopSer.FinishWG.Add(1)
 			go func() {
 				if err := RunTraining(jobConf, &newPara, progress, maxStep, hosts); err != nil {
-					log.Printf("Training failed. Stopping containers")
+					log.Printf("Training failed: %v. Stopping containers", err)
 					StopContainers(jobConf.Cluster.Hosts, jobConf.User)
+					// TODO: make it fail
 				}
 				stopSer.FinishWG.Done()
 			}()
@@ -277,23 +277,18 @@ func ScalingTraining(jobConf *job.JobConfig) {
 			atomic.StoreInt32(&stopSer.Stopped, 0)
 		} else {
 			if err := RunTraining(jobConf, &newPara, progress, maxStep, hosts); err != nil {
-				log.Printf("Training failed. Stopping containers")
+				log.Printf("Training failed: %v. Stopping containers", err)
 				StopContainers(jobConf.Cluster.Hosts, jobConf.User)
+				break // TODO: make it fail
 			}
 		}
 	}
 }
 
-func runP(p P, finish chan string) {
-	r := run(p, &stdio)
-	if r.Err != nil {
-		// log.Panicf("running P failed with %v", r.Err)
-		log.Printf("running P failed with %v", r.Err)
-	}
-	finish <- "finished"
-}
-
 func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
+	ctx := context.TODO()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	stageID := job.GetStageId()
 	workers := c.Workers
 
@@ -304,18 +299,15 @@ func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
 		return r.Err
 	}
 	log.Printf("Making mount directories took %s", time.Since(mkMountDirStart))
-
-	finish := make(chan string)
+	var ps []P
 	for i, w := range workers {
-		p := c.Run(w)
+		p := c.RunCtx(w, ctx)
 		p = job.Tee2Files(fmt.Sprintf("logs/stage-%02d-worker-%02d", stageID, i), p)
-		go runP(p, finish)
+		ps = append(ps, p)
 	}
-
-	<-finish
-	StopContainers(jobConf.Cluster.Hosts, jobConf.User)
-
-	return nil
+	var err error = errors.New(`failed`)
+	r = run(cancelgroup.CancelGroup(ps, err, cancel), &stdio)
+	return r.Err
 }
 
 func getStep(j *job.JobConfig, sp para_config.ScalingPoint) int {

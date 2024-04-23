@@ -26,8 +26,10 @@ class MLFSDataset(torch.utils.data.Dataset):
         with open(path, "r", encoding="utf-8") as list_file:
             self.data_file_paths = list_file.readlines()
 
+        self.index_files_cache = {}
         self.offset = 0
         self.use_index_file(0)
+        self.samples_per_file = self.num_samples
 
     def use_index_file(self, file_idx: int):
         self.current_file_idx = file_idx
@@ -49,25 +51,33 @@ class MLFSDataset(torch.utils.data.Dataset):
             splitted = line.split(" ")
             self.indices.append((int(splitted[0]), int(splitted[1])))
 
+        self.index_files_cache[file_idx] = self.indices
+
     def __len__(self):
         return self.indices[-1][1]
 
+    def read_npz(self, idx):
+        file_idx = idx // self.samples_per_file
+        sample_idx = idx % self.samples_per_file
 
-class BERTDataset(MLFSDataset):
+        if file_idx in self.index_files_cache:
+            indices = self.index_files_cache[file_idx]
+        else:
+            self.use_index_file(file_idx)
+            indices = self.indices
 
-    def __getitem__(self, idx):
-        file_idx = idx - self.offset
-        if file_idx >= self.num_samples:
-            self.offset = self.offset + self.num_samples
-            self.use_index_file(self.current_file_idx + 1)
-            file_idx = idx - self.offset
-
-        file_indices = self.indices[file_idx]
-        size = file_indices[1] - file_indices[0]
+        sample_indices = indices[sample_idx]
+        size = sample_indices[1] - sample_indices[0]
         with open(self.npzs_path, "rb") as npzs_file:
-            npzs_file.seek(self.indices[file_idx][0])
+            npzs_file.seek(sample_indices[0])
             npz_sample = npzs_file.read(size)
 
+        return npz_sample
+
+
+class BERTDataset(MLFSDataset):
+    def __getitem__(self, idx):
+        npz_sample = self.read_npz(idx)
         buf = io.BytesIO(npz_sample)
         sample = np.load(buf)
 
@@ -87,39 +97,8 @@ class BERTDataset(MLFSDataset):
 
 
 class GPTDataset(MLFSDataset):
-
     def __getitem__(self, idx):
-        try:
-            return self.f(idx)
-        except Exception as e:
-            # dump here
-            print(f'self.offset: {self.offset}')
-            print(f'idx: {idx}')
-            file_idx = idx - self.offset
-            print(f'file_idx: {file_idx}')
-            raise e
-
-    def f(self, idx):
-        file_idx = idx - self.offset
-        if file_idx < 0:
-            raise ValueError("file index {file_id} < 0, offset {self.offset}")
-        if file_idx >= self.num_samples:
-            print(f'moving to next file: {self.current_file_idx} + 1')
-            self.offset = self.offset + self.num_samples
-            self.use_index_file(self.current_file_idx + 1)
-            print(f'moved to next file: {self.current_file_idx} with num samples {self.num_samples}')
-            file_idx = idx - self.offset
-            if file_idx >= self.num_samples:
-                raise ValueError('move next is not enough: file_idx >= self.num_samples')
-        if file_idx > len(self):
-            raise ValueError(f"file index larger length {len(self)}")
-
-        file_indices = self.indices[file_idx]
-        size = file_indices[1] - file_indices[0]
-        with open(self.npzs_path, "rb") as npzs_file:
-            npzs_file.seek(self.indices[file_idx][0])
-            npz_sample = npzs_file.read(size)
-
+        npz_sample = self.read_npz(idx)
         buf = io.BytesIO(npz_sample)
         sample = np.load(buf)
 

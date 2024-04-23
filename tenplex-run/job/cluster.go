@@ -2,10 +2,13 @@ package job
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path"
 
+	"github.com/kungfu-team/tenplex/tenplex-run/cancelgroup"
+	"github.com/kungfu-team/tenplex/tenplex-run/counter"
 	"github.com/lgarithm/proc"
 	"github.com/lgarithm/proc/experimental"
 	"github.com/lgarithm/proc/iostream"
@@ -99,19 +102,20 @@ func (c *ContainerCluster) RunTrain(jConf *JobConfig) P {
 	return nil
 }
 
-func genCounter() func() int {
-	var id int
-	return func() int { x := id; id++; return x }
-}
-
-var GetStageId = genCounter()
+var (
+	Stage      = counter.New()
+	GetStageId = Stage.Next
+)
 
 func (c *ContainerCluster) RunTrainMegatronLM() P {
+	ctx := context.TODO()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	stageID := GetStageId()
 	workers := c.Workers
 	var runs []P
 	for i, w := range workers {
-		p := c.Run(w)
+		p := c.RunCtx(w, ctx)
 		p = Tee2Files(fmt.Sprintf("logs/stage-%02d-worker-%02d", stageID, i), p)
 		runs = append(runs, p)
 	}
@@ -120,7 +124,7 @@ func (c *ContainerCluster) RunTrainMegatronLM() P {
 	// cmds = append(cmds, Par(cmap(CopyBERTVocab, workers...)...))
 	cmds = append(cmds,
 		Term(`[*] `, Echo(`starting containers ...`)),
-		Par(runs...),
+		cancelgroup.CancelGroup(runs, errors.New("worker failed"), cancel),
 		Term(`[*] `, Echo(`started containers`)),
 	)
 	return Seq(cmds...)

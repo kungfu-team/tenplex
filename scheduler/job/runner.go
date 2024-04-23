@@ -132,7 +132,7 @@ func (ru *Runner) TransformStateWithCmd(conf *meta.Config, newNumDev int, newClu
 		c.VocabSize = ru.Job.VocabSize // remove?
 		p := Proc{
 			Prog: "tenplex-state-transformer",
-			Args: structflag.ToArgs(&c),
+			Args: structflag.ToGoArgs(&c),
 			Host: host,
 		}
 		prefix := fmt.Sprintf("[%s %d Transform] ", host, i)
@@ -156,8 +156,8 @@ func (ru *Runner) TransformState(newParaConf *para_config.ParallelismConfig, new
 		TargetPPDegree:  newParaConf.PPSize,
 		SourceSize:      ru.ParaConfig.Size,
 		TargetSize:      newParaConf.Size,
-		SourceDPDegree:  ru.ParaConfig.Size / (ru.ParaConfig.MPSize * ru.ParaConfig.PPSize),
-		TargetDPDegree:  newParaConf.Size / (newParaConf.MPSize * newParaConf.PPSize),
+		SourceDPDegree:  ru.ParaConfig.GetDPSize(),
+		TargetDPDegree:  newParaConf.GetDPSize(),
 		Precision:       ru.Job.Precision,
 		OutputTimestamp: "load",
 		InputTimestamp:  "save",

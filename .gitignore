@@ -1,8 +1,9 @@
+*.egg-info
+*.log
 .DS_Store
 .mypy_cache
+/training
 __pycache__
-build
 bin
-*.log
-*.egg-info
+build
 events.out.tfevents.*

@@ -179,6 +179,7 @@ def main():
     tenplex_dp = np.load("./data/tenplex_dp_loss.npz")
     tenplex_dp = dict(tenplex_dp)
     pytorch = np.load("./data/pytorch_loss.npz")
+
     pytorch = dict(pytorch)
 
     time_key = "wall_time"
@@ -239,6 +240,7 @@ def main():
     plot_loss(tenplex, ax, sys, "solid", "black", use_step=use_step)
     print("plot Tenplex DP only")
     plot_loss(tenplex_dp, ax, f"{sys} DP", "dashed", "tab:red", use_step=use_step)
+
     print("plot Pytorch")
     plot_loss(
         pytorch,

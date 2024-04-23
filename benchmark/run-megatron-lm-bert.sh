@@ -1,26 +1,33 @@
 #!/bin/bash
 set -e
 
-make
+. $(dirname $0)/common.sh
 
-    # -image "kungfu.azurecr.io/mw-megatron-lm-no-scheduler:latest" \
-    # -image "kungfu.azurecr.io/mw-megatron-lm-no-scheduler-gpt-torch-save:latest" \
-    # -index-url "https://tenplex.blob.core.windows.net/tenplexcontainer/gpt_enwiki_indices.txt" \
-./bin/tenplex-run \
-    -image "kungfu.azurecr.io/mw-megatron-lm-no-scheduler:latest" \
-    -framework "megatron-lm" \
-    -model "bert" \
-    -model-size "large" \
-    -dataset "openwebtext" \
-    -batch-size 128 \
-    -micro-batch-size 8 \
-    -precision "fp16" \
-    -hosts "10.10.10.1" \
-    -index-url "/data/megatron-lm/bert/openwebtext/npzs_seq1024/indices.txt" \
-    -tenplex-prefix "$HOME/.tenplex" \
-    -schedule-file "$(pwd)/schedule.json" \
-    -mlfs-port 20010 \
-    -gpu-per-host 4 \
-    -gpu-per-container 1 \
-    -user marcel \
-    -seq-length 1024 > tenplex-run.log 2>&1
+list_hosts() {
+    echo "10.10.10.1"
+    echo "10.10.10.2"
+    echo "10.10.10.3"
+    echo "10.10.10.4"
+}
+
+flags() {
+    base_flags
+
+    echo -framework "megatron-lm"
+    echo -model "bert"
+    echo -model-size "large"
+    echo -dataset "openwebtext"
+    echo -batch-size 128
+    echo -micro-batch-size 8
+    echo -precision "fp16"
+    echo -hosts "$(join $(list_hosts))"
+    echo -index-url "/data/megatron-lm/bert/openwebtext/npzs_seq1024/indices.txt"
+    echo -schedule-file "$(dirname $0)/schedule.json"
+    echo -para-config "$(dirname $0)/para-config.json"
+    echo -gpu-per-host 4
+    echo -gpu-per-container 4
+    echo -seq-length 1024
+    echo -jobid bert
+}
+
+tenplex-run $(flags) >bert.log 2>&1
