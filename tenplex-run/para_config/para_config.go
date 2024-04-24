@@ -3,6 +3,7 @@ package para_config
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -50,6 +51,8 @@ func (p ParaConfig) Sizes() []int {
 	return ss
 }
 
+var errInvalidMDP = errors.New(`invalid MDP`)
+
 func LoadFile(filename string) (ParaConfig, error) {
 	f, err := os.Open(filename)
 	if err != nil {
@@ -58,6 +61,11 @@ func LoadFile(filename string) (ParaConfig, error) {
 	var config ParaConfig
 	if err := json.NewDecoder(f).Decode(&config); err != nil {
 		return nil, err
+	}
+	for s, mdp := range config {
+		if s != mdp.GetTotalSize() {
+			return nil, errInvalidMDP
+		}
 	}
 	return config, nil
 }

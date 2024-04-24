@@ -357,7 +357,8 @@ func QueryIter(jobID string, host string, port int) (int, error) {
 		return 0, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return 0, fmt.Errorf("response failed with status code: %d", resp.StatusCode)
+		bs, _ := io.ReadAll(resp.Body)
+		return 0, fmt.Errorf("response failed with: %s (%s)", resp.Status, string(bs))
 	}
 	iter, err := strconv.Atoi(string(body))
 	if err != nil {
