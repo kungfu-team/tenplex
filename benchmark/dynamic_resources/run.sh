@@ -31,22 +31,22 @@ common_flags() {
 tenplex_flags() {
     common_flags
     echo -jobid dyn-res-ten
-    echo -schedule-file "$(pwd)/tenplex-schedule.json"
-    echo -para-config "$(pwd)/tenplex-para-config.json"
+    echo -schedule-file "$(dirname $0)/schedule.json"
+    echo -para-config "$(dirname $0)/tenplex-para-config.json"
 }
 
 tenplex_dp_flags() {
     common_flags
     echo -jobid dyn-res-tdp
-    echo -schedule-file "$(pwd)/pytorch-schedule.json"
-    echo -para-config "$(pwd)/pytorch-para-config.json"
+    echo -schedule-file "$(dirname $0)/schedule.json"
+    echo -para-config "$(dirname $0)/pytorch-para-config.json"
 }
 
 pytorch_flags() {
     common_flags
     echo -jobid dyn-res-pyt
-    echo -schedule-file "$(pwd)/pytorch-schedule.json"
-    echo -para-config "$(pwd)/pytorch-para-config.json"
+    echo -schedule-file "$(dirname $0)/schedule.json"
+    echo -para-config "$(dirname $0)/pytorch-para-config.json"
     echo -no-tenplex
 }
 
