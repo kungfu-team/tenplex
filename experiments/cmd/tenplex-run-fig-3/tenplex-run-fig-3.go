@@ -92,9 +92,9 @@ func genRuns(trains []TrainConfig, MDPSizes []int) []Run {
 		for _, pc := range pcs {
 			r := Run{
 				TrainConf: t,
-				Schedule:  oneStageSchedule(pc.Size),
+				Schedule:  oneStageSchedule(pc.GetTotalSize()),
 				ParaConfigs: para_config.ParaConfig{
-					pc.Size: pc,
+					pc.GetTotalSize(): pc,
 				},
 				ID: join(t.ID(), pc.ID()),
 			}
@@ -212,26 +212,23 @@ func logName(ss ...string) string { return join(ss...) + `.log` }
 
 func join(ss ...string) string { return strings.Join(ss, `-`) }
 
-func genMDPs(sizes []int) []para_config.ParallelismConfig {
-	var mdps []para_config.ParallelismConfig
+func genMDPs(sizes []int) []para_config.MDP {
+	var mdps []para_config.MDP
 	for _, s := range sizes {
 		mdps = append(mdps, genMDP(s)...)
 	}
 	return mdps
 }
 
-func genMDP(size int) []para_config.ParallelismConfig {
-	var mdps []para_config.ParallelismConfig
+func genMDP(size int) []para_config.MDP {
+	var mdps []para_config.MDP
 	for pp := 1; pp <= size; pp++ {
 		for mp := 1; mp <= size; mp++ {
-			// if pp == 1 || mp == 1 {
-			// 	continue
-			// }
 			if dp := size / (pp * mp); pp*mp*dp == size {
-				mdp := para_config.ParallelismConfig{
+				mdp := para_config.MDP{
 					PPSize: pp,
 					MPSize: mp,
-					Size:   size,
+					DPSize: dp,
 				}
 				mdps = append(mdps, mdp)
 			}

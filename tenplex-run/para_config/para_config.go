@@ -3,31 +3,32 @@ package para_config
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"sort"
 )
 
-type ParallelismConfig struct {
-	Size   int `json:"size"`
-	PPSize int `json:"pp_size"`
+type MDP struct {
 	MPSize int `json:"mp_size"`
+	DPSize int `json:"dp_size"`
+	PPSize int `json:"pp_size"`
 }
 
-func (c ParallelismConfig) GetDPSize() int {
-	return c.Size / (c.PPSize * c.MPSize)
+func (c MDP) GetTotalSize() int {
+	return c.MPSize * c.DPSize * c.PPSize
 }
 
-func (c ParallelismConfig) ID() string {
-	return fmt.Sprintf("mp%d-dp%d-pp%d", c.MPSize, c.GetDPSize(), c.PPSize)
+func (c MDP) ID() string {
+	return fmt.Sprintf("mp%d-dp%d-pp%d", c.MPSize, c.DPSize, c.PPSize)
 }
 
-func (c ParallelismConfig) String() string {
-	return fmt.Sprintf("size:%d = pp:%d x mp:%d x dp:%d", c.Size, c.PPSize, c.MPSize, c.GetDPSize())
+func (c MDP) String() string {
+	return fmt.Sprintf("size:%d = mp:%d x dp:%d x pp:%d", c.GetTotalSize(), c.MPSize, c.DPSize, c.PPSize)
 }
 
-type ParaConfig map[int]ParallelismConfig
+type ParaConfig map[int]MDP
 
 func (pc ParaConfig) String() string {
 	buf := &bytes.Buffer{}
@@ -50,6 +51,8 @@ func (p ParaConfig) Sizes() []int {
 	return ss
 }
 
+var errInvalidMDP = errors.New(`invalid MDP`)
+
 func LoadFile(filename string) (ParaConfig, error) {
 	f, err := os.Open(filename)
 	if err != nil {
@@ -58,6 +61,11 @@ func LoadFile(filename string) (ParaConfig, error) {
 	var config ParaConfig
 	if err := json.NewDecoder(f).Decode(&config); err != nil {
 		return nil, err
+	}
+	for s, mdp := range config {
+		if s != mdp.GetTotalSize() {
+			return nil, errInvalidMDP
+		}
 	}
 	return config, nil
 }
