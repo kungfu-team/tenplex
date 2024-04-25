@@ -12,21 +12,22 @@ func GenMegatronLMBERTCmd(c MDPConfig, rank int, jobID string, host string, jCon
 		`base`:  TFSize(12, 768, 12),
 		`large`: TFSize(24, 1024, 16),
 	}
-	bert_args := []string{
-		`--seq-length`, str(1024), // default: 512
-		`--max-position-embeddings`, str(1024), // default: 512
-		`--lr`, `0.0001`,
-		`--lr-decay-iters`, str(10000),
-		`--train-iters`, str(c.TrainIters),
-		`--min-lr`, `0.00001`,
-		`--lr-warmup-fraction`, `0.01`,
-		`--micro-batch-size`, str(jConf.MicroBatchSize), // default: 4
-		`--global-batch-size`, str(jConf.BatchSize), // default: 32
-		`--vocab-file`, `/workspace/Megatron-LM/vocab/bert-large-uncased-vocab.txt`,
-		`--split`, `949,50,1`,
-		`--data-path`, `/data/dataset/bert_text_sentence`,
-		`--distributed-backend`, `nccl`,
+	mlm := MegatronLM{
+		SeqLength:             1024, // default: 512
+		MaxPositionEmbeddings: 1024, // default: 512
+		LR:                    0.0001,
+		LRDecayIters:          10000,
+		TrainIters:            c.TrainIters,
+		MinLR:                 0.00001,
+		LRWarmupFraction:      0.01,
+		MicroBatchSize:        jConf.MicroBatchSize,
+		GlobalBatchSize:       jConf.BatchSize,
+		VocabFile:             `/workspace/Megatron-LM/vocab/bert-large-uncased-vocab.txt`,
+		Split:                 `949,50,1`,
+		DataPath:              `/data/dataset/bert_text_sentence`,
+		DistributedBackend:    `nccl`,
 	}
+	bert_args := mlm.ToPyArgs()
 	if ts, ok := sizes[jConf.ModelSize]; ok {
 		bert_args = append(bert_args, ts.ToPyArgs()...)
 	} else {

@@ -1,6 +1,10 @@
 package job
 
-import "strconv"
+import (
+	"strconv"
+
+	"github.com/kungfu-team/tenplex/tenplex-run/structflag"
+)
 
 var str = strconv.Itoa
 
@@ -22,17 +26,13 @@ type MDPConfig struct {
 type GenCmdFunc func(c MDPConfig, rank int, jobID string, host string, jConf *JobConfig) []string
 
 type TransformerSize struct {
-	Layers         int
-	HiddenSize     int
-	AttentionHeads int
+	Layers         int `flag:"num-layers"`
+	HiddenSize     int `flag:"hidden-size"`
+	AttentionHeads int `flag:"num-attention-heads"`
 }
 
 func (s TransformerSize) ToPyArgs() []string {
-	return []string{
-		`--num-layers`, str(s.Layers),
-		`--hidden-size`, str(s.HiddenSize),
-		`--num-attention-heads`, str(s.AttentionHeads),
-	}
+	return structflag.ToArgs(&s, structflag.LongFlagName)
 }
 
 func TFSize(nl, hs, ah int) TransformerSize {

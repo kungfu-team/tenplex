@@ -8,25 +8,29 @@ func GenMegatronLMGPTCmd(c MDPConfig, rank int, jobID string, host string, jConf
 	}
 	cmd = append(cmd, jConf.DistFlags(c, rank)...)
 	cmd = append(cmd, `/workspace/Megatron-LM/pretrain_gpt.py`)
-	gpt_args := []string{
-		`--micro-batch-size`, str(jConf.MicroBatchSize),
-		`--global-batch-size`, str(jConf.BatchSize),
-		`--seq-length`, `1024`,
-		`--max-position-embeddings`, `1024`,
-		`--train-iters`, str(c.TrainIters),
-		`--lr-decay-iters`, `10000`,
-		`--lr-warmup-fraction`, `0.01`,
-		`--vocab-file`, `/workspace/Megatron-LM/vocab/gpt2-vocab.json`,
+	mlm := MegatronLM{
+		MicroBatchSize:        jConf.MicroBatchSize,
+		GlobalBatchSize:       jConf.BatchSize,
+		SeqLength:             1024,
+		MaxPositionEmbeddings: 1024,
+		TrainIters:            c.TrainIters,
+		LRDecayIters:          10000,
+		LRWarmupFraction:      0.01,
+		VocabFile:             `/workspace/Megatron-LM/vocab/gpt2-vocab.json`,
+		Split:                 `949,50,1`,
+		LR:                    0.00015,
+		MinLR:                 0.00001,
+		DataPath:              `/data/dataset/gpt-2/my-gpt2_text_document`,
+		DistributedBackend:    `nccl`,
+	}
+	gpt_args := mlm.ToPyArgs()
+	gpt_args = append(gpt_args,
 		`--merge-file`, `/workspace/Megatron-LM/vocab/gpt2-merges.txt`,
 		`--data-impl`, `mmap`,
-		`--split`, `949,50,1`,
-		`--lr`, `0.00015`,
 		`--lr-decay-style`, `cosine`,
-		`--min-lr`, `1.0e-5`,
 		`--weight-decay`, `1e-2`,
 		`--clip-grad`, `1.0`,
-		`--lr-warmup-fraction`, `.01`,
-	}
+	)
 	var sizes = map[string]TransformerSize{
 		`medium`: TFSize(24, 1024, 16),
 		`large`:  TFSize(24, 1536, 16),
@@ -40,12 +44,6 @@ func GenMegatronLMGPTCmd(c MDPConfig, rank int, jobID string, host string, jConf
 		log.Fatalf("Model size not matching %s", jConf.ModelSize)
 	}
 	cmd = append(cmd, gpt_args...)
-	args := []string{
-		`--data-path`, `/data/dataset/gpt-2/my-gpt2_text_document`,
-		// `--DDP-impl`, `local`,
-		`--distributed-backend`, `nccl`,
-	}
-	cmd = append(cmd, args...)
 	cmd = append(cmd, jConf.LogFlags(c)...)
 	cmd = append(cmd, jConf.TenplexFlags(c, host)...)
 	cmd = append(cmd, jConf.OtherFlags(c)...)

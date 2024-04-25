@@ -2,6 +2,7 @@ package structflag
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"reflect"
 	"strconv"
@@ -40,6 +41,12 @@ func registerFlag(v *reflect.Value, name string, def string, flag *flag.FlagSet)
 		flag.IntVar(p, name, 0, ``)
 		if len(def) > 0 {
 			*p, _ = strconv.Atoi(def)
+		}
+	case reflect.Float64:
+		p := (*float64)(v.Addr().UnsafePointer())
+		flag.Float64Var(p, name, 0, ``)
+		if len(def) > 0 {
+			fmt.Sscanf(def, "%f", p)
 		}
 	case reflect.Bool:
 		p := (*bool)(v.Addr().UnsafePointer())
@@ -83,6 +90,9 @@ func toArg(v *reflect.Value, name string, toFlag flagName) []string {
 	case reflect.Int:
 		p := (*int)(v.Addr().UnsafePointer())
 		return []string{flg, str(*p)}
+	case reflect.Float64:
+		p := (*float64)(v.Addr().UnsafePointer())
+		return []string{flg, fmt.Sprintf("%f", *p)}
 	case reflect.Bool:
 		p := (*bool)(v.Addr().UnsafePointer())
 		if *p {
