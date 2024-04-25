@@ -66,9 +66,7 @@ func (j *JobConfig) ParseParaConfig() {
 	if err != nil {
 		log.Panicf("%s: %v", `ParseParaConfig`, err)
 	}
-	for i, size := range j.ParaConfigs.Sizes() {
-		log.Printf("ParaConfig[%d/%d]: %s", i+1, len(j.ParaConfigs), j.ParaConfigs[size])
-	}
+	log.Printf("%s", j.ParaConfigs)
 }
 
 func (j *JobConfig) ParseSchedule() {
