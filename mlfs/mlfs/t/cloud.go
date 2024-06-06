@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/kungfu-team/tenplex/mlfs/formats/tfrecord"
 	"github.com/kungfu-team/tenplex/mlfs/mlfs"
-	"github.com/kungfu-team/tenplex/mlfs/tfrecord"
 	"github.com/kungfu-team/tenplex/mlfs/vfs"
 	"github.com/kungfu-team/tenplex/mlfs/vfs/hfs"
 	"github.com/kungfu-team/tenplex/mlfs/vfs/vfile"

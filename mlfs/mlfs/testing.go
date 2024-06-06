@@ -12,9 +12,9 @@ import (
 	"time"
 
 	"github.com/kungfu-team/tenplex/mlfs/ds/trds"
+	"github.com/kungfu-team/tenplex/mlfs/formats/tfrecord"
 	"github.com/kungfu-team/tenplex/mlfs/iotrace"
 	"github.com/kungfu-team/tenplex/mlfs/par"
-	"github.com/kungfu-team/tenplex/mlfs/tfrecord"
 	"github.com/kungfu-team/tenplex/mlfs/uri"
 	"github.com/kungfu-team/tenplex/mlfs/utils"
 	"github.com/kungfu-team/tenplex/mlfs/vfs/vfile"

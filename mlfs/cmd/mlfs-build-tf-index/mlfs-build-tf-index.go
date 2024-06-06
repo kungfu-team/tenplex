@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/kungfu-team/tenplex/mlfs/tfrecord"
+	"github.com/kungfu-team/tenplex/mlfs/formats/tfrecord"
 	"github.com/kungfu-team/tenplex/mlfs/vfs/vfile"
 )
 
