@@ -12,7 +12,7 @@ common_flags() {
 
     echo -framework "megatron-lm"
     echo -model "gpt"
-    echo -model-size "xl"
+    echo -model-size "large"
     echo -dataset "enwiki"
     echo -batch-size 128
     echo -micro-batch-size 8
@@ -27,7 +27,8 @@ common_flags() {
     echo -seed 1234
     echo -no-shuffle
 
-    echo -schedule-file "$(dirname $0)/schedule.json"
+    # echo -schedule-file "$(dirname $0)/schedule.json"
+    echo -schedule-file "$(dirname $0)/schedule-debug.json"
 }
 
 tenplex_flags() {
@@ -49,9 +50,12 @@ pytorch_flags() {
     echo -no-tenplex
 }
 
-tenplex-run $(tenplex_flags) >tenplex-dyn-res.log 2>&1
+tenplex-run $(tenplex_flags)
+#  >tenplex-dyn-res.log 2>&1
 
 # tenplex-run $(tenplex_dp_flags) >tenplex-dp-dyn-res.log 2>&1
 
 # sudo rm -fr /mnt/k1d2/ckpt/*
-# tenplex-run $(pytorch_flags) >pytorch-dyn-res.log 2>&1
+
+tenplex-run $(pytorch_flags)
+# >pytorch-dyn-res.log 2>&1
