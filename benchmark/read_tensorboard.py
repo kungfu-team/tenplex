@@ -47,6 +47,18 @@ def main():
 
     np.savez(f"{args.exper}_loss.npz", wall_time=wall_times, step=steps, loss=loss)
 
+def debug():
+    names = ["no_tenplex", "tenplex_tenplex"]
+    for name in names:
+        path = f"training/{name}"
+        metrics = load_metrics(path)
+        wall_times = [x[0] for x in metrics]
+        steps = [x[1] for x in metrics]
+        loss = [x[2] for x in metrics]
+
+        np.savez(f"{name}_loss.npz", wall_time=wall_times, step=steps, loss=loss)
+
 
 if __name__ == "__main__":
-    main()
+    # main()
+    debug()
