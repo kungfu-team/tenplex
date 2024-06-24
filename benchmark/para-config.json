@@ -1,4 +1,9 @@
 {
+    "1": {
+        "dp_size": 1,
+        "pp_size": 1,
+        "mp_size": 1
+    },
     "4": {
         "dp_size": 2,
         "pp_size": 1,

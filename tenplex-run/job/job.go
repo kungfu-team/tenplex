@@ -29,7 +29,7 @@ func (j Job) createWorkers(jConf *JobConfig, numContainers int, hosts []string) 
 	return workers
 }
 
-func (j Job) genCmd(i int, jConf *JobConfig, host string) []string {
+func (j Job) GenCmd(i int, jConf *JobConfig, host string) []string {
 	if jConf.Framework == "megatron-lm" {
 		pyHost := OverwriteHost(host, jConf)
 		gf := map[string]GenCmdFunc{
@@ -80,7 +80,7 @@ func (j Job) newWorker(i int, jConf *JobConfig, host string, gpus []string) Cont
 		IP:       dockerName,
 		GPUs:     gpus,
 		Host:     host,
-		Cmd:      j.genCmd(i, jConf, host),
+		Cmd:      j.GenCmd(i, jConf, host),
 		Rank:     i,
 		PathMaps: pathMaps,
 	}

@@ -27,4 +27,5 @@ flags() {
     echo -no-tenplex
 }
 
+sudo rm -rf /mnt/k1d2/ckpt/*
 tenplex_run_with flags
