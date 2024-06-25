@@ -23,7 +23,7 @@ func mount(cli *mlfs.Client, ds ds.Dataset, jobID string, batchSize, progress, d
 	return nil
 }
 
-func addDataset(dpSize, progress int, jobConf *job.JobConfig) error {
+func AddDataset(dpSize, progress int, jobConf *job.JobConfig) error {
 	for _, host := range jobConf.Cluster.Hosts {
 		cli, err := mlfs.NewClientTo(host, jobConf.MLFSPort)
 		if err != nil {

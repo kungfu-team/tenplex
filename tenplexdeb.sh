@@ -3,6 +3,8 @@ set -e
 
 make binaries
 
+sudo rm -rf ~/.tenplex/training/*
+
 ./bin/tenplex-debug \
     -image "kungfu.azurecr.io/mw-megatron-lm-23.06-debug:latest" \
     -user $USER \

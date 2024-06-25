@@ -57,7 +57,7 @@ func RunTraining(jobConf *job.JobConfig, paraConf *para_config.MDP, progress, ma
 		// add dataset to MLFS
 		dpSize := paraConf.DPSize
 		addDataStart := time.Now()
-		if err := addDataset(dpSize, progress, jobConf); err != nil {
+		if err := AddDataset(dpSize, progress, jobConf); err != nil {
 			// log.Printf("add dataset failed but IGNORE: %v", err)
 			return err
 		}
