@@ -43,9 +43,9 @@ func main() {
 
 		TrainIters: 10_000,
 
-		LogInterval:  10,
-		SaveInterval: 5000,
-		EvalInterval: 10000,
+		LogInterval:  50_000,
+		SaveInterval: 50_000,
+		EvalInterval: 50_000,
 
 		Precision: d.JobConfig.Precision,
 	}

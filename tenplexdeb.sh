@@ -3,7 +3,6 @@ set -e
 
 make binaries
 
-sudo rm -rf ~/.tenplex/training/*
 sudo rm -f /mnt/k1d2/megatron-lm/gpt-2/enwiki/*.npy
 sudo rm -f /mnt/k1d2/megatron-lm/gpt-2/*.npy
 
@@ -29,9 +28,11 @@ flags() {
     echo -no-shuffle
 }
 
+sudo rm -rf ~/.tenplex/training/*
 ./bin/tenplex-debug $(flags)
 cp ~/.tenplex/training/tenplexdeb/0/ckpt/samples_build.txt ./samples_tenplex.txt
 
+sudo rm -rf ~/.tenplex/training/*
 ./bin/tenplex-debug $(flags) -no-tenplex
 cp ~/.tenplex/training/tenplexdeb/0/ckpt/samples_build.txt ./samples_tde.txt
 
