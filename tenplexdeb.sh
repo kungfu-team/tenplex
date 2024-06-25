@@ -4,24 +4,34 @@ set -e
 make binaries
 
 sudo rm -rf ~/.tenplex/training/*
+sudo rm -f /mnt/k1d2/megatron-lm/gpt-2/enwiki/*.npy
+sudo rm -f /mnt/k1d2/megatron-lm/gpt-2/*.npy
 
-./bin/tenplex-debug \
-    -image "kungfu.azurecr.io/mw-megatron-lm-23.06-debug:latest" \
-    -user $USER \
-    -mlfs-port 20010 \
-    -tenplex-prefix "$HOME/.tenplex" \
-    -framework "megatron-lm" \
-    -model "gpt" \
-    -model-size "large" \
-    -dataset "enwiki" \
-    -batch-size 128 \
-    -micro-batch-size 8 \
-    -precision "fp16" \
-    -index-url "/data/megatron-lm/gpt-2/enwiki/npzs_seq1024_new/indices.txt" \
-    -hosts "10.10.10.2" \
-    -schedule-file "./benchmark/schedule.json" \
-    -para-config "./benchmark/para-config.json" \
-    -gpu-per-host 1 \
-    -gpu-per-container 1 \
-    -seq-length 1024 \
-    -no-tenplex
+flags() {
+    echo -image "kungfu.azurecr.io/mw-megatron-lm-23.06-debug:latest"
+    echo -user $USER
+    echo -mlfs-port 20010
+    echo -tenplex-prefix "$HOME/.tenplex"
+    echo -framework "megatron-lm"
+    echo -model "gpt"
+    echo -model-size "large"
+    echo -dataset "enwiki"
+    echo -batch-size 128
+    echo -micro-batch-size 8
+    echo -precision "fp16"
+    echo -index-url "/data/megatron-lm/gpt-2/enwiki/npzs_seq1024_new/indices.txt"
+    echo -hosts "10.10.10.2"
+    echo -schedule-file "./benchmark/schedule.json"
+    echo -para-config "./benchmark/para-config.json"
+    echo -gpu-per-host 1
+    echo -gpu-per-container 1
+    echo -seq-length 1024
+}
+
+./bin/tenplex-debug $(flags)
+cp ~/.tenplex/training/tenplexdeb/0/ckpt/samples_build.txt ./samples_tenplex.txt
+
+./bin/tenplex-debug $(flags) -no-tenplex
+cp ~/.tenplex/training/tenplexdeb/0/ckpt/samples_build.txt ./samples_tde.txt
+
+head samples_*.txt

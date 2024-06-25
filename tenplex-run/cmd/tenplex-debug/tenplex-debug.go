@@ -63,7 +63,7 @@ func main() {
 
 	cmd := j.GenCmd(0, &d.JobConfig, d.JobConfig.Cluster.Hosts[0])
 	for i, arg := range cmd {
-		cmd[i] = strings.Replace(arg, "pretrain_gpt.py", "hash_samples.py", 1)
+		cmd[i] = strings.Replace(arg, "pretrain_gpt.py", "hash_batch.py", 1)
 	}
 
 	pathMaps := []job.PathMap{
