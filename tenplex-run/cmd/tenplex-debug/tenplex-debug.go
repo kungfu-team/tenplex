@@ -68,13 +68,22 @@ func main() {
 
 	pathMaps := []job.PathMap{
 		{
-			HostPath:      "/mnt/mlfs",
-			ContainerPath: `/data/mlfs`,
-		},
-		{
 			HostPath:      path.Join(j.HostPath, d.JobConfig.ID, `0`, `ckpt`),
 			ContainerPath: `/data/ckpt`,
 		},
+	}
+	if d.NoTenplex {
+		pathMaps = append(pathMaps,
+			job.PathMap{
+				HostPath:      `/mnt/k1d2/megatron-lm`,
+				ContainerPath: `/data/dataset`,
+			})
+	} else {
+		pathMaps = append(pathMaps,
+			job.PathMap{
+				HostPath:      "/mnt/mlfs",
+				ContainerPath: `/data/mlfs`,
+			})
 	}
 
 	dockerCmd := []string{`docker`, `run`}

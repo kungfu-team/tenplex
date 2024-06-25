@@ -23,4 +23,5 @@ sudo rm -rf ~/.tenplex/training/*
     -para-config "./benchmark/para-config.json" \
     -gpu-per-host 1 \
     -gpu-per-container 1 \
-    -seq-length 1024 
+    -seq-length 1024 \
+    -no-tenplex
