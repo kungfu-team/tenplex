@@ -56,10 +56,12 @@ func main() {
 		Config:   cfg,
 	}
 
-	err := runop.AddDataset(1, 0, &d.JobConfig)
-	if err != nil {
-		log.Fatal(err)
+	if !d.NoTenplex {
+		err := runop.AddDataset(1, 0, &d.JobConfig)
+		if err != nil {
+			log.Fatal(err)
 
+		}
 	}
 
 	cmd := j.GenCmd(0, &d.JobConfig, d.JobConfig.Cluster.Hosts[0])
@@ -117,7 +119,7 @@ func main() {
 	var stderr bytes.Buffer
 	execCmd.Stderr = &stderr
 	execCmd.Stdout = &stdout
-	err = execCmd.Run()
+	err := execCmd.Run()
 	log.Printf("Stdout: %s", stdout.String())
 	if err != nil {
 		log.Printf("Stderr: %s", stderr.String())
