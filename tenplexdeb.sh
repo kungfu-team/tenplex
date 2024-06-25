@@ -26,6 +26,7 @@ flags() {
     echo -gpu-per-host 1
     echo -gpu-per-container 1
     echo -seq-length 1024
+    echo -no-shuffle
 }
 
 ./bin/tenplex-debug $(flags)

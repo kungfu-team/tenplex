@@ -33,6 +33,7 @@ func main() {
 	id := `tenplexdeb`
 	d.ID = id
 	d.JobConfig.ID = id
+	log.Printf("JOB CONFIG %+v", d.JobConfig)
 
 	cfg := job.MDPConfig{
 		NumNodes:             1,
@@ -104,10 +105,6 @@ func main() {
 		`-t`, d.JobConfig.Image,
 	}...)
 	dockerCmd = append(dockerCmd, cmd...)
-
-	// log.Printf("CMD %v", cmd)
-	// log.Printf("DOCKER CMD %v", dockerCmd)
-	// log.Printf("PATH MAPS %v", pathMaps)
 
 	execCmd := exec.Command(`bash`, `-c`, strings.Join(dockerCmd, ` `))
 	log.Printf(`EXEC CMD """%v"""`, execCmd)
