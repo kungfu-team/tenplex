@@ -26,4 +26,7 @@ flags() {
     echo -seq-length 1024
 }
 
+sudo systemctl restart mlfs
+sudo rm -rf ~/.tenplex/training/*
+
 tenplex_run_with flags

@@ -29,25 +29,26 @@ def plot_loss(data, ax, label, linesty, colour, use_step=False):
 
 
 def main():
-    use_step = False
+    use_step = True
 
-    tenplex = np.load("./tenplex_tenplex_loss.npz")
+    tenplex = np.load("./tenplex_loss.npz")
     tenplex = dict(tenplex)
-    no_tenplex = np.load("./no_tenplex_loss.npz")
-    no_tenplex = dict(no_tenplex)
+    tde = np.load("./tde_loss.npz")
+    tde = dict(tde)
 
     plt.rc("figure", figsize=[8, 3.5])
     fig, ax = plt.subplots()
 
     tenplex = zero_time(tenplex)
-    no_tenplex = zero_time(no_tenplex)
+    tde = zero_time(tde)
 
     plot_loss(tenplex, ax, "Tenplex", "solid", "black", use_step=use_step)
-    plot_loss(no_tenplex, ax, "NO Tenplex", "dashed", "tab:red", use_step=use_step)
+    plot_loss(tde, ax, "NO Tenplex", "dashed", "tab:red", use_step=use_step)
 
     fontsize = 18
     labelsize = 16
-    ax.set_ylim(bottom=0, top=8)
+    # ax.set_ylim(bottom=0, top=8)
+    # ax.set_ylim(bottom=0)
     ax.tick_params(labelsize=labelsize)
     ax.legend(loc="upper right", fontsize=labelsize)
     if use_step:

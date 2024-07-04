@@ -47,8 +47,9 @@ def main():
 
     np.savez(f"{args.exper}_loss.npz", wall_time=wall_times, step=steps, loss=loss)
 
+
 def debug():
-    names = ["no_tenplex", "tenplex_tenplex"]
+    names = ["tenplex", "tde"]
     for name in names:
         path = f"training/{name}"
         metrics = load_metrics(path)
