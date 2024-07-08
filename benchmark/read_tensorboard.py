@@ -51,7 +51,7 @@ def main():
 def debug():
     names = ["tenplex", "tde"]
     for name in names:
-        path = f"training/{name}"
+        path = f"boards/{name}"
         metrics = load_metrics(path)
         wall_times = [x[0] for x in metrics]
         steps = [x[1] for x in metrics]

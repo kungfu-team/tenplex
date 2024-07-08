@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+rm -rf logs logs_tde logs_tenplex training
+
 flags() {
     echo -image "kungfu.azurecr.io/mw-megatron-lm-23.06-debug:latest"
     echo -user $USER
@@ -27,11 +29,13 @@ sudo systemctl restart mlfs
 sudo rm -rf $HOME/.tenplex/training/*
 tenplex-run $(flags)
 cp $HOME/.tenplex/training/*/0/ckpt/samples_0.txt ./samples_tenplex.txt
+mv logs logs_tenplex
 
 sudo rm -f /mnt/k1d2/megatron-lm/gpt-2/enwiki/*.npy
 sudo rm -f /mnt/k1d2/megatron-lm/gpt-2/*.npy
 sudo rm -rf /mnt/k1d2/ckpt/*
 tenplex-run $(flags) -no-tenplex
 cp /mnt/k1d2/ckpt/samples_0.txt ./samples_tde.txt
+mv logs logs_tde
 
 head samples_*.txt

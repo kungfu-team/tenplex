@@ -43,12 +43,12 @@ def main():
     tde = zero_time(tde)
 
     plot_loss(tenplex, ax, "Tenplex", "solid", "black", use_step=use_step)
-    plot_loss(tde, ax, "NO Tenplex", "dashed", "tab:red", use_step=use_step)
+    plot_loss(tde, ax, "TDE", "solid", "tab:red", use_step=use_step)
 
     fontsize = 18
     labelsize = 16
     # ax.set_ylim(bottom=0, top=8)
-    # ax.set_ylim(bottom=0)
+    ax.set_ylim(bottom=0)
     ax.tick_params(labelsize=labelsize)
     ax.legend(loc="upper right", fontsize=labelsize)
     if use_step:
