@@ -17,7 +17,8 @@ func GenMegatronLMBERTCmd(c MDPConfig, rank int, jobID string, host string, jCon
 		`--max-position-embeddings`, str(1024), // default: 512
 		`--lr`, `0.0001`,
 		`--lr-decay-iters`, str(10000),
-		`--train-iters`, str(c.TrainIters),
+		`--train-iters`, str(10000),
+		`--tenplex-train-iters`, str(c.TrainIters),
 		`--min-lr`, `0.00001`,
 		`--lr-warmup-fraction`, `0.01`,
 		`--micro-batch-size`, str(jConf.MicroBatchSize), // default: 4
