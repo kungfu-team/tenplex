@@ -172,14 +172,13 @@ def main():
     parser.add_argument("--throughput", action="store_true")
     args = parser.parse_args()
     use_step = args.use_step
+    use_step = True
 
-    # tenplex = pd.read_csv("./loss_tenplex.csv")
-    tenplex = np.load("./data/tenplex_loss.npz")
+    tenplex = np.load("./tenplex_loss.npz")
     tenplex = dict(tenplex)
-    tenplex_dp = np.load("./data/tenplex_dp_loss.npz")
+    tenplex_dp = np.load("./tenplex_dp_loss.npz")
     tenplex_dp = dict(tenplex_dp)
-    pytorch = np.load("./data/pytorch_loss.npz")
-
+    pytorch = np.load("./pytorch_loss.npz")
     pytorch = dict(pytorch)
 
     time_key = "wall_time"

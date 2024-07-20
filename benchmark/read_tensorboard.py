@@ -49,9 +49,11 @@ def main():
 
 
 def debug():
-    names = ["tenplex", "tde"]
+    # names = ["tenplex", "pytorch", "tenplex_dp"]
+    names = ["tde"]
     for name in names:
-        path = f"boards/{name}"
+        # path = f"dynamic_resources/runs/boards/{name}"
+        path = f"./boards/{name}"
         metrics = load_metrics(path)
         wall_times = [x[0] for x in metrics]
         steps = [x[1] for x in metrics]
