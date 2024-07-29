@@ -47,7 +47,7 @@ type (
 
 var DefaultTimeout time.Duration
 
-func RunTraining(jobConf *job.JobConfig, paraConf *para_config.MDP, progress, maxStep int, hosts []string) error {
+func RunTraining(jobConf *job.JobConfig, paraConf *para_config.MultiDimensionalParallelism, progress, maxStep int, hosts []string) error {
 	if DefaultTimeout > 0 {
 		defer timeout.New(DefaultTimeout, func() {
 			StopContainers(jobConf.Cluster.Hosts, jobConf.User)
@@ -75,7 +75,7 @@ func RunTraining(jobConf *job.JobConfig, paraConf *para_config.MDP, progress, ma
 	return nil
 }
 
-func repartition(from, to *para_config.MDP, step int, jobConf *job.JobConfig) error {
+func repartition(from, to *para_config.MultiDimensionalParallelism, step int, jobConf *job.JobConfig) error {
 	var round = RoundID.Next()
 	var home = path.Join("/home", jobConf.User)
 	t0 := time.Now()

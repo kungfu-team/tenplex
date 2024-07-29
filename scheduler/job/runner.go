@@ -38,7 +38,7 @@ type Runner struct {
 	JobConfig     *job.JobConfig
 	Finished      bool
 	Cluster       *cluster.Cluster
-	ParaConfig    *para_config.MDP
+	ParaConfig    *para_config.MultiDimensionalParallelism
 	CurStep       int
 	MLFSPort      int
 	TenplexPrefix string
@@ -146,7 +146,7 @@ func (ru *Runner) TransformStateWithCmd(conf *meta.Config, newNumDev int, newClu
 	return nil
 }
 
-func (ru *Runner) TransformState(newParaConf *para_config.MDP, newSubCluster *cluster.Cluster) {
+func (ru *Runner) TransformState(newParaConf *para_config.MultiDimensionalParallelism, newSubCluster *cluster.Cluster) {
 	log.Printf("TransformState ru.CurStep %d", ru.CurStep)
 	conf := meta.Config{
 		CkptStructDir:   path.Join(ru.TenplexPrefix, "transformer-checkpoint"),
@@ -189,7 +189,7 @@ func (ru *Runner) TransformState(newParaConf *para_config.MDP, newSubCluster *cl
 	}
 }
 
-func (ru *Runner) TransformAndRun(newParaConf *para_config.MDP, newSubClu *cluster.Cluster, wg *sync.WaitGroup, ch *chan string, schedulerAddr string) {
+func (ru *Runner) TransformAndRun(newParaConf *para_config.MultiDimensionalParallelism, newSubClu *cluster.Cluster, wg *sync.WaitGroup, ch *chan string, schedulerAddr string) {
 	start := time.Now()
 	log.Printf("TransformAndRun %s on new cluster: %s", ru.Job.ID, strings.Join(newSubClu.Hosts, ","))
 	ru.TransformState(newParaConf, newSubClu)

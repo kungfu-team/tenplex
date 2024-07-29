@@ -26,7 +26,7 @@ func (s ScalingPoint) String() string {
 	return buf.String()
 }
 
-var Empty MDP // Size == PPSize == MPSize == 0
+var Empty MultiDimensionalParallelism // Size == PPSize == MPSize == 0
 
 type Schedule []ScalingPoint
 

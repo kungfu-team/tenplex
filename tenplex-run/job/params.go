@@ -11,7 +11,7 @@ var str = strconv.Itoa
 type TrainingConfig struct {
 	NumNodes   int
 	GPUPerNode int
-	MDP        para_config.MDP
+	MDP        para_config.MultiDimensionalParallelism
 
 	TrainIters int
 
