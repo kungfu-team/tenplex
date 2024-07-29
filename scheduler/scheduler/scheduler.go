@@ -127,7 +127,7 @@ func (sch *Scheduler) scale(newJobs []job.Job) {
 		runner := job.Runner{
 			Job:           jo,
 			Cluster:       subClu,
-			ParaConfig:    &paraConf,
+			MDP:           &paraConf,
 			MLFSPort:      mlfs.DefaultCtrlPort,
 			TenplexPrefix: tenplexPrefix,
 		}
