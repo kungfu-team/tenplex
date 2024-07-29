@@ -1,14 +1,17 @@
 package job
 
-import "strconv"
+import (
+	"strconv"
+
+	"github.com/kungfu-team/tenplex/tenplex-run/para_config"
+)
 
 var str = strconv.Itoa
 
-type MDPConfig struct {
-	NumNodes             int
-	GPUPerNode           int
-	ModelParallelSize    int
-	PipelineParallelSize int
+type MegatronConfig struct {
+	NumNodes   int
+	GPUPerNode int
+	MDP        para_config.MDP
 
 	TrainIters int
 
@@ -19,7 +22,7 @@ type MDPConfig struct {
 	Precision string
 }
 
-type GenCmdFunc func(c MDPConfig, rank int, jobID string, host string, jConf *JobConfig) []string
+type GenCmdFunc func(c MegatronConfig, rank int, jobID string, host string, jConf *JobConfig) []string
 
 type TransformerSize struct {
 	Layers         int

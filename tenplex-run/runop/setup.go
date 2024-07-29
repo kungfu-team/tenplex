@@ -28,11 +28,10 @@ func createCluster(jobConf *job.JobConfig, paraConf *para_config.MDP, hosts []st
 		numNodes = 1
 	}
 
-	cfg := job.MDPConfig{
-		NumNodes:             numNodes,
-		GPUPerNode:           gpusPerContainer,
-		PipelineParallelSize: paraConf.PPSize,
-		ModelParallelSize:    paraConf.MPSize,
+	cfg := job.MegatronConfig{
+		NumNodes:   numNodes,
+		GPUPerNode: gpusPerContainer,
+		MDP:        *paraConf,
 
 		TrainIters: maxTrainStep,
 
