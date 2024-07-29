@@ -89,7 +89,7 @@ func OverwriteHost(host string, jc *JobConfig) string {
 	return host
 }
 
-func (j *JobConfig) DistFlags(c MegatronConfig, rank int) []string {
+func (j *JobConfig) DistFlags(c TrainingConfig, rank int) []string {
 	size := c.MDP.DPSize * c.MDP.PPSize * c.MDP.MPSize
 	numProc := c.GPUPerNode
 	if size < numProc { // min
@@ -104,7 +104,7 @@ func (j *JobConfig) DistFlags(c MegatronConfig, rank int) []string {
 	}
 }
 
-func (j *JobConfig) LogFlags(c MegatronConfig) []string {
+func (j *JobConfig) LogFlags(c TrainingConfig) []string {
 	return []string{
 		`--log-interval`, str(c.LogInterval),
 		`--save-interval`, str(c.SaveInterval),
@@ -113,7 +113,7 @@ func (j *JobConfig) LogFlags(c MegatronConfig) []string {
 	}
 }
 
-func (j *JobConfig) TenplexFlags(c MegatronConfig, host string) []string {
+func (j *JobConfig) TenplexFlags(c TrainingConfig, host string) []string {
 	if j.NoTenplex {
 		return nil
 	}
@@ -126,7 +126,7 @@ func (j *JobConfig) TenplexFlags(c MegatronConfig, host string) []string {
 	return cmd
 }
 
-func (j *JobConfig) OtherFlags(c MegatronConfig) []string {
+func (j *JobConfig) OtherFlags(c TrainingConfig) []string {
 	const checkpoint_path = `/data/ckpt`
 	var cmd []string
 	args := []string{

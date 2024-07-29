@@ -10,7 +10,7 @@ import (
 type Job struct {
 	Image    string
 	HostPath string
-	Config   MegatronConfig
+	Config   TrainingConfig
 }
 
 func (j Job) createWorkers(jConf *JobConfig, numContainers int, hosts []string) []Container {

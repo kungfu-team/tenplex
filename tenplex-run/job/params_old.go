@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func GenDeepspeedCommandOld(c MegatronConfig, jConf *JobConfig) []string {
+func GenDeepspeedCommandOld(c TrainingConfig, jConf *JobConfig) []string {
 	cmd := []string{
 		`deepspeed`,
 		`--hostfile=/data/ckpt/hostfile.txt`,
@@ -81,7 +81,7 @@ func GenDeepspeedCommandOld(c MegatronConfig, jConf *JobConfig) []string {
 	return cmd
 }
 
-func GenDeepspeedCommand(c MegatronConfig, jConf *JobConfig) []string {
+func GenDeepspeedCommand(c TrainingConfig, jConf *JobConfig) []string {
 	cmd := []string{
 		`deepspeed`,
 		`--hostfile=/data/ckpt/hostfile.txt`,
@@ -158,7 +158,7 @@ func GenDeepspeedCommand(c MegatronConfig, jConf *JobConfig) []string {
 	return cmd
 }
 
-func GenMegatronDeepspeedCommand(c MegatronConfig, rank int, jConf *JobConfig) []string {
+func GenMegatronDeepspeedCommand(c TrainingConfig, rank int, jConf *JobConfig) []string {
 	cmd := []string{
 		`torchrun`,
 	}

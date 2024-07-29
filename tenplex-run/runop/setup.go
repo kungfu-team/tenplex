@@ -28,7 +28,7 @@ func createCluster(jobConf *job.JobConfig, paraConf *para_config.MDP, hosts []st
 		numNodes = 1
 	}
 
-	cfg := job.MegatronConfig{
+	cfg := job.TrainingConfig{
 		NumNodes:   numNodes,
 		GPUPerNode: gpusPerContainer,
 		MDP:        *paraConf,

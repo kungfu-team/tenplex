@@ -8,7 +8,7 @@ import (
 
 var str = strconv.Itoa
 
-type MegatronConfig struct {
+type TrainingConfig struct {
 	NumNodes   int
 	GPUPerNode int
 	MDP        para_config.MDP
@@ -22,7 +22,7 @@ type MegatronConfig struct {
 	Precision string
 }
 
-type GenCmdFunc func(c MegatronConfig, rank int, jobID string, host string, jConf *JobConfig) []string
+type GenCmdFunc func(c TrainingConfig, rank int, jobID string, host string, jConf *JobConfig) []string
 
 type TransformerSize struct {
 	Layers         int
