@@ -4,15 +4,15 @@ import (
 	"fmt"
 )
 
-func GenDeepspeedCommandOld(c MDPConfig, jConf *JobConfig) []string {
+func GenDeepspeedCommandOld(c TrainingConfig, jConf *JobConfig) []string {
 	cmd := []string{
 		`deepspeed`,
 		`--hostfile=/data/ckpt/hostfile.txt`,
 		`--num_nodes`, str(c.NumNodes),
 		`--num_gpus`, str(c.GPUPerNode),
 		`pretrain_gpt2.py`,
-		`--model-parallel-size`, str(c.ModelParallelSize),
-		`--pipe-parallel-size`, str(c.PipelineParallelSize),
+		`--model-parallel-size`, str(c.MDP.MPSize),
+		`--pipe-parallel-size`, str(c.MDP.PPSize),
 	}
 
 	if jConf.ModelSize == "medium" {
@@ -81,15 +81,15 @@ func GenDeepspeedCommandOld(c MDPConfig, jConf *JobConfig) []string {
 	return cmd
 }
 
-func GenDeepspeedCommand(c MDPConfig, jConf *JobConfig) []string {
+func GenDeepspeedCommand(c TrainingConfig, jConf *JobConfig) []string {
 	cmd := []string{
 		`deepspeed`,
 		`--hostfile=/data/ckpt/hostfile.txt`,
 		`--num_nodes`, str(c.NumNodes),
 		`--num_gpus`, str(c.GPUPerNode),
 		`pretrain_gpt.py`,
-		`--tensor-model-parallel-size`, str(c.ModelParallelSize),
-		`--pipeline-model-parallel-size`, str(c.PipelineParallelSize),
+		`--tensor-model-parallel-size`, str(c.MDP.MPSize),
+		`--pipeline-model-parallel-size`, str(c.MDP.PPSize),
 	}
 
 	if jConf.ModelSize == "medium" {
@@ -158,7 +158,7 @@ func GenDeepspeedCommand(c MDPConfig, jConf *JobConfig) []string {
 	return cmd
 }
 
-func GenMegatronDeepspeedCommand(c MDPConfig, rank int, jConf *JobConfig) []string {
+func GenMegatronDeepspeedCommand(c TrainingConfig, rank int, jConf *JobConfig) []string {
 	cmd := []string{
 		`torchrun`,
 	}
@@ -171,8 +171,8 @@ func GenMegatronDeepspeedCommand(c MDPConfig, rank int, jConf *JobConfig) []stri
 	}...)
 	cmd = append(cmd, `/workspace/Megatron-DeepSpeed/pretrain_gpt.py`)
 	cmd = append(cmd, []string{
-		`--tensor-model-parallel-size`, str(c.ModelParallelSize),
-		`--pipeline-model-parallel-size`, str(c.PipelineParallelSize),
+		`--tensor-model-parallel-size`, str(c.MDP.MPSize),
+		`--pipeline-model-parallel-size`, str(c.MDP.PPSize),
 	}...)
 	if jConf.ModelSize == "medium" {
 		cmd = append(cmd,

@@ -2,7 +2,7 @@ package job
 
 import "log"
 
-func GenMegatronLMGPTCmd(c MDPConfig, rank int, jobID string, host string, jConf *JobConfig) []string {
+func GenMegatronLMGPTCmd(c TrainingConfig, rank int, jobID string, host string, jConf *JobConfig) []string {
 	cmd := []string{
 		`torchrun`,
 	}

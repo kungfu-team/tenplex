@@ -21,18 +21,17 @@ var (
 	runScript = experimental.RunScript
 )
 
-func createCluster(jobConf *job.JobConfig, paraConf *para_config.MDP, hosts []string, maxTrainStep int) *job.ContainerCluster {
+func createCluster(jobConf *job.JobConfig, paraConf *para_config.MultiDimensionalParallelism, hosts []string, maxTrainStep int) *job.ContainerCluster {
 	gpusPerContainer := jobConf.Cluster.GPUsPerContainer
 	numNodes := int(paraConf.GetTotalSize() / gpusPerContainer)
 	if numNodes < 1 {
 		numNodes = 1
 	}
 
-	cfg := job.MDPConfig{
-		NumNodes:             numNodes,
-		GPUPerNode:           gpusPerContainer,
-		PipelineParallelSize: paraConf.PPSize,
-		ModelParallelSize:    paraConf.MPSize,
+	cfg := job.TrainingConfig{
+		NumNodes:   numNodes,
+		GPUPerNode: gpusPerContainer,
+		MDP:        *paraConf,
 
 		TrainIters: maxTrainStep,
 

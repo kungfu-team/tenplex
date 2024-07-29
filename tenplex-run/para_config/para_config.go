@@ -10,25 +10,25 @@ import (
 	"sort"
 )
 
-type MDP struct {
+type MultiDimensionalParallelism struct {
 	MPSize int `json:"mp_size"`
 	DPSize int `json:"dp_size"`
 	PPSize int `json:"pp_size"`
 }
 
-func (c MDP) GetTotalSize() int {
+func (c MultiDimensionalParallelism) GetTotalSize() int {
 	return c.MPSize * c.DPSize * c.PPSize
 }
 
-func (c MDP) ID() string {
+func (c MultiDimensionalParallelism) ID() string {
 	return fmt.Sprintf("mp%d-dp%d-pp%d", c.MPSize, c.DPSize, c.PPSize)
 }
 
-func (c MDP) String() string {
+func (c MultiDimensionalParallelism) String() string {
 	return fmt.Sprintf("size:%d = mp:%d x dp:%d x pp:%d", c.GetTotalSize(), c.MPSize, c.DPSize, c.PPSize)
 }
 
-type ParaConfig map[int]MDP
+type ParaConfig map[int]MultiDimensionalParallelism
 
 func (pc ParaConfig) String() string {
 	buf := &bytes.Buffer{}

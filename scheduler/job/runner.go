@@ -38,7 +38,7 @@ type Runner struct {
 	JobConfig     *job.JobConfig
 	Finished      bool
 	Cluster       *cluster.Cluster
-	ParaConfig    *para_config.MDP
+	MDP           *para_config.MultiDimensionalParallelism
 	CurStep       int
 	MLFSPort      int
 	TenplexPrefix string
@@ -79,7 +79,7 @@ func (ru *Runner) RunTraining(wg *sync.WaitGroup, ch *chan string, schedulerAddr
 
 	progress := ru.CurStep * ru.JobConfig.BatchSize
 	log.Printf("job config %+v", ru.JobConfig)
-	log.Printf("para config %+v", ru.ParaConfig)
+	log.Printf("para config %+v", ru.MDP)
 	log.Printf("progress %d", progress)
 	log.Printf("steps %d", ru.Job.Steps)
 	log.Printf("id %s", ru.Job.ID)
@@ -89,7 +89,7 @@ func (ru *Runner) RunTraining(wg *sync.WaitGroup, ch *chan string, schedulerAddr
 				log.Panicf("recovered from RunTraining: %v", err)
 			}
 		}()
-		err := runop.RunTraining(ru.JobConfig, ru.ParaConfig, progress, ru.Job.Steps, ru.Cluster.Hosts)
+		err := runop.RunTraining(ru.JobConfig, ru.MDP, progress, ru.Job.Steps, ru.Cluster.Hosts)
 		if err != nil {
 			log.Panicf("Run training failed. %v", err)
 		}
@@ -146,17 +146,17 @@ func (ru *Runner) TransformStateWithCmd(conf *meta.Config, newNumDev int, newClu
 	return nil
 }
 
-func (ru *Runner) TransformState(newParaConf *para_config.MDP, newSubCluster *cluster.Cluster) {
+func (ru *Runner) TransformState(newParaConf *para_config.MultiDimensionalParallelism, newSubCluster *cluster.Cluster) {
 	log.Printf("TransformState ru.CurStep %d", ru.CurStep)
 	conf := meta.Config{
 		CkptStructDir:   path.Join(ru.TenplexPrefix, "transformer-checkpoint"),
-		SourceMPDegree:  ru.ParaConfig.MPSize,
+		SourceMPDegree:  ru.MDP.MPSize,
 		TargetMPDegree:  newParaConf.MPSize,
-		SourcePPDegree:  ru.ParaConfig.PPSize,
+		SourcePPDegree:  ru.MDP.PPSize,
 		TargetPPDegree:  newParaConf.PPSize,
-		SourceSize:      ru.ParaConfig.GetTotalSize(),
+		SourceSize:      ru.MDP.GetTotalSize(),
 		TargetSize:      newParaConf.GetTotalSize(),
-		SourceDPDegree:  ru.ParaConfig.DPSize,
+		SourceDPDegree:  ru.MDP.DPSize,
 		TargetDPDegree:  newParaConf.DPSize,
 		Precision:       ru.Job.Precision,
 		OutputTimestamp: "load",
@@ -189,14 +189,14 @@ func (ru *Runner) TransformState(newParaConf *para_config.MDP, newSubCluster *cl
 	}
 }
 
-func (ru *Runner) TransformAndRun(newParaConf *para_config.MDP, newSubClu *cluster.Cluster, wg *sync.WaitGroup, ch *chan string, schedulerAddr string) {
+func (ru *Runner) TransformAndRun(newParaConf *para_config.MultiDimensionalParallelism, newSubClu *cluster.Cluster, wg *sync.WaitGroup, ch *chan string, schedulerAddr string) {
 	start := time.Now()
 	log.Printf("TransformAndRun %s on new cluster: %s", ru.Job.ID, strings.Join(newSubClu.Hosts, ","))
 	ru.TransformState(newParaConf, newSubClu)
 	log.Printf("TransformAndRun %s on new cluster: %s | TransformState took %s", ru.Job.ID, strings.Join(newSubClu.Hosts, ","), time.Since(start))
 
 	ru.Cluster = newSubClu
-	ru.ParaConfig = newParaConf
+	ru.MDP = newParaConf
 
 	ru.RunTraining(wg, ch, schedulerAddr)
 	log.Printf("TransformAndRun %s on new cluster: %s | done:RunTraining", ru.Job.ID, strings.Join(newSubClu.Hosts, ","))

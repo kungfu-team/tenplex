@@ -89,9 +89,14 @@ func OverwriteHost(host string, jc *JobConfig) string {
 	return host
 }
 
-func (j *JobConfig) DistFlags(c MDPConfig, rank int) []string {
+func (j *JobConfig) DistFlags(c TrainingConfig, rank int) []string {
+	size := c.MDP.DPSize * c.MDP.PPSize * c.MDP.MPSize
+	numProc := c.GPUPerNode
+	if size < numProc { // min
+		numProc = size
+	}
 	return []string{
-		`--nproc_per_node`, str(c.GPUPerNode),
+		`--nproc_per_node`, str(numProc),
 		`--nnodes`, str(c.NumNodes),
 		`--node_rank`, str(rank),
 		`--master_addr`, j.Cluster.Hosts[0],
@@ -99,7 +104,7 @@ func (j *JobConfig) DistFlags(c MDPConfig, rank int) []string {
 	}
 }
 
-func (j *JobConfig) LogFlags(c MDPConfig) []string {
+func (j *JobConfig) LogFlags(c TrainingConfig) []string {
 	return []string{
 		`--log-interval`, str(c.LogInterval),
 		`--save-interval`, str(c.SaveInterval),
@@ -108,7 +113,7 @@ func (j *JobConfig) LogFlags(c MDPConfig) []string {
 	}
 }
 
-func (j *JobConfig) TenplexFlags(c MDPConfig, host string) []string {
+func (j *JobConfig) TenplexFlags(c TrainingConfig, host string) []string {
 	if j.NoTenplex {
 		return nil
 	}
@@ -121,14 +126,14 @@ func (j *JobConfig) TenplexFlags(c MDPConfig, host string) []string {
 	return cmd
 }
 
-func (j *JobConfig) OtherFlags(c MDPConfig) []string {
+func (j *JobConfig) OtherFlags(c TrainingConfig) []string {
 	const checkpoint_path = `/data/ckpt`
 	var cmd []string
 	args := []string{
 		`--save`, checkpoint_path,
 		`--load`, checkpoint_path,
-		`--tensor-model-parallel-size`, str(c.ModelParallelSize),
-		`--pipeline-model-parallel-size`, str(c.PipelineParallelSize),
+		`--tensor-model-parallel-size`, str(c.MDP.MPSize),
+		`--pipeline-model-parallel-size`, str(c.MDP.PPSize),
 		`--tensorboard-dir`, path.Join(checkpoint_path, `tensorboard`),
 		`--seed`, str(j.Seed),
 	}

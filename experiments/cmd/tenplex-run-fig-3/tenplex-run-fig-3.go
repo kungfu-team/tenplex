@@ -212,20 +212,20 @@ func logName(ss ...string) string { return join(ss...) + `.log` }
 
 func join(ss ...string) string { return strings.Join(ss, `-`) }
 
-func genMDPs(sizes []int) []para_config.MDP {
-	var mdps []para_config.MDP
+func genMDPs(sizes []int) []para_config.MultiDimensionalParallelism {
+	var mdps []para_config.MultiDimensionalParallelism
 	for _, s := range sizes {
 		mdps = append(mdps, genMDP(s)...)
 	}
 	return mdps
 }
 
-func genMDP(size int) []para_config.MDP {
-	var mdps []para_config.MDP
+func genMDP(size int) []para_config.MultiDimensionalParallelism {
+	var mdps []para_config.MultiDimensionalParallelism
 	for pp := 1; pp <= size; pp++ {
 		for mp := 1; mp <= size; mp++ {
 			if dp := size / (pp * mp); pp*mp*dp == size {
-				mdp := para_config.MDP{
+				mdp := para_config.MultiDimensionalParallelism{
 					PPSize: pp,
 					MPSize: mp,
 					DPSize: dp,
