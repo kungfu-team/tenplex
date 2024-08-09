@@ -10,5 +10,7 @@ def add_tenplex_args(parser: argparse.ArgumentParser):
     group.add_argument("--host-ip", type=str, default=None)
     group.add_argument("--mlfs-port", type=int, default=None)
     group.add_argument("--scheduler-addr", type=str, default=None)
+    group.add_argument("--tenplex-train-iters", type=int, default=None)
+    group.add_argument("--gen-para-config", action="store_true")
 
     return parser

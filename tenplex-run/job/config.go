@@ -43,6 +43,7 @@ type JobConfig struct {
 	User              string `flag:"user"`
 	Seed              int    `flag:"seed" default:"1234"`
 	NoShuffle         bool   `flag:"no-shuffle" default:"false"`
+	GenParaConfig     bool   `flag:"gen-para-config" default:"false"`
 }
 
 func genJobID() string {
@@ -123,6 +124,9 @@ func (j *JobConfig) TenplexFlags(c TrainingConfig, host string) []string {
 	cmd = append(cmd, `--jobid`, j.ID)
 	cmd = append(cmd, `--host-ip`, host)
 	cmd = append(cmd, `--mlfs-port`, str(j.MLFSPort))
+	if j.GenParaConfig {
+		cmd = append(cmd, `--gen-para-config`)
+	}
 	return cmd
 }
 
