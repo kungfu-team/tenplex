@@ -48,17 +48,24 @@ func setNonTensor(conf *meta.Config, ckptClient *client.CheckpointClient, nonTen
 	// sourceDPRank := rand.Intn(conf.SourceDPDegree)
 	sourceDPRank := 0 // With Megatron-LM there are no replicated ckpts
 
-	if len(nonTensor) >= 6 &&
-		equal(nonTensor[:3], []string{"optimizer", "optimizer", "param_groups"}) &&
-		isInt(nonTensor[3]) &&
-		nonTensor[4] == "params" &&
-		isInt(nonTensor[5]) { // Megatron-LM
+	// if len(nonTensor) >= 6 &&
 
-		group, err := strconv.Atoi(nonTensor[3])
+	off := 0
+	if conf.Precision == "fp16" {
+		off = 1
+	}
+	if equalAndCheck(nonTensor, 0, "optimizer") &&
+		(equalAndCheck(nonTensor, 1, "optimizer") || conf.Precision == "fp32") &&
+		equalAndCheck(nonTensor, 1+off, "param_groups") &&
+		isIntAndCheck(nonTensor, 2+off) &&
+		equalAndCheck(nonTensor, 3+off, "params") &&
+		isIntAndCheck(nonTensor, 4+off) { // Megatron-LM
+
+		group, err := strconv.Atoi(nonTensor[2+off])
 		if err != nil {
 			return err
 		}
-		indexInGroup, err := strconv.Atoi(nonTensor[5])
+		indexInGroup, err := strconv.Atoi(nonTensor[4+off])
 		if err != nil {
 			return err
 		}
@@ -105,6 +112,10 @@ func setNonTensor(conf *meta.Config, ckptClient *client.CheckpointClient, nonTen
 		return err
 	}
 	if err != nil {
+		log.Printf("Source path %v", sourcePath)
+		targetPath := strings.Join(nonTensor, "/")
+		log.Printf("Target path %v", targetPath)
+		log.Panicf("Error %v", err)
 		return err
 	}
 

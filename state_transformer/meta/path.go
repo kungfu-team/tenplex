@@ -8,6 +8,7 @@ import (
 func GetStructPath(conf *Config, before bool) string {
 	structPath := path.Join(conf.CkptStructDir,
 		conf.MdpLibrary,
+		conf.Precision,
 		conf.Model,
 		conf.ModelSize)
 

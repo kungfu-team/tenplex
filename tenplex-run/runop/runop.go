@@ -120,7 +120,7 @@ func repartition(from, to *para_config.MultiDimensionalParallelism, step int, jo
 		}
 		args = append(args,
 			"--ckpt-struct-dir", path.Join(home, ".tenplex/transformer-checkpoint"),
-			"--precision", "fp16",
+			"--precision", jobConf.Precision,
 			"--input-timestamp", "save",
 			"--output-timestamp", "load",
 			"--sequence-length", str(jobConf.SequenceLength),
@@ -145,7 +145,7 @@ func repartition(from, to *para_config.MultiDimensionalParallelism, step int, jo
 			args = append(args, `--central`)
 		}
 		migrate := Proc{
-			Prog: "tenplex-state-transformer",
+			Prog: path.Join(home, "go/bin/tenplex-state-transformer"),
 			Args: args,
 			Host: host,
 			User: jobConf.User,
