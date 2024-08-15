@@ -85,7 +85,7 @@ func cloneTransformerCkpts(rpc proc.CreatePFn) P {
 	dir := "~/.tenplex/transformer-checkpoint"
 	return seq(
 		ignore(rpc(`rm`, `-rf`, dir)),
-		rpc(`git`, `clone`, `git@github.com:kungfu-team/transformer-checkpoint.git`, dir),
+		rpc(`git`, `clone`, `https://github.com/kungfu-team/transformer-checkpoint.git`, dir),
 	)
 }
 
@@ -162,7 +162,9 @@ func Main(jobConf *job.JobConfig) {
 	CleanMachines(jobConf)
 	// SetupSwarm(jobConf)
 	PrepareVMs(jobConf)
-	PullImages(jobConf)
+	if false {
+		PullImages(jobConf)
+	}
 	ScalingTraining(jobConf)
 	collectLogs(jobConf)
 }
