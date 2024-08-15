@@ -5,25 +5,22 @@ import (
 	"path"
 )
 
-func GetStructPath(conf *Config, before bool) string {
-	structPath := path.Join(conf.CkptStructDir,
-		conf.MdpLibrary,
-		conf.Precision,
-		conf.Model,
-		conf.ModelSize)
-
-	if before {
-		structPath = path.Join(structPath,
-			fmt.Sprintf("pp%02d/mp%02d/dp%02d",
-				conf.SourcePPDegree,
-				conf.SourceMPDegree,
-				conf.SourceDPDegree))
-	} else {
-		structPath = path.Join(structPath,
-			fmt.Sprintf("pp%02d/mp%02d/dp%02d",
-				conf.TargetPPDegree,
-				conf.TargetMPDegree,
-				conf.TargetDPDegree))
+func GetStructPath(c *Config, before bool) string {
+	suffix := func(pp, mp, dp int) string {
+		return fmt.Sprintf("pp%02d/mp%02d/dp%02d", pp, mp, dp)
 	}
-	return structPath
+	var sfx string
+	if before {
+		sfx = suffix(c.SourcePPDegree, c.SourceMPDegree, c.SourceDPDegree)
+	} else {
+		sfx = suffix(c.TargetPPDegree, c.TargetMPDegree, c.TargetDPDegree)
+	}
+	return path.Join(
+		c.CkptStructDir,
+		c.MdpLibrary,
+		c.Precision,
+		c.Model,
+		c.ModelSize,
+		sfx,
+	)
 }
