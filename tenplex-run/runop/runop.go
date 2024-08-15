@@ -149,6 +149,9 @@ func repartition(from, to *para_config.MultiDimensionalParallelism, step int, jo
 			Args: args,
 			Host: host,
 			User: jobConf.User,
+			Env: proc.Env{
+				`PATH`: `$HOME/go/bin:$PATH`,
+			},
 		}
 		name := fmt.Sprintf("logs/tenplex-state-transformer-%d-%d", round, i)
 		p := proc.Tee2Files(name, ssh(migrate))
