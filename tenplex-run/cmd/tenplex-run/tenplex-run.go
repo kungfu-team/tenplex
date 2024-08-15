@@ -21,6 +21,7 @@ import (
 
 type TenplexRunFlags struct {
 	job.JobConfig
+	runop.Options
 	DetectIPv4    string `flag:"detect-self-ip"`
 	mlfsGitCommit string `flag:"mlfs-git-commit"`
 	logfile       string `flag:"logfile"`
@@ -28,6 +29,7 @@ type TenplexRunFlags struct {
 
 func (d *TenplexRunFlags) RegisterFlags(flag *flag.FlagSet) {
 	d.JobConfig.RegisterFlags(flag)
+	d.Options.RegisterFlags(flag)
 	structflag.RegisterFlags(d, flag)
 }
 
@@ -64,7 +66,7 @@ func main() {
 		}
 		log.Printf("all daemons are using same version: %q", d.mlfsGitCommit)
 	}
-	runop.Main(&d.JobConfig)
+	runop.Main(&d.JobConfig, d.Options)
 }
 
 func checkDaemons(git string, hosts []string, port int) int {

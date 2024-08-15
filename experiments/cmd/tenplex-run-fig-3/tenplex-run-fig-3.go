@@ -200,7 +200,7 @@ func runOne(n string, r Run) {
 		log.Printf("would run %s", n)
 		return
 	}
-	runop.Main(jc)
+	runop.Main(jc, runop.Options{})
 	os.RemoveAll(n)
 	if err := os.Rename("logs", n); err != nil {
 		log.Panic(err)
