@@ -145,7 +145,7 @@ func repartition(from, to *para_config.MultiDimensionalParallelism, step int, jo
 			args = append(args, `--central`)
 		}
 		migrate := Proc{
-			Prog: path.Join(home, "go/bin/tenplex-state-transformer"),
+			Prog: `tenplex-state-transformer`,
 			Args: args,
 			Host: host,
 			User: jobConf.User,
