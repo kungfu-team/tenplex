@@ -42,6 +42,16 @@ func addListMeta(conf *meta.Config, ckptClient *client.CheckpointClient, targetS
 	return nil
 }
 
+func isOptimizerParam(name []string, offset int, precision string) bool {
+	return (equalAndCheck(name, 0, "optimizer") &&
+		(equalAndCheck(name, 1, "optimizer") || precision == "fp32") &&
+		equalAndCheck(name, 1+offset, "param_groups") &&
+		isIntAndCheck(name, 2+offset) &&
+		equalAndCheck(name, 3+offset, "params") &&
+		isIntAndCheck(name, 4+offset))
+
+}
+
 func setNonTensor(conf *meta.Config, ckptClient *client.CheckpointClient, nonTensor []string, weightDecayTens [][]string, targetMDPRank *meta.MDPRank) error {
 	sourcePPRank := rand.Intn(conf.SourcePPDegree)
 	sourceMPRank := rand.Intn(conf.SourceMPDegree)
@@ -54,13 +64,7 @@ func setNonTensor(conf *meta.Config, ckptClient *client.CheckpointClient, nonTen
 	if conf.Precision == "fp16" {
 		off = 1
 	}
-	if equalAndCheck(nonTensor, 0, "optimizer") &&
-		(equalAndCheck(nonTensor, 1, "optimizer") || conf.Precision == "fp32") &&
-		equalAndCheck(nonTensor, 1+off, "param_groups") &&
-		isIntAndCheck(nonTensor, 2+off) &&
-		equalAndCheck(nonTensor, 3+off, "params") &&
-		isIntAndCheck(nonTensor, 4+off) { // Megatron-LM
-
+	if isOptimizerParam(nonTensor, off, conf.Precision) { // Megatron-LM
 		group, err := strconv.Atoi(nonTensor[2+off])
 		if err != nil {
 			return err
