@@ -11,7 +11,9 @@ join() { join_ , $@; }
 logfile="$(basename $0).log"
 
 base_flags() {
-    echo -image "kungfu.azurecr.io/mw-megatron-lm-23.06-update:latest"
+    echo -image "kungfu.azurecr.io/mw-megatron-lm-23.06-update:v0.0.1"
+    # echo -image "kungfu.azurecr.io/mw-megatron-lm-23.06-update:latest"
+
     echo -user $USER
 
     echo -mlfs-port 20010
