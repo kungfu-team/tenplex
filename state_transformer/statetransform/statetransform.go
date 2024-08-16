@@ -92,15 +92,12 @@ func setNonTensor(conf *meta.Config, ckptClient *client.CheckpointClient, nonTen
 	sourcePath := strings.Join(nonTensor, "/")
 
 	if strings.Contains(sourcePath, "np_rng_state/1") { // HACK
-		dtype := "numpy.ndarray"
-		hackSourcePath := fmt.Sprintf("%s.%s", sourcePath, dtype)
-		data, err := ckptClient.QueryMegatronTensor(&sourceMDPRank, conf.InputTimestamp, hackSourcePath, nil)
+		data, err := ckptClient.QueryMegatronTensor(&sourceMDPRank, conf.InputTimestamp, sourcePath, nil)
 		if err != nil {
 			return err
 		}
 
 		targetPath := strings.Join(nonTensor, "/")
-		targetPath = fmt.Sprintf("%s.%s", targetPath, dtype)
 		err = ckptClient.UploadMegatronTensor(data, targetMDPRank, conf.OutputTimestamp, targetPath)
 		if err != nil {
 			return err

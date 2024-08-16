@@ -92,7 +92,6 @@ func mapRequests(sourceDim, targetDim, sourceMPSize, targetMPRank int) (Requests
 func requestTensors(dim int, reqs *Requests, ckptCl *client.CheckpointClient, sourceKey *[]string, inputTimestamp string, srcRankMap *meta.RankMap, srcPPRank int) ([]*tensor.Tensor, error) {
 	var tensors []*tensor.Tensor
 	sourcePath := strings.Join(*sourceKey, "/")
-	sourcePath = fmt.Sprintf("%s.numpy.ndarray", sourcePath)
 	for sourceMPRank, rang := range *reqs {
 		sourceMDPRank := meta.MDPRank{PPRank: srcPPRank, MPRank: sourceMPRank, DPRank: 0}
 		slice := client.Slice{Range: rang, Dim: dim}
