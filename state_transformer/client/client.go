@@ -94,23 +94,23 @@ func (c CheckpointClient) QueryTensor(ip string, pa string, slice *Slice) (*tens
 	u := c.createURL(ip, `/query`, q)
 	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
-		log.Panicf("Query tensor new req %v", q)
+		log.Panicf("Query tensor new req %v", u)
 		return nil, err
 	}
 	req.Header.Add("Content-Type", "x-tensor")
 	resp, err := c.HttpClient.Do(req)
 	if err != nil {
-		log.Panicf("Query tensor do req %v", q)
+		log.Panicf("Query tensor do req %v", u)
 		return nil, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		log.Panicf("Query tensor status code %d, %v", resp.StatusCode, q)
+		log.Panicf("Query tensor status code %d, %v", resp.StatusCode, u)
 		return nil, fmt.Errorf("query tensor failed, status: %s, url: %s", resp.Status, req.URL.String())
 	}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Panicf("Query tensor read %v", q)
+		log.Panicf("Query tensor read %v", u)
 		return nil, err
 	}
 	dtype := resp.Header.Get("x-tensor-dtype")
@@ -170,22 +170,22 @@ func (c CheckpointClient) QueryValue(ip string, pa string) ([]byte, string, erro
 	u := c.createURL(ip, `/query`, q)
 	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
-		log.Panicf("Query value new req %v", q)
+		log.Panicf("Query value new req %v", u)
 		return nil, "", err
 	}
 	resp, err := c.HttpClient.Do(req)
 	if err != nil {
-		log.Panicf("Query value do req %v", q)
+		log.Panicf("Query value do req %v", u)
 		return nil, "", err
 	}
 	if resp.StatusCode != http.StatusOK {
-		log.Panicf("Query value status code %d, %v", resp.StatusCode, q)
+		log.Panicf("Query value status code %d, %v", resp.StatusCode, u)
 		return nil, "", fmt.Errorf("query value failed, status: %s, path: %s, IP: %s", resp.Status, queryPath, ip)
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Panicf("Query value read %v", q)
+		log.Panicf("Query value read %v", u)
 		return nil, "", err
 	}
 	dtype := resp.Header.Get("dtype")
