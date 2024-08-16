@@ -103,6 +103,7 @@ func (c CheckpointClient) QueryTensor(ip string, pa string, slice *Slice) (*tens
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
+		log.Panicf("Query tensor failed %v", q)
 		return nil, fmt.Errorf("query tensor failed, status: %s, url: %s", resp.Status, req.URL.String())
 	}
 	body, err := io.ReadAll(resp.Body)
@@ -178,6 +179,7 @@ func (c CheckpointClient) QueryValue(ip string, pa string) ([]byte, string, erro
 		return nil, "", err
 	}
 	if resp.StatusCode != http.StatusOK {
+		log.Panicf("Query value failed %v", q)
 		return nil, "", fmt.Errorf("query value failed, status: %s, path: %s, IP: %s", resp.Status, queryPath, ip)
 	}
 	dtype := resp.Header.Get("dtype")
