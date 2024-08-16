@@ -1,14 +1,10 @@
 [
     {
         "step": 0,
-        "size": 8
+        "size": 16
     },
     {
         "step": 50,
-        "size": 4
-    },
-    {
-        "step": 60,
         "size": 0
     }
 ]

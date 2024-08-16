@@ -4,10 +4,10 @@ set -e
 . $(dirname $0)/common.sh
 
 list_hosts() {
-    # echo "10.10.10.1"
+    echo "10.10.10.1"
     echo "10.10.10.2"
     echo "10.10.10.3"
-    # echo "10.10.10.4"
+    echo "10.10.10.4"
 }
 
 flags() {
@@ -27,7 +27,6 @@ flags() {
     echo -gpu-per-host 4
     echo -gpu-per-container 4
     echo -seq-length 1024
-    echo -jobid run_gpt
 }
 
-tenplex-run $(flags) 2>&1 | tee gpt.log
+tenplex-run $(flags) >gpt.log 2>&1
