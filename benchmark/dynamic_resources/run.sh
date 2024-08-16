@@ -17,7 +17,7 @@ common_flags() {
     echo -batch-size 128
     echo -micro-batch-size 8
     echo -precision "fp16"
-    echo -index-url "/data/megatron-lm/gpt-2/enwiki/npzs_seq1024/indices.txt"
+    echo -index-url "/data/megatron-lm/gpt-2/enwiki/npzs_seq1024_new/indices.txt"
     echo -hosts "$(join $(hosts))"
     echo -gpu-per-host 4
     echo -gpu-per-container 4
@@ -30,29 +30,34 @@ common_flags() {
 
 tenplex_flags() {
     common_flags
-    echo -jobid dyn-res-ten
-    echo -para-config "$(dirname $0)/tenplex-para-config.json"
-    echo -schedule-file "$(dirname $0)/tenplex-schedule.json"
+    echo -jobid dyn-res-tenplex
+    echo -para-config "tenplex-para-config.json"
+    echo -schedule-file "tenplex-schedule.json"
 }
 
 tenplex_dp_flags() {
     common_flags
-    echo -jobid dyn-res-tdp
-    echo -para-config "$(dirname $0)/pytorch-para-config.json"
-    echo -schedule-file "$(dirname $0)/pytorch-schedule.json"
+    echo -jobid dyn-res-tenplex-dp
+    echo -para-config "pytorch-para-config.json"
+    echo -schedule-file "pytorch-schedule.json"
 }
 
 pytorch_flags() {
     common_flags
-    echo -jobid dyn-res-pyt
-    echo -para-config "$(dirname $0)/pytorch-para-config.json"
-    echo -schedule-file "$(dirname $0)/pytorch-schedule.json"
+    echo -jobid dyn-res-tde
+    echo -para-config "pytorch-para-config.json"
+    echo -schedule-file "pytorch-schedule.json"
     echo -no-tenplex
 }
 
-# tenplex-run $(tenplex_flags) >tenplex-dyn-res.log 2>&1
+tenplex-run $(tenplex_flags) 2>&1 | tee dyn-res-tenplex.log
+python extract_metrics.py -t dyn-res-tenplex
 
-tenplex-run $(tenplex_dp_flags) >tenplex-dp-dyn-res.log 2>&1
+tenplex-run $(tenplex_dp_flags) 2>&1 | tee dyn-res-tenplex-dp.log 
+python extract_metrics.py -t dyn-res-tenplex-dp
 
-# sudo rm -fr /mnt/k1d2/ckpt/*
-# tenplex-run $(pytorch_flags) >pytorch-dyn-res.log 2>&1
+sudo rm -fr /mnt/k1d2/ckpt/*
+tenplex-run $(pytorch_flags) 2>&1 | tee dyn-res-tde.log
+python extract_metrics.py -t dyn-res-tde
+
+python plot.py

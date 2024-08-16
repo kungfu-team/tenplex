@@ -10,3 +10,4 @@ events.out.tfevents.*
 training
 para_config.json
 schedule.json
+*.npz
