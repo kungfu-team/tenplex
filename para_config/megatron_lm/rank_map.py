@@ -1,6 +1,5 @@
 import json
 import os
-import re
 
 
 def gen_rank_map(
@@ -11,10 +10,11 @@ def gen_rank_map(
     pp_size: int,
     tp_size: int,
     dp_size: int,
-    base_dir: str,
+    job_dir: str,
+    repo: str,
 ):
     size = pp_size * tp_size * dp_size
-    out_dir = f"{framework}/{precision}/{model}/{model_size}"
+    out_dir = os.path.join(repo, f"{framework}/{precision}/{model}/{model_size}")
     out_dir = os.path.join(out_dir, f"pp{pp_size:02d}/mp{tp_size:02d}/dp{dp_size:02d}")
     gpus_container = 4
     num_nodes = size // gpus_container
@@ -24,7 +24,7 @@ def gen_rank_map(
     for rank in range(size):
         for node in range(num_nodes):
             rank_path = os.path.join(
-                base_dir, f"{node}/ckpt/{rank}/rank_{rank:02d}.json"
+                job_dir, f"{node}/ckpt/{rank}/rank_{rank:02d}.json"
             )
 
             if not os.path.exists(rank_path):

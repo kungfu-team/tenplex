@@ -4,6 +4,7 @@ import os
 import subprocess
 
 from structure import gen_structure
+from util import remove_dir
 
 
 def create_schedule(size: int):
@@ -73,9 +74,20 @@ def create_training_args(model: str, size: str, precision: str, hosts: [str]) ->
     return args
 
 
-def remove_dir(path: str):
-    if os.path.exists(path):
-        os.rmdir(path)
+def commit_para_config(repo: str, model: str, size: str, pp: int, tp: int, dp: int):
+    res = subprocess.run(
+        f"cd {repo} && git diff", shell=True, check=True, capture_output=True, text=True
+    )
+    if res.stdout == "":
+        print("Repo has not changed")
+        return
+
+    msg = f"update megatron-lm {model} {size} p{pp}t{tp}d{dp}"
+    subprocess.run(
+        f"cd {repo} && git commit -am'{msg}' && git push",
+        shell=True,
+        check=True,
+    )
 
 
 def main():
@@ -103,11 +115,14 @@ def main():
     cmd = ["tenplex-run"]
     cmd.extend(cmd_args)
     cmd.extend(["2>&1", "|", "tee gen_para_config_training.log"])
-    subprocess.run(cmd, shell=True, check=True)
+    cmd_str = " ".join(cmd)
+    subprocess.run(cmd_str, shell=True, check=True)
 
     gen_structure(
         args.model, args.size, args.precision, args.pp, args.tp, args.dp, repo
     )
+
+    commit_para_config(repo, args.model, args.size, args.pp, args.tp, args.dp)
 
 
 if __name__ == "__main__":

@@ -53,9 +53,10 @@ def gen_key_order(
     pp_size: int,
     tp_size: int,
     dp_size: int,
+    repo: str,
 ):
     total_size = pp_size * tp_size * dp_size
-    direc = f"{framework}/{precision}/{model}/{model_size}"
+    direc = os.path.join(repo, f"{framework}/{precision}/{model}/{model_size}")
     direc = os.path.join(direc, f"pp{pp_size:02d}/mp{tp_size:02d}/dp{dp_size:02d}")
 
     model_keys = {}

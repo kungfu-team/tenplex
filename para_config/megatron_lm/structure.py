@@ -5,6 +5,7 @@ import os
 import torch
 from key_order import gen_key_order
 from rank_map import gen_rank_map
+from util import remove_dir
 
 
 def create_value_dict(value):
@@ -58,6 +59,8 @@ def gen_rank_structs(
     gpus_container = 4
     num_containers = size // gpus_container
 
+    remove_dir(out_dir)
+
     for container in range(num_containers):
         container_path = os.path.join(base_dir, f"{container}/ckpt")
         for entry in os.scandir(container_path):
@@ -92,11 +95,11 @@ def gen_structure(
     model: str, size: str, precision: str, pp: int, tp: int, dp: int, repo: str
 ):
     job_id = "gen-para-config"
-    base_dir = f"training/{job_id}"
+    job_dir = f"training/{job_id}"
     step = 50
-    gen_rank_structs(job_id, base_dir, pp, tp, dp, step, model, size, precision, repo)
+    gen_rank_structs(job_id, job_dir, pp, tp, dp, step, model, size, precision, repo)
 
     framework = "megatron-lm"
-    gen_key_order(framework, model, size, precision, pp, tp, dp)
+    gen_key_order(framework, model, size, precision, pp, tp, dp, repo)
 
-    gen_rank_map(framework, model, size, precision, pp, tp, dp, base_dir)
+    gen_rank_map(framework, model, size, precision, pp, tp, dp, job_dir, repo)
