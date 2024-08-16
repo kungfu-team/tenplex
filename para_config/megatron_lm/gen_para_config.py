@@ -99,8 +99,7 @@ def main():
     parser.add_argument("--pp", type=int)
     parser.add_argument("--tp", type=int)
     args = parser.parse_args()
-    # hosts = [10.10.10.1, 10.10.10.2, 10.10.10.3, 10.10.10.4]
-    hosts = ["10.10.10.2", "10.10.10.3"]
+    hosts = ["10.10.10.1", "10.10.10.2", "10.10.10.3", "10.10.10.4"]
     home = os.path.expanduser("~")
     repo = os.path.join(home, "Tenplex/repo/transformer-checkpoint")
 
