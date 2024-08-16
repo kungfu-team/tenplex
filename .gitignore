@@ -7,3 +7,6 @@ __pycache__
 bin
 build
 events.out.tfevents.*
+training
+para_config.json
+schedule.json
