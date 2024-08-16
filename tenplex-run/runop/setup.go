@@ -1,6 +1,7 @@
 package runop
 
 import (
+	"flag"
 	"log"
 	"os"
 	"path"
@@ -9,6 +10,7 @@ import (
 	"github.com/kungfu-team/tenplex/tenplex-run/docker"
 	"github.com/kungfu-team/tenplex/tenplex-run/job"
 	"github.com/kungfu-team/tenplex/tenplex-run/para_config"
+	"github.com/kungfu-team/tenplex/tenplex-run/structflag"
 	"github.com/lgarithm/proc"
 	"github.com/lgarithm/proc/experimental"
 )
@@ -85,7 +87,7 @@ func cloneTransformerCkpts(rpc proc.CreatePFn) P {
 	dir := "~/.tenplex/transformer-checkpoint"
 	return seq(
 		ignore(rpc(`rm`, `-rf`, dir)),
-		rpc(`git`, `clone`, `git@github.com:kungfu-team/transformer-checkpoint.git`, dir),
+		rpc(`git`, `clone`, `https://github.com/kungfu-team/transformer-checkpoint.git`, dir),
 	)
 }
 
@@ -156,13 +158,23 @@ func collectLogs(jobConf *job.JobConfig) {
 	}
 }
 
-func Main(jobConf *job.JobConfig) {
+type Options struct {
+	PullImage bool `flag:"pool-image"`
+}
+
+func (o *Options) RegisterFlags(flag *flag.FlagSet) {
+	structflag.RegisterFlags(o, flag)
+}
+
+func Main(jobConf *job.JobConfig, o Options) {
 	RoundID.Reset()
 	job.Stage.Reset()
 	CleanMachines(jobConf)
 	// SetupSwarm(jobConf)
 	PrepareVMs(jobConf)
-	PullImages(jobConf)
+	if o.PullImage {
+		PullImages(jobConf)
+	}
 	ScalingTraining(jobConf)
 	collectLogs(jobConf)
 }
