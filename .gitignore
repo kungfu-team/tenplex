@@ -2,11 +2,12 @@
 *.log
 .DS_Store
 .mypy_cache
-/training
+training
 __pycache__
 bin
 build
 events.out.tfevents.*
-training
 para_config.json
 schedule.json
+*.npz
+*.pdf
