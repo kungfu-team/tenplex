@@ -20,13 +20,14 @@ type PathMap struct {
 }
 
 type Container struct {
-	Name     string
-	IP       string // private IP
-	GPUs     []string
-	Host     string // Docker Host IP
-	Cmd      []string
-	Rank     int
-	PathMaps []PathMap
+	Name             string
+	IP               string // private IP
+	GPUs             []string
+	Host             string // Docker Host IP
+	Cmd              []string
+	Rank             int
+	PathMaps         []PathMap
+	NetworkInterface string
 }
 
 func (c Container) MapFlags() []string {

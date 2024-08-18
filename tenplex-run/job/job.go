@@ -76,13 +76,14 @@ func (j Job) newWorker(i int, jConf *JobConfig, host string, gpus []string) Cont
 	}
 
 	return Container{
-		Name:     dockerName,
-		IP:       dockerName,
-		GPUs:     gpus,
-		Host:     host,
-		Cmd:      j.GenCmd(i, jConf, host),
-		Rank:     i,
-		PathMaps: pathMaps,
+		Name:             dockerName,
+		IP:               dockerName,
+		GPUs:             gpus,
+		Host:             host,
+		Cmd:              j.GenCmd(i, jConf, host),
+		Rank:             i,
+		PathMaps:         pathMaps,
+		NetworkInterface: jConf.NetworkInterface,
 	}
 }
 

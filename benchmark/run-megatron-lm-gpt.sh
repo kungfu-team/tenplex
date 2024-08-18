@@ -29,4 +29,4 @@ flags() {
     echo -seq-length 1024
 }
 
-tenplex-run $(flags) >gpt.log 2>&1
+tenplex-run $(flags) 2>&1 | tee gpt.log
