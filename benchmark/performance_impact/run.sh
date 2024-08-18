@@ -12,9 +12,9 @@ hosts() {
 
 model_sizes() {
     # echo "6.7B"
-    # echo "2.7B"
-    # echo "xl"
-    echo "large"
+    echo "2.7B"
+    echo "xl"
+    # echo "large"
 }
 
 batch_sizes() {
@@ -31,6 +31,7 @@ mdp_sizes() {
 
 bert_flags() {
     echo -model "bert"
+    echo -model-sizes "large"
 
     echo -dataset "openwebtext"
     echo -index-url "/data/megatron-lm/bert/openwebtext/npzs_seq1024/indices.txt"
@@ -38,6 +39,7 @@ bert_flags() {
 
 gpt_flags() {
     echo -model "gpt"
+    echo -model-sizes "2.7B"
 
     echo -dataset "enwiki"
     echo -index-url "/data/megatron-lm/gpt-2/enwiki/npzs_seq1024_new/indices.txt"
@@ -46,7 +48,6 @@ gpt_flags() {
 comb_flags() {
     echo -hosts $(join $(hosts))
 
-    echo -model-sizes $(join $(model_sizes))
     echo -batch-sizes $(join $(batch_sizes))
     echo -micro-batch-sizes $(join $(micro_batch_sizes))
 
