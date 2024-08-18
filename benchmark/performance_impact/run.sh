@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-. $(dirname $0)/common.sh
+. $(dirname $0)/../common.sh
 
 hosts() {
     echo "10.10.10.1"
@@ -12,14 +12,13 @@ hosts() {
 
 model_sizes() {
     # echo "6.7B"
-    # echo "2.7B"
-    # echo "xl"
-    echo "large"
+    echo "2.7B"
+    echo "xl"
+    # echo "large"
 }
 
 batch_sizes() {
     echo 128
-    # echo 256
 }
 
 micro_batch_sizes() {
@@ -27,12 +26,12 @@ micro_batch_sizes() {
 }
 
 mdp_sizes() {
-    # echo 8
     echo 16
 }
 
 bert_flags() {
     echo -model "bert"
+    echo -model-sizes "large"
 
     echo -dataset "openwebtext"
     echo -index-url "/data/megatron-lm/bert/openwebtext/npzs_seq1024/indices.txt"
@@ -40,15 +39,15 @@ bert_flags() {
 
 gpt_flags() {
     echo -model "gpt"
+    echo -model-sizes "2.7B"
 
     echo -dataset "enwiki"
-    echo -index-url "/data/megatron-lm/gpt-2/enwiki/npzs_seq1024/indices.txt"
+    echo -index-url "/data/megatron-lm/gpt-2/enwiki/npzs_seq1024_new/indices.txt"
 }
 
 comb_flags() {
     echo -hosts $(join $(hosts))
 
-    echo -model-sizes $(join $(model_sizes))
     echo -batch-sizes $(join $(batch_sizes))
     echo -micro-batch-sizes $(join $(micro_batch_sizes))
 
@@ -62,15 +61,15 @@ common_flags() {
 }
 
 run_bert() {
-    ./bin/tenplex-run-fig-3 $(common_flags) $(bert_flags)
+    tenplex-perf-impact $(common_flags) $(bert_flags)
 }
 
 run_gpt() {
-    ./bin/tenplex-run-fig-3 $(common_flags) $(gpt_flags)
+    tenplex-perf-impact $(common_flags) $(gpt_flags)
 }
 
 main() {
-    # run_bert
+    run_bert
     run_gpt
 }
 
@@ -78,5 +77,7 @@ with_nohup() {
     nohup $@ >out.log 2>err.log &
 }
 
-# with_nohup
 main
+
+python extract.py
+python plot.py
