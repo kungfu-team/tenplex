@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-. $(dirname $0)/common.sh
+. $(dirname $0)/../common.sh
 
 hosts() {
     echo "10.10.10.1"
@@ -19,7 +19,6 @@ model_sizes() {
 
 batch_sizes() {
     echo 128
-    # echo 256
 }
 
 micro_batch_sizes() {
@@ -27,7 +26,6 @@ micro_batch_sizes() {
 }
 
 mdp_sizes() {
-    # echo 8
     echo 16
 }
 
@@ -42,7 +40,7 @@ gpt_flags() {
     echo -model "gpt"
 
     echo -dataset "enwiki"
-    echo -index-url "/data/megatron-lm/gpt-2/enwiki/npzs_seq1024/indices.txt"
+    echo -index-url "/data/megatron-lm/gpt-2/enwiki/npzs_seq1024_new/indices.txt"
 }
 
 comb_flags() {
@@ -62,15 +60,15 @@ common_flags() {
 }
 
 run_bert() {
-    ./bin/tenplex-run-fig-3 $(common_flags) $(bert_flags)
+    tenplex-perf-impact $(common_flags) $(bert_flags)
 }
 
 run_gpt() {
-    ./bin/tenplex-run-fig-3 $(common_flags) $(gpt_flags)
+    tenplex-perf-impact $(common_flags) $(gpt_flags)
 }
 
 main() {
-    # run_bert
+    run_bert
     run_gpt
 }
 
@@ -78,5 +76,7 @@ with_nohup() {
     nohup $@ >out.log 2>err.log &
 }
 
-# with_nohup
 main
+
+python extract.py
+python plot.py
