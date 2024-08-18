@@ -44,6 +44,7 @@ type JobConfig struct {
 	Seed              int    `flag:"seed" default:"1234"`
 	NoShuffle         bool   `flag:"no-shuffle" default:"false"`
 	GenParaConfig     bool   `flag:"gen-para-config" default:"false"`
+	NetworkInterface  string `flag:"network-interface" default:"eth0"`
 }
 
 func genJobID() string {
