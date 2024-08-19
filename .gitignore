@@ -7,8 +7,6 @@ __pycache__
 bin
 build
 events.out.tfevents.*
-para_config.json
-schedule.json
 *.npz
 *.pdf
 *.csv
