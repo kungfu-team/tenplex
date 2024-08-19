@@ -1,5 +1,7 @@
 #!/bin/bash
 set -e
 
-python training.py
-python plot.py
+sudo rm -rf /mnt/k1d2/ckpt/*
+python training.py --scale-up
+
+# python plot.py
