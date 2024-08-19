@@ -2,7 +2,7 @@
 
 set -e
 
-. $(dirname $0)/common.sh
+. $(dirname $0)/../common.sh
 
 hosts() {
     echo "10.10.10.1"
@@ -26,7 +26,7 @@ comb_flags() {
     echo -model-sizes $(join $(model_sizes))
     echo -batch-sizes 128
     echo -micro-batch-sizes 8
-    echo -para-config "para-config.json"
+    echo -para-config "$(dirname $0)/para-config.json"
     echo -redeploy
 }
 
