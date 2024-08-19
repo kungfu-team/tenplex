@@ -18,17 +18,18 @@ model_sizes() {
 }
 
 comb_flags() {
+    base_flags
     echo -model "gpt"
     echo -dataset "enwiki"
     echo -index-url "/data/megatron-lm/gpt-2/enwiki/npzs_seq1024_new/indices.txt"
     echo -hosts $(join $(hosts))
-    echo -schedule "schedule.json"
+    echo -schedule "$(dirname $0)/schedule.json"
     echo -model-sizes $(join $(model_sizes))
     echo -batch-sizes 128
     echo -micro-batch-sizes 8
     echo -para-config "$(dirname $0)/para-config.json"
     echo -redeploy
+    echo -central
 }
 
-tenplex-multi-experiment 2>&1 | tee redeploy.log
-tenplex-multi-experiment -central 2>&1 | tee redeploy_central.log
+tenplex-multi-experiment $(comb_flags) 2>&1 | tee redeploy.log

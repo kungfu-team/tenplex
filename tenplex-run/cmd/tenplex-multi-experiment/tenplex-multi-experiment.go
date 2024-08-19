@@ -125,6 +125,7 @@ type MultiRunConfig struct {
 
 	DryRun   bool `flag:"dryrun"`
 	Redeploy bool `flag:"redeploy"`
+	Central  bool `flag:"central"`
 }
 
 func (j *MultiRunConfig) ParseParaConfig() {
@@ -159,14 +160,12 @@ func main() {
 	log.Printf("Using %d batch sizes: %v", len(cfg.BatchSizes), cfg.BatchSizes)
 	log.Printf("Using %d micro batch sizes: %v", len(cfg.MicroBatchSizes), cfg.MicroBatchSizes)
 
-	var (
-		isCentral = []bool{
-			false,
-			true,
-		}
-		trains = genTrainings(cfg.ModelSizes, cfg.BatchSizes, cfg.MicroBatchSizes)
-		runs   = genRuns(trains, cfg.ScheduleFiles, isCentral)
-	)
+	isCentral := []bool{false}
+	if cfg.Central {
+		isCentral = append(isCentral, true)
+	}
+	trains := genTrainings(cfg.ModelSizes, cfg.BatchSizes, cfg.MicroBatchSizes)
+	runs := genRuns(trains, cfg.ScheduleFiles, isCentral)
 
 	log.Printf("will run %d experiments", len(runs))
 
