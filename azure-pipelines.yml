@@ -5,6 +5,7 @@
 
 trigger:
 - main
+- lg/*
 
 pool:
   vmImage: ubuntu-20.04
