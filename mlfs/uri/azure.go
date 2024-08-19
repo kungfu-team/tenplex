@@ -26,13 +26,13 @@ func (o *Opener) loadSAS(filename string) {
 		return
 	}
 	sa := strings.TrimSuffix(path.Base(filename), `.sas`)
-	sas := strings.TrimSpace(string(bs))
+	sas := strings.TrimPrefix(strings.TrimSpace(string(bs)), `?`)
 	if err := checkSAS(filename, sas); err != nil {
 		log.Printf("invalid SAS %s: %v", filename, err)
 		return
 	}
 	o.SetSAS(sa, sas)
-	// log.Printf("loaded SAS for %s", sa)
+	// log.Printf("loaded SAS for %s %s", sa, sas)
 }
 
 func (o *Opener) SetSAS(sa, sas string) {
