@@ -12,3 +12,5 @@ schedule.json
 *.npz
 *.pdf
 *.csv
+data
+*.pt
