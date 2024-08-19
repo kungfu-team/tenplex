@@ -4,6 +4,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+def parse_logs():
+    # TODO
+    pass
+
+
 def main():
     sys = "Scalai"
     width = 0.3

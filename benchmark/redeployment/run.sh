@@ -33,3 +33,5 @@ comb_flags() {
 }
 
 tenplex-multi-experiment $(comb_flags) 2>&1 | tee redeploy.log
+
+python plot.py
