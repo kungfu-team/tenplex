@@ -45,12 +45,9 @@ def parse_log(fname):
     return steps, losses
 
 
-def main():
-    mnist_fname = "mnist.log"
-    inconsistent_fname = "inconsistent.log"
-
-    mnist_step, mnist_loss = parse_log(mnist_fname)
-    incon_step, incon_loss = parse_log(inconsistent_fname)
+def plot_inconsistent(static_fname, dynamic_fname, out_name):
+    mnist_step, mnist_loss = parse_log(static_fname)
+    incon_step, incon_loss = parse_log(dynamic_fname)
 
     plt.rc("figure", figsize=[4, 2.25])
     fig, ax = plt.subplots()
@@ -72,7 +69,7 @@ def main():
         linewidth=linewidth,
         color="tab:red",
     )
-    plt.axvline(200, linewidth=linewidth, color="tab:orange")
+    plt.axvline(150, linewidth=linewidth, color="tab:orange")
 
     ax.set_ylim(bottom=0, top=0.4)
     fontsize = 16
@@ -84,7 +81,18 @@ def main():
     ax.set_ylabel("Loss", fontsize=fontsize)
 
     fig.tight_layout()
-    plt.savefig("inconsistent_dataset.pdf")
+    plt.savefig(f"{out_name}.pdf")
+
+
+def main():
+    mnist_fname = "mnist.log"
+    inconsistent_dataset_fname = "inconsistent_dataset.log"
+    inconsistent_batch_size_fname = "inconsistent_batch_size.log"
+
+    plot_inconsistent(mnist_fname, inconsistent_dataset_fname, "inconsistent_dataset")
+    plot_inconsistent(
+        mnist_fname, inconsistent_batch_size_fname, "inconsistent_batch_size"
+    )
 
 
 if __name__ == "__main__":
