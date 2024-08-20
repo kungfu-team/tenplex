@@ -15,13 +15,11 @@ flags() {
     echo --admin-username kungfu
     echo --vnet-name tenplex-relayVNET
     echo --subnet tenplex-relaySubnet
-    echo --disable-overprovision
     echo --image $image
     echo --instance-count 0
     echo --vm-sku $size
     echo --location westeurope
     echo --storage-sku $storage
-    # echo --lb '""'
 }
 
 recreate() {
