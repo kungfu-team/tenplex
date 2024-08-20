@@ -1,9 +1,10 @@
 import argparse
+import shutil
 import subprocess
 import time
 
 
-def create_cmd(worker: int, image: str, model_size: str):
+def create_cmd(worker: int, image: str, model_size: str, com_backend: str):
     docker_cmd = (
         "docker run "
         "--rm "
@@ -17,21 +18,23 @@ def create_cmd(worker: int, image: str, model_size: str):
         "--ulimit memlock=-1 "
         "--shm-size=1gb "
         "--env GLOO_SOCKET_IFNAME=eth0 "
+        # "--env NCCL_DEBUG=INFO "
+        # "--env TORCH_CPP_LOG_LEVEL=INFO "
         "-d "
         f"-t {image} "
     )
     if model_size == "large":
-        docker_cmd += f"./run_gpt.sh {worker}"
+        docker_cmd += f"./run_gpt.sh {worker} {com_backend}"
     elif model_size == "xl":
-        docker_cmd += f"./run_gpt_xl.sh {worker}"
+        docker_cmd += f"./run_gpt_xl.sh {worker} {com_backend}"
     else:
         raise NotImplementedError
 
     return docker_cmd
 
 
-def start_container(hosts, i, image, model_size):
-    docker_cmd = create_cmd(i, image, model_size)
+def start_container(hosts: list, i: int, image: str, model_size: str, com_backend: str):
+    docker_cmd = create_cmd(i, image, model_size, com_backend)
     host = hosts[i]
     cmd = f'ssh {host} "{docker_cmd}"'
     subprocess.run(cmd, check=True, shell=True)
@@ -49,7 +52,8 @@ def main():
     # hosts = ["komodo01", "komodo02", "komodo03", "komodo04"]
     hosts = ["komodo01", "komodo02"]
     num_hosts = len(hosts)
-    image = "kungfu.azurecr.io/mw-megatron-deepspeed:latest"
+    # image = "kungfu.azurecr.io/mw-megatron-deepspeed:latest"
+    image = "kungfu.azurecr.io/mw-megatron-deepspeed-update:latest"
     model_size = "xl"
     parser = argparse.ArgumentParser(description="Deepspeed")
     parser.add_argument(
@@ -59,6 +63,7 @@ def main():
     )
     args = parser.parse_args()
     scale_up = args.scale_up
+    com_backend = "nccl" if scale_up else "gloo"
 
     # Pull image
     for host in hosts:
@@ -69,16 +74,16 @@ def main():
     if scale_up:
         cur_hosts = num_hosts // 2
     for i in range(cur_hosts):
-        start_container(hosts, i, image, model_size)
+        start_container(hosts, i, image, model_size, com_backend)
     print("Started training")
 
     # Wait
-    time.sleep(4 * 60)
+    time.sleep(3 * 60)
 
     # Scale
     if scale_up:
         for i in range(num_hosts // 2, num_hosts):
-            start_container(hosts, i, image, model_size)
+            start_container(hosts, i, image, model_size, com_backend)
             print(f"Finished docker run -d {time.time()}")
     else:
         for i in range(num_hosts // 2, num_hosts):
@@ -87,7 +92,7 @@ def main():
         print(f"Finished docker stop {time.time()}")
 
     # Wait
-    time.sleep(4 * 60)
+    time.sleep(3 * 60)
 
     # Stop
     cur_hosts = num_hosts
@@ -96,6 +101,11 @@ def main():
     for i in range(cur_hosts):
         stop_container(hosts[i])
     print("Stopped Training")
+
+    # Collect logs
+    name = "scale_up" if scale_up else "scale_down"
+    for i in range(num_hosts):
+        shutil.copyfile(f"/mnt/k1d2/ckpt/worker{i}.log", f"{name}_{i}.log")
 
 
 if __name__ == "__main__":
