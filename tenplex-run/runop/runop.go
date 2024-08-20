@@ -256,6 +256,7 @@ func ScalingTraining(jobConf *job.JobConfig) {
 				hosts = hosts[:len(hosts)/2]
 			} else {
 				hosts = hosts[len(hosts)/2:]
+				jobConf.Cluster.Hosts = hosts
 			}
 		}
 		progress := getStep(jobConf, scalingPoint) * jobConf.BatchSize
