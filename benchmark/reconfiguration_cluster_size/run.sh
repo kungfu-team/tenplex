@@ -36,4 +36,24 @@ mv logs logs_8_pp
 tenplex-run $(training_flags) -schedule-file schedule-8.json -para-config para-config-tp.json 2>&1 | tee reconfig_8_tp.log
 mv logs logs_8_tp
 
+. ./scale-cluster.sh 4
+
+tenplex-run $(training_flags) -schedule-file schedule-16.json -para-config para-config-dp.json 2>&1 | tee reconfig_16_dp.log
+mv logs logs_16_dp
+tenplex-run $(training_flags) -schedule-file schedule-16.json -para-config para-config-pp.json 2>&1 | tee reconfig_16_pp.log
+mv logs logs_16_pp
+tenplex-run $(training_flags) -schedule-file schedule-16.json -para-config para-config-tp.json 2>&1 | tee reconfig_16_tp.log
+mv logs logs_16_tp
+
+. ./scale-cluster.sh 8
+
+tenplex-run $(training_flags) -schedule-file schedule-16.json -para-config para-config-dp.json 2>&1 | tee reconfig_32_dp.log
+mv logs logs_32_dp
+tenplex-run $(training_flags) -schedule-file schedule-16.json -para-config para-config-pp.json 2>&1 | tee reconfig_32_pp.log
+mv logs logs_32_pp
+tenplex-run $(training_flags) -schedule-file schedule-16.json -para-config para-config-tp.json 2>&1 | tee reconfig_32_tp.log
+mv logs logs_32_tp
+
 . ./scale-cluster.sh 0
+
+python plot.py
