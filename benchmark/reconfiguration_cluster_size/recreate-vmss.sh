@@ -11,7 +11,7 @@ echo "Using image $image"
 
 storage=Premium_LRS # SSD
 
-flags() {
+create_flags() {
     echo --admin-username kungfu
     echo --vnet-name tenplex-relayVNET
     echo --subnet tenplex-relaySubnet
@@ -20,13 +20,14 @@ flags() {
     echo --vm-sku $size
     echo --location westeurope
     echo --storage-sku $storage
+    echo --lb-sku Standard
 }
 
 recreate() {
     az vmss delete -g $group -n $name
     echo "deleted $name"
 
-    az vmss create -g $group -n $name $(flags) --lb ""
+    az vmss create -g $group -n $name $(create_flags) --lb ""
     echo "created $name"
 }
 
