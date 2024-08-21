@@ -1,6 +1,8 @@
 # Tenplex
 Tenplex is a state management library for DL systems that enables jobs to change their parallelism dynamically after the GPU allocation changes at runtime.
 
+You can find the Tenplex paper at [https://arxiv.org/abs/2312.05181](https://arxiv.org/abs/2312.05181)
+
 ## Install
 
 ### Prerequisites
@@ -27,9 +29,11 @@ Examples are in the `benchmark` directory. For instance, to run the dynamic reso
 ## Citation
 If you use Tenplex for your research, please cite our [paper](https://arxiv.org/abs/2312.05181):
 
+```
 @inproceedings{wagenlander2024tenplex,
   title={Tenplex: Dynamic Parallelism for Deep Learning using Parallelizable Tensor Collections},
   author={Marcel Wagenlander, Guo Li, Bo Zhao, Luo Mai, Peter Pietzuch},
   booktitle={Proceedings of the ACM SIGOPS 30th Symposium on Operating Systems Principles},
   year={2024}
 }
+```
