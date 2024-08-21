@@ -5,18 +5,18 @@
         "mp_size": 4
     },
     "8": {
-        "dp_size": 1,
+        "dp_size": 2,
         "pp_size": 1,
-        "mp_size": 8
+        "mp_size": 4
     },
     "16": {
-        "dp_size": 1,
+        "dp_size": 4,
         "pp_size": 1,
-        "mp_size": 16
+        "mp_size": 4
     },
     "32": {
-        "dp_size": 1,
+        "dp_size": 8,
         "pp_size": 1,
-        "mp_size": 32
+        "mp_size": 4
     }
 }
