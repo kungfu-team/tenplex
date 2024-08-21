@@ -62,7 +62,7 @@ def main():
     ax.set_xticks(x + 0.5 * width, size)
 
     fig.tight_layout()
-    plt.savefig("./redeploy.pdf")
+    plt.savefig("./redeployment.pdf")
 
 
 if __name__ == "__main__":

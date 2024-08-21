@@ -178,6 +178,9 @@ func runAll(runs []Run) {
 
 	for i, r := range runs {
 		n := logName("logs", fmt.Sprintf("%04d", i+1), r.TrainConf.ModelName, r.TrainConf.ModelSize, cfg.Dataset.Name)
+		if r.Central {
+			n = n + "-central"
+		}
 		func() {
 			defer func() {
 				if err := recover(); err != nil {
