@@ -2,12 +2,13 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+        "crypto/sha256"
+	"encoding/hex"
 
 	"github.com/kungfu-team/tenplex/mlfs/ds"
 	"github.com/kungfu-team/tenplex/tenplex-run/cluster"
@@ -177,12 +178,21 @@ func main() {
 	runAll(runs)
 }
 
+func genRandomStr() string {
+	currentTime := time.Now().Unix()
+	hash := sha256.New()
+	hash.Write([]byte(str(int(currentTime))))
+	hashInBytes := hash.Sum(nil)
+	hashString := hex.EncodeToString(hashInBytes)
+        return hashString[:8]
+}
+
 func runAll(runs []Run) {
 	t0 := time.Now()
 	defer func() { log.Printf("Multi experiment took %s", time.Since(t0)) }()
 
 	for i, r := range runs {
-		logParts := []string{"logs", fmt.Sprintf("%04d", i+1), r.TrainConf.ModelName, r.TrainConf.ModelSize, cfg.Dataset.Name}
+		logParts := []string{"logs", genRandomStr(), r.TrainConf.ModelName, r.TrainConf.ModelSize, cfg.Dataset.Name}
 		if r.Central {
 			logParts = append(logParts, "central")
 		}
