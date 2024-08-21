@@ -26,8 +26,10 @@ def create_training_args(model: str, size: str, precision: str, hosts: [str]) ->
     home = os.path.expanduser("~")
     user = os.getlogin()
     dataset = "enwiki"
+    dataset_index = "/data/megatron-lm/gpt-2/enwiki/npzs_seq1024_new/indices.txt"
     if model == "bert":
         dataset = "openwebtext"
+        dataset_index = "/data/megatron-lm/bert/openwebtext/npzs_seq1024/indices.txt"
 
     args = [
         "-image",
@@ -53,7 +55,7 @@ def create_training_args(model: str, size: str, precision: str, hosts: [str]) ->
         "-precision",
         precision,
         "-index-url",
-        "/data/megatron-lm/gpt-2/enwiki/npzs_seq1024_new/indices.txt",
+        dataset_index,
         "-hosts",
         ",".join(hosts),
         "-schedule-file",
