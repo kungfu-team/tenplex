@@ -3,6 +3,16 @@ Tenplex is a state management library for DL systems that enables jobs to change
 
 You can find the Tenplex paper at [https://arxiv.org/abs/2312.05181](https://arxiv.org/abs/2312.05181)
 
+## About
+Tenplex let's you train a model with multi-dimensional parallelism, i.e. tensor, data, and pipeline parallelism, resource-independently. That means you can change the resources during the training without affecting convergence.
+
+__When to use Tenplex?__
+- Elasticity, e.g. spot instances
+- Redeployment, e.g. preemption
+- Failure recovery, e.g. GPU failure
+
+We implemented the prototype with [Megatron-LM](https://github.com/NVIDIA/Megatron-LM) to get the parallelization configuration for a given set of resources.
+
 ## Install
 
 ### Prerequisites
