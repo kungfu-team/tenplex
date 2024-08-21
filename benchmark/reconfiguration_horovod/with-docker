@@ -1,0 +1,48 @@
+#!/bin/sh
+
+set -e
+
+# name=$(cat $(dirname $0)/name.txt)
+name=reconfiguration_horovod
+tag=$(cat $(dirname $0)/tag.txt)
+
+join_() {
+    local IFS=$1
+    shift
+    echo "$*"
+}
+
+join() { join_ , $@; }
+
+gpus() {
+    local n=2
+    seq 0 $((n - 1))
+}
+
+docker_mount() { echo -v $1:$2; }
+docker_forward() { docker_mount $1 $1; }
+
+docker_run_flags() {
+    echo --rm
+    echo --gpus
+    echo "\"device=$(join $(gpus))\""
+
+    echo -i
+
+    echo --name $name
+
+    docker_forward /mnt/mlfs
+    docker_forward /data/imagenet/records
+}
+
+docker_run() { docker run $(docker_run_flags) -t $tag $@; }
+
+main() {
+    if [ -z "$1" ]; then
+        docker_run bash
+    else
+        docker_run $@
+    fi
+}
+
+main $@
