@@ -62,7 +62,6 @@ func genJobConf(r *Run) *job.JobConfig {
 	}
 }
 
-var runID int
 var str = strconv.Itoa
 
 func genRuns(trains []TrainConfig, scheduleFiles []string, isCentral []bool) []Run {
@@ -74,14 +73,20 @@ func genRuns(trains []TrainConfig, scheduleFiles []string, isCentral []bool) []R
 		}
 		for _, t := range trains {
 			for _, central := range isCentral {
+                                id := t.ModelName + `-` + t.ModelSize
+                                if cfg.Redeploy {
+                                        id = id + `-redeploy`
+                                }
+                                if central {
+                                        id = id + `-central`
+                                }
 				r := Run{
 					TrainConf: t,
 					Schedule:  sch,
 					Central:   central,
 					Redeploy:  cfg.Redeploy,
-					ID:        str(runID),
+					ID:        id,
 				}
-				runID++
 				runs = append(runs, r)
 			}
 		}
@@ -125,6 +130,7 @@ type MultiRunConfig struct {
 
 	DryRun   bool `flag:"dryrun"`
 	Redeploy bool `flag:"redeploy"`
+	Central  bool `flag:"central"`
 }
 
 func (j *MultiRunConfig) ParseParaConfig() {
@@ -159,14 +165,12 @@ func main() {
 	log.Printf("Using %d batch sizes: %v", len(cfg.BatchSizes), cfg.BatchSizes)
 	log.Printf("Using %d micro batch sizes: %v", len(cfg.MicroBatchSizes), cfg.MicroBatchSizes)
 
-	var (
-		isCentral = []bool{
-			false,
-			true,
-		}
-		trains = genTrainings(cfg.ModelSizes, cfg.BatchSizes, cfg.MicroBatchSizes)
-		runs   = genRuns(trains, cfg.ScheduleFiles, isCentral)
-	)
+	isCentral := []bool{false}
+	if cfg.Central {
+		isCentral = append(isCentral, true)
+	}
+	trains := genTrainings(cfg.ModelSizes, cfg.BatchSizes, cfg.MicroBatchSizes)
+	runs := genRuns(trains, cfg.ScheduleFiles, isCentral)
 
 	log.Printf("will run %d experiments", len(runs))
 
@@ -178,7 +182,11 @@ func runAll(runs []Run) {
 	defer func() { log.Printf("Multi experiment took %s", time.Since(t0)) }()
 
 	for i, r := range runs {
-		n := logName("logs", fmt.Sprintf("%04d", i+1), r.TrainConf.ModelName, r.TrainConf.ModelSize, cfg.Dataset.Name)
+		logParts := []string{"logs", fmt.Sprintf("%04d", i+1), r.TrainConf.ModelName, r.TrainConf.ModelSize, cfg.Dataset.Name}
+		if r.Central {
+			logParts = append(logParts, "central")
+		}
+		n := strings.Join(logParts, `-`)
 		func() {
 			defer func() {
 				if err := recover(); err != nil {
@@ -204,5 +212,3 @@ func runOne(n string, r Run) {
 		log.Panic(err)
 	}
 }
-
-func logName(ss ...string) string { return strings.Join(ss, `-`) + `.log` }
