@@ -1,7 +1,9 @@
 # ansible-playbook -i hosts.txt ansible/tenplex.yml
 
 - name: install tenplex
-  hosts: all
+  hosts: all  
+  remote_user: kungfu
+
   tasks:
   # - import_tasks: ./uninstall.yml
   - import_tasks: ./install.yml

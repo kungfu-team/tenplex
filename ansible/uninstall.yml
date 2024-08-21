@@ -6,6 +6,7 @@
 
 - name: stop
   become: true
+  ignore_errors: yes
   ansible.builtin.shell:
     cmd: systemctl stop mlfs
   register: log

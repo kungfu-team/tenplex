@@ -21,7 +21,7 @@ with_log_file() {
     echo "logged to $filename $ $@"
 }
 
-. ../common-cloud.sh
+. ../common.sh
 . ./config.sh
 
 list_hosts() {
@@ -33,7 +33,7 @@ training_flags() {
 
     echo -framework "megatron-lm"
     echo -model "gpt"
-    echo -model-size "xl"
+    echo -model-size "large"
     echo -dataset "enwiki"
     echo -batch-size 128
     echo -micro-batch-size 8

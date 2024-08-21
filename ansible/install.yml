@@ -17,9 +17,18 @@
   register: log
 
 # - name: Update apt repository cache
-#   ansible.builtin.apt:
-#     update_cache: yes
+#  ansible.builtin.apt:
+#    update_cache: yes
 
+- name: stop mlfs
+  become: true
+  ignore_errors: yes
+  ansible.builtin.shell:
+    cmd: |
+      rm /etc/mlfs/tenplex.sas
+      systemctl stop mlfs
+        
+  register: log
 - name: Install a list of packages
   become: true
   ansible.builtin.apt:
@@ -29,6 +38,7 @@
 
 - name: reload mlfs
   become: true
+  ignore_errors: yes
   ansible.builtin.shell:
     cmd: |
       systemctl daemon-reload
