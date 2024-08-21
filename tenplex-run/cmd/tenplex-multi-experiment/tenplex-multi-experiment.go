@@ -177,10 +177,11 @@ func runAll(runs []Run) {
 	defer func() { log.Printf("Multi experiment took %s", time.Since(t0)) }()
 
 	for i, r := range runs {
-		n := logName("logs", fmt.Sprintf("%04d", i+1), r.TrainConf.ModelName, r.TrainConf.ModelSize, cfg.Dataset.Name)
+		logParts := []string{"logs", fmt.Sprintf("%04d", i+1), r.TrainConf.ModelName, r.TrainConf.ModelSize, cfg.Dataset.Name}
 		if r.Central {
-			n = n + "-central"
+			logParts = append(logParts, "central")
 		}
+		n := strings.Join(logParts, `-`)
 		func() {
 			defer func() {
 				if err := recover(); err != nil {
@@ -206,5 +207,3 @@ func runOne(n string, r Run) {
 		log.Panic(err)
 	}
 }
-
-func logName(ss ...string) string { return strings.Join(ss, `-`) + `.log` }

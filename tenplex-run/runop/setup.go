@@ -159,7 +159,7 @@ func collectLogs(jobConf *job.JobConfig) {
 }
 
 type Options struct {
-	PullImage bool `flag:"pool-image"`
+	NoPullImage bool `flag:"no-pull-image"`
 }
 
 func (o *Options) RegisterFlags(flag *flag.FlagSet) {
@@ -172,7 +172,7 @@ func Main(jobConf *job.JobConfig, o Options) {
 	CleanMachines(jobConf)
 	// SetupSwarm(jobConf)
 	PrepareVMs(jobConf)
-	if o.PullImage {
+	if !o.NoPullImage {
 		PullImages(jobConf)
 	}
 	ScalingTraining(jobConf)
