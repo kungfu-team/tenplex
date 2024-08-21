@@ -1,16 +1,54 @@
+import glob
 import os
+import re
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 
+def extract_time(path: str, pattern: str) -> float:
+    with open(path, "r", encoding="utf-8") as log_file:
+        lines = log_file.readlines()
+
+    for line in lines:
+        mat = re.search(pattern, line)
+        if mat:
+            return float(mat.group(1))
+    return -1.0
+
+def reconfig_time(log_dir: str) -> float:
+    first_stage = "stage-00-worker-00.out.log"
+    second_stage = "stage-01-worker-00.out.log"
+
+    pattern = r"Exit training loop at (\d+\.\d+)"
+    exit_time = extract_time(os.path.join(log_dir, first_stage), pattern)
+    pattern = r"Start training loop at (\d+\.\d+)"
+    start_time = extract_time(os.path.join(log_dir, second_stage), pattern)
+
+    return start_time - exit_time
+
+
 def parse_logs():
-    # TODO
-    pass
+    sizes = ["xl", "2.7B", "6.7B"]
+    log_dirs = glob.glob("logs-*")
+
+    times = []
+    times_central = []
+    for size in sizes:
+        size_log_dirs = list(filter(lambda x: size in x, log_dirs))
+        log_dir = list(filter(lambda x: "central" not in x, size_log_dirs))[0]
+        log_dir_central = list(filter(lambda x: "central" in x, size_log_dirs))[0]
+
+        recon_time = reconfig_time(log_dir)
+        recon_time_central = reconfig_time(log_dir_central)
+        times.append(recon_time)
+        times_central.append(recon_time_central)
+
+    return times, times_central
 
 
-def main():
-    sys = "Scalai"
+def plot_redeploy(times_tenplex: list, times_central: list):
+    sys = "Tenplex"
     width = 0.3
 
     size = [
@@ -18,9 +56,6 @@ def main():
         "2.7B",
         "6.7B",
     ]
-    times_tenplex = [4.8, 8.5, 15.3]
-
-    times_central = [10, 16, 31.1]
 
     plt.rcParams["hatch.linewidth"] = 3
     linewidth = 2
@@ -63,6 +98,10 @@ def main():
 
     fig.tight_layout()
     plt.savefig("./redeployment.pdf")
+
+def main():
+    times, times_central = parse_logs()
+    plot_redeploy(times, times_central)
 
 
 if __name__ == "__main__":
