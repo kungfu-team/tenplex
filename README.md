@@ -39,7 +39,7 @@ Examples are in the `benchmark` directory. For instance, to run the dynamic reso
 ## Citation
 If you use Tenplex for your research, please cite our [paper](https://arxiv.org/abs/2312.05181):
 
-```
+```bibtex
 @inproceedings{wagenlander2024tenplex,
   title={Tenplex: Dynamic Parallelism for Deep Learning using Parallelizable Tensor Collections},
   author={Marcel Wagenlander, Guo Li, Bo Zhao, Luo Mai, Peter Pietzuch},
