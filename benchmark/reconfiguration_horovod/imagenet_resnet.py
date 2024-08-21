@@ -2,20 +2,21 @@
 
 import argparse
 import os
-import timeit
 
 import horovod.tensorflow as hvd
-import numpy as np
 import tensorflow as tf
 from tensorflow.keras import applications
 
 from imagenet import create_dataset, create_dataset_from_files
+from logger import Logger
 
 
 def parse_arsg():
     p = argparse.ArgumentParser()
     p.add_argument('--model', type=str, default='ResNet50')
     p.add_argument('--batch-size', type=int, default=32)
+    p.add_argument('--batch-number', type=int, default=256)
+    p.add_argument('--log-period', type=int, default=16)
     p.add_argument('--num-warmup-batches', type=int, default=10)
     p.add_argument('--num-batches-per-iter', type=int, default=10)
     p.add_argument('--num-iters', type=int, default=10)
@@ -50,24 +51,16 @@ def get_data(args):
 
 
 def run(args, benchmark_step):
-    device = '/gpu:0' if args.cuda else 'CPU'
-    # Warm-up
     log('Running warmup...')
-    timeit.timeit(benchmark_step, number=args.num_warmup_batches)
+    for _ in range(args.num_warmup_batches):
+        benchmark_step()
 
-    # Benchmark
     log('Running benchmark...')
-    img_secs = []
-    for x in range(args.num_iters):
-        time = timeit.timeit(benchmark_step, number=args.num_batches_per_iter)
-        img_sec = args.batch_size * args.num_batches_per_iter / time
-        log('Iter #%d: %.1f img/sec per %s' % (x, img_sec, device))
-        img_secs.append(img_sec)
-
-    # Results
-    img_sec_mean = np.mean(img_secs)
-    img_sec_conf = 1.96 * np.std(img_secs)
-    log('Img/sec per %s: %.1f +-%.1f' % (device, img_sec_mean, img_sec_conf))
+    l = Logger()
+    for _ in range(args.batch_number):
+        benchmark_step()
+        l.add(args.batch_size)
+    l.report()
 
 
 def build_train_op(args, data, target):

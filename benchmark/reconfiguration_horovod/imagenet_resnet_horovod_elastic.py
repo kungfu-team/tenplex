@@ -5,17 +5,18 @@ import os
 import timeit
 
 import horovod.tensorflow as hvd
-import numpy as np
 import tensorflow as tf
 from tensorflow.keras import applications
 
 from imagenet import create_dataset, create_dataset_from_files
+from logger import Logger
 
 
 def parse_arsg():
     p = argparse.ArgumentParser()
     p.add_argument('--model', type=str, default='ResNet50')
     p.add_argument('--batch-size', type=int, default=32)
+    p.add_argument('--batch-number', type=int, default=256)
     p.add_argument('--num-warmup-batches', type=int, default=10)
     p.add_argument('--num-batches-per-iter', type=int, default=10)
     p.add_argument('--num-iters', type=int, default=10)
@@ -49,27 +50,6 @@ def get_data(args):
         return data, target
 
 
-def run(args, benchmark_step):
-    device = '/gpu:0' if args.cuda else 'CPU'
-    # Warm-up
-    log('Running warmup...')
-    timeit.timeit(benchmark_step, number=args.num_warmup_batches)
-
-    # Benchmark
-    log('Running benchmark...')
-    img_secs = []
-    for x in range(args.num_iters):
-        time = timeit.timeit(benchmark_step, number=args.num_batches_per_iter)
-        img_sec = args.batch_size * args.num_batches_per_iter / time
-        log('Iter #%d: %.1f img/sec per %s' % (x, img_sec, device))
-        img_secs.append(img_sec)
-
-    # Results
-    img_sec_mean = np.mean(img_secs)
-    img_sec_conf = 1.96 * np.std(img_secs)
-    log('Img/sec per %s: %.1f +-%.1f' % (device, img_sec_mean, img_sec_conf))
-
-
 def build_train_op(args, data, target):
     model = getattr(applications, args.model)(weights=None)
     opt = tf.train.GradientDescentOptimizer(0.01)
@@ -78,6 +58,18 @@ def build_train_op(args, data, target):
     loss = tf.losses.sparse_softmax_cross_entropy(target, logits)
     train_op = opt.minimize(loss)
     return train_op
+
+
+# https://horovod.readthedocs.io/en/latest/elastic_include.html#elastic-tensorflow
+@hvd.elastic.run
+def run(state, args, train_one_batch):
+    batches_per_commit = 10
+    for state.epoch in range(state.epoch, 1):
+        for state.batch in range(state.batch, args.batch_number):
+            train_one_batch()
+            if state.batch % batches_per_commit == 0:
+                state.commit()
+        state.batch = 0
 
 
 def main():
@@ -100,33 +92,26 @@ def main():
     opt = hvd.DistributedOptimizer(opt)
     logits = model(data, training=True)
     loss = tf.losses.sparse_softmax_cross_entropy(target, logits)
-    # train_op = opt.minimize(loss)
-
-    batches_per_epoch = 100
-    batches_per_commit = 10
-
-    @hvd.elastic.run
-    def train(state, train_one_batch):
-        for state.epoch in range(state.epoch, 1):
-            print(f'{state.epoch}')
-            for state.batch in range(state.batch, batches_per_epoch):
-                print(f'{state.batch}')
-                train_one_batch()
-                if state.batch % batches_per_commit == 0:
-                    state.commit()
-            state.batch = 0
+    train_op = opt.minimize(loss)
 
     with tf.Session(config=config) as session:
+        print('session created')
         session.run(tf.global_variables_initializer())
-
+        print('session initialized')
         state = hvd.elastic.TensorFlowState(session=session, batch=0, epoch=0)
-        train_op = opt.minimize(loss)
-        print('train ...')
-        import time
-        t0 = time.time()
-        train(state, lambda: session.run(train_op))
-        d = time.time() - t0
-        img_sec = args.batch_size * batches_per_epoch / d
-        log('%.1f img/sec per' % (img_sec))
+        print('state created')
+
+        for _ in range(args.num_warmup_batches):
+            session.run(train_op)
+
+        def step(log):
+            session.run(train_op)
+            log.add(args.batch_size)
+
+        l = Logger()
+        print('running ...')
+        run(state, args, lambda: step(l))
+        l.report()
+
 
 main()
