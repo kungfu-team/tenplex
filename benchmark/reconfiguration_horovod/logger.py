@@ -29,4 +29,4 @@ class Logger(object):
     def report(self):
         img_sec_mean = np.mean(self.img_secs)
         img_sec_conf = 1.96 * np.std(self.img_secs)
-        print('Img/sec per: %.1f +-%.1f' % (img_sec_mean, img_sec_conf))
+        print('RESULT Img/sec: %.1f +-%.1f' % (img_sec_mean, img_sec_conf))
