@@ -1,0 +1,12 @@
+# ansible-playbook -i hosts.txt ansible/tenplex.yml
+
+- name: install tenplex
+  hosts: all  
+  remote_user: kungfu
+
+  tasks:
+  # - import_tasks: ./uninstall.yml
+  - import_tasks: ../../ansible/install.yml
+
+  - debug: msg="{{ log.stdout }}"
+  - debug: msg="{{ log.stderr }}"

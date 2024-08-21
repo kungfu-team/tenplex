@@ -12,6 +12,7 @@ echo "Using image $image"
 storage=Premium_LRS # SSD
 
 create_flags() {
+    #echo --admin-username $USER
     echo --admin-username kungfu
     echo --vnet-name tenplex-relayVNET
     echo --subnet tenplex-relaySubnet

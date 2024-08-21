@@ -4,6 +4,12 @@
     cmd: echo "deb https://europe-west2-apt.pkg.dev/projects/tenplex tenplex main" | sudo tee /etc/apt/sources.list.d/tenplex.list
   register: log
 
+- name: add apt key
+  become: true
+  ansible.builtin.shell:
+    cmd: curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/packages-cloud-google-apt.gpg >/dev/null
+  register: log
+
 - name: apt update
   become: true
   ansible.builtin.shell:

@@ -1,11 +1,31 @@
 #!/bin/bash
 set -e
 
-. ../common.sh
+cd $(dirname $0)
+
+export PATH=$HOME/go/bin:$PATH
+
+x() {
+    echo "BGN $@"
+    $@
+    echo "END $@"
+    echo
+    echo
+}
+
+with_log_file() {
+    local filename=$1
+    shift
+    echo "logging to file $filename $@"
+    $@ 2>&1 | tee $filename
+    echo "logged to $filename $ $@"
+}
+
+. ../common-cloud.sh
 . ./config.sh
 
 list_hosts() {
-	az vmss nic list -g kungfu --vmss-name $name --query '[].ipConfigurations[0].privateIpAddress' -o table | sed 1,2d
+    az vmss nic list -g kungfu --vmss-name $name --query '[].ipConfigurations[0].privateIPAddress' -o table | sed 1,2d
 }
 
 training_flags() {
@@ -25,9 +45,33 @@ training_flags() {
     echo -seq-length 1024
 }
 
-. ./recreate-vmss.sh
+run_group() {
+    local schedule=$1
+    local hosts="$(join $(list_hosts))"
+    if [ -z "$hosts" ]; then
+        echo "no hosts available"
+        return
+    fi
+    echo "using hosts: $hosts"
 
-. ./scale-cluster.sh 2
+    with_log_file reconfig_8_dp.log tenplex-run $(training_flags) -schedule-file $schedule -para-config para-config-dp.json
+    #mv logs logs_8_dp
+
+    #tenplex-run $(training_flags) -schedule-file schedule-8.json -para-config para-config-pp.json 2>&1 | tee reconfig_8_pp.log
+    #mv logs logs_8_pp
+
+    #tenplex-run $(training_flags) -schedule-file schedule-8.json -para-config para-config-tp.json 2>&1 | tee reconfig_8_tp.log
+    #mv logs logs_8_tp
+}
+
+# ./recreate-vmss.sh
+# x ./scale-cluster.sh 0
+
+x ./scale-cluster.sh 2 # took 103s
+x run_group schedule_8.json
+# x ./scale-cluster.sh 0
+
+exit
 
 tenplex-run $(training_flags) -schedule-file schedule-8.json -para-config para-config-dp.json 2>&1 | tee reconfig_8_dp.log
 mv logs logs_8_dp
@@ -36,7 +80,7 @@ mv logs logs_8_pp
 tenplex-run $(training_flags) -schedule-file schedule-8.json -para-config para-config-tp.json 2>&1 | tee reconfig_8_tp.log
 mv logs logs_8_tp
 
-. ./scale-cluster.sh 4
+./scale-cluster.sh 4
 
 tenplex-run $(training_flags) -schedule-file schedule-16.json -para-config para-config-dp.json 2>&1 | tee reconfig_16_dp.log
 mv logs logs_16_dp
@@ -45,7 +89,7 @@ mv logs logs_16_pp
 tenplex-run $(training_flags) -schedule-file schedule-16.json -para-config para-config-tp.json 2>&1 | tee reconfig_16_tp.log
 mv logs logs_16_tp
 
-. ./scale-cluster.sh 8
+./scale-cluster.sh 8
 
 tenplex-run $(training_flags) -schedule-file schedule-16.json -para-config para-config-dp.json 2>&1 | tee reconfig_32_dp.log
 mv logs logs_32_dp
@@ -54,6 +98,7 @@ mv logs logs_32_pp
 tenplex-run $(training_flags) -schedule-file schedule-16.json -para-config para-config-tp.json 2>&1 | tee reconfig_32_tp.log
 mv logs logs_32_tp
 
-. ./scale-cluster.sh 0
+./scale-cluster.sh 0
 
 python plot.py
+
