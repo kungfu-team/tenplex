@@ -62,7 +62,6 @@ func genJobConf(r *Run) *job.JobConfig {
 	}
 }
 
-var runID int
 var str = strconv.Itoa
 
 func genRuns(trains []TrainConfig, scheduleFiles []string, isCentral []bool) []Run {
@@ -74,14 +73,20 @@ func genRuns(trains []TrainConfig, scheduleFiles []string, isCentral []bool) []R
 		}
 		for _, t := range trains {
 			for _, central := range isCentral {
+                                id := t.ModelName + `-` + t.ModelSize
+                                if cfg.Redeploy {
+                                        id = id + `-redeploy`
+                                }
+                                if central {
+                                        id = id + `-central`
+                                }
 				r := Run{
 					TrainConf: t,
 					Schedule:  sch,
 					Central:   central,
 					Redeploy:  cfg.Redeploy,
-					ID:        str(runID),
+					ID:        id,
 				}
-				runID++
 				runs = append(runs, r)
 			}
 		}
