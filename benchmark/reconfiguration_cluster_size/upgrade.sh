@@ -26,7 +26,7 @@ upgrade_cluster() {
     done
     sleep 1
 
-    measure ansible-playbook -i hosts.txt ./tenplex-2.yml
+    measure ansible-playbook -i hosts.txt ./tenplex-2.yml # took 269s
 }
 
 measure upgrade_cluster
