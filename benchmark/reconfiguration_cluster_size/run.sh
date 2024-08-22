@@ -64,9 +64,9 @@ training_flags() {
 }
 
 wait_cluster() {
-    for i in $(seq 5); do
+    for i in $(seq 20); do
         x ./list-ips.sh
-        sleep 2
+        sleep 5
     done
 }
 
