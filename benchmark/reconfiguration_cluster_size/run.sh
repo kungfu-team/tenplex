@@ -3,11 +3,28 @@ set -e
 
 cd $(dirname $0)
 
+now_sec() {
+    date +%s
+}
+
+_show_duration() {
+    echo "$1s"
+}
+
+measure() {
+    echo "BEGIN $@"
+    local begin=$(now_sec)
+    $@
+    local end=$(now_sec)
+    local duration=$((end - begin))
+    echo "END $@, took $(_show_duration $duration)" | tee -a measure.log
+}
+
 export PATH=$HOME/go/bin:$PATH
 
 x() {
     echo "BGN $@"
-    $@
+    measure $@
     echo "END $@"
     echo
     echo
@@ -46,8 +63,23 @@ training_flags() {
     echo -disable-ib
 }
 
+wait_cluster() {
+    for i in $(seq 5); do
+        x ./list-ips.sh
+        sleep 2
+    done
+}
+
 run_group() {
-    local schedule=$1
+    local cluster_size=$1
+    local n=$2
+    local para_config_tp=$3
+
+    x ./scale-cluster.sh $cluster_size
+    x wait_cluster
+    x ./upgrade.sh
+
+    local schedule="schedule_${n}.json"
     local hosts="$(join $(list_hosts))"
     if [ -z "$hosts" ]; then
         echo "no hosts available"
@@ -55,50 +87,25 @@ run_group() {
     fi
     echo "using hosts: $hosts"
 
-    with_log_file reconfig_8_dp.log tenplex-run $(training_flags) -schedule-file $schedule -para-config para-config-dp.json
-    #mv logs logs_8_dp
+    x with_log_file reconfig_${n}_dp.log tenplex-run $(training_flags) -schedule-file $schedule -para-config para-config-dp.json
+    mv logs logs_${n}_dp
 
-    #tenplex-run $(training_flags) -schedule-file schedule-8.json -para-config para-config-pp.json 2>&1 | tee reconfig_8_pp.log
-    #mv logs logs_8_pp
+    x with_log_file reconfig_${n}_pp.log tenplex-run $(training_flags) -schedule-file $schedule -para-config para-config-pp.json
+    mv logs logs_${n}_pp
 
-    #tenplex-run $(training_flags) -schedule-file schedule-8.json -para-config para-config-tp.json 2>&1 | tee reconfig_8_tp.log
-    #mv logs logs_8_tp
+    x with_log_file reconfig_${n}_tp.log tenplex-run $(training_flags) -schedule-file $schedule -para-config $para_config_tp
+    mv logs logs_${n}_tp
+
+    x ./scale-cluster.sh 0
 }
 
-# ./recreate-vmss.sh
-# x ./scale-cluster.sh 0
+run_all() {
+    x ./recreate-vmss.sh
+    x run_group 2 8 para-config-tp-4to8.json
+    x run_group 4 16 para-config-tp-8to16.json
+    x run_group 8 32 para-config-tp-16to32.json
+}
 
-x ./scale-cluster.sh 2 # took 103s
-x run_group schedule_8.json
-# x ./scale-cluster.sh 0
-
-exit
-
-tenplex-run $(training_flags) -schedule-file schedule-8.json -para-config para-config-dp.json 2>&1 | tee reconfig_8_dp.log
-mv logs logs_8_dp
-tenplex-run $(training_flags) -schedule-file schedule-8.json -para-config para-config-pp.json 2>&1 | tee reconfig_8_pp.log
-mv logs logs_8_pp
-tenplex-run $(training_flags) -schedule-file schedule-8.json -para-config para-config-tp-4to8.json 2>&1 | tee reconfig_8_tp.log
-mv logs logs_8_tp
-
-./scale-cluster.sh 4
-
-tenplex-run $(training_flags) -schedule-file schedule-16.json -para-config para-config-dp.json 2>&1 | tee reconfig_16_dp.log
-mv logs logs_16_dp
-tenplex-run $(training_flags) -schedule-file schedule-16.json -para-config para-config-pp.json 2>&1 | tee reconfig_16_pp.log
-mv logs logs_16_pp
-tenplex-run $(training_flags) -schedule-file schedule-16.json -para-config para-config-tp-8to16.json 2>&1 | tee reconfig_16_tp.log
-mv logs logs_16_tp
-
-./scale-cluster.sh 8
-
-tenplex-run $(training_flags) -schedule-file schedule-16.json -para-config para-config-dp.json 2>&1 | tee reconfig_32_dp.log
-mv logs logs_32_dp
-tenplex-run $(training_flags) -schedule-file schedule-16.json -para-config para-config-pp.json 2>&1 | tee reconfig_32_pp.log
-mv logs logs_32_pp
-tenplex-run $(training_flags) -schedule-file schedule-16.json -para-config para-config-tp-16to32.json 2>&1 | tee reconfig_32_tp.log
-mv logs logs_32_tp
-
-./scale-cluster.sh 0
+x run_all
 
 python plot.py
