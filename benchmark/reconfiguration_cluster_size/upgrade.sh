@@ -21,6 +21,11 @@ measure() {
 upgrade_cluster() {
     measure ansible-playbook -i hosts.txt ./tenplex.yml
 
+    for h in $(cat hosts.txt); do
+        ssh $h pwd
+    done
+    sleep 1
+
     measure ansible-playbook -i hosts.txt ./tenplex-2.yml
 }
 

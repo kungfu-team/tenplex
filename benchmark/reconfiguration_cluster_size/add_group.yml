@@ -1,8 +1,6 @@
-- name: add docker gorup
+- name: add docker group
   become: true
   ansible.builtin.user:
     name: sospreviewer01
     groups: [docker]
     append: yes
-
-
