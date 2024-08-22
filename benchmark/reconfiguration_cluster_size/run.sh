@@ -21,7 +21,7 @@ with_log_file() {
     echo "logged to $filename $ $@"
 }
 
-. ../common.sh
+. ../common-cloud.sh
 . ./config.sh
 
 list_hosts() {
@@ -43,6 +43,7 @@ training_flags() {
     echo -gpu-per-host 4
     echo -gpu-per-container 4
     echo -seq-length 1024
+    echo -disable-ib
 }
 
 run_group() {
@@ -101,4 +102,3 @@ mv logs logs_32_tp
 ./scale-cluster.sh 0
 
 python plot.py
-

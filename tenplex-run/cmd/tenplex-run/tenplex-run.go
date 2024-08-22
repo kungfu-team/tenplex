@@ -22,6 +22,7 @@ import (
 type TenplexRunFlags struct {
 	job.JobConfig
 	runop.Options
+	DisableIB     bool   `flag:"disable-ib"`
 	DetectIPv4    string `flag:"detect-self-ip"`
 	mlfsGitCommit string `flag:"mlfs-git-commit"`
 	logfile       string `flag:"logfile"`
@@ -39,6 +40,9 @@ func main() {
 	var d TenplexRunFlags
 	d.RegisterFlags(flag.CommandLine)
 	flag.Parse()
+	if d.DisableIB {
+		job.UseIB = false
+	}
 	d.ParseSchedule()
 	d.ParseParaConfig()
 	d.Validate()
