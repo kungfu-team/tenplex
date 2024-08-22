@@ -4,7 +4,7 @@
   hosts: all
 
   tasks:
-  - import_tasks: pull_image.yml
+  - import_tasks: ./tasks/pull_image.yml
 
   #- debug: msg="{{ log.stdout }}"
   #- debug: msg="{{ log.stderr }}"

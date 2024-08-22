@@ -18,15 +18,17 @@ measure() {
     echo "END $@, took $(_show_duration $duration)" | tee -a measure.log
 }
 
+wait_docker() {
+    measure ansible-playbook -i hosts.txt ./docker.yml # took 269s
+}
+
 upgrade_cluster() {
     measure ansible-playbook -i hosts.txt ./tenplex.yml
 
-    for h in $(cat hosts.txt); do
-        ssh $h pwd
+    for i in $(seq 10); do
+        wait_docker
+        sleep 2
     done
-    sleep 1
-
-    measure ansible-playbook -i hosts.txt ./tenplex-2.yml # took 269s
 }
 
 measure upgrade_cluster

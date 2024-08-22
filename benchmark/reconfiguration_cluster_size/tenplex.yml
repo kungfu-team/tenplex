@@ -6,7 +6,7 @@
   tasks:
   - import_tasks: ../../ansible/uninstall.yml
   - import_tasks: ../../ansible/install.yml
-  - import_tasks: add_group.yml
+  - import_tasks: ./tasks/add_group.yml
 
   #- debug: msg="{{ log.stdout }}"
   #- debug: msg="{{ log.stderr }}"
