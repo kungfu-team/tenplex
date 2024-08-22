@@ -1,3 +1,8 @@
+- name: docker ps
+  ansible.builtin.shell:
+    cmd: docker ps
+  register: log
+
 - name: pull docker image
   ansible.builtin.shell:
     cmd: docker pull kungfu.azurecr.io/mw-megatron-lm-23.06-update-v100

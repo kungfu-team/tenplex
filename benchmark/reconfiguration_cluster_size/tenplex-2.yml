@@ -1,6 +1,6 @@
 # ansible-playbook -i hosts.txt ansible/tenplex.yml
 
-- name: install tenplex 
+- name: pull image
   hosts: all
 
   tasks:
