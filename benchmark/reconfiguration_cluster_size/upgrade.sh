@@ -24,4 +24,4 @@ upgrade_cluster() {
     measure ansible-playbook -i hosts.txt ./tenplex-2.yml
 }
 
-measure
+measure upgrade_cluster
