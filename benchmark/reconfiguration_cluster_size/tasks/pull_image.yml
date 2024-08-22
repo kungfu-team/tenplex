@@ -1,3 +1,9 @@
+- name: check UID
+  ignore_errors: yes
+  ansible.builtin.shell:
+    cmd: id
+  register: log
+
 - name: docker ps
   ignore_errors: yes
   ansible.builtin.shell:
