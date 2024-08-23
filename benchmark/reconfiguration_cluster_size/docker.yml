@@ -1,0 +1,10 @@
+# ansible-playbook -i hosts.txt ansible/tenplex.yml
+
+- name: pull image
+  hosts: all
+
+  tasks:
+  - import_tasks: ./tasks/pull_image.yml
+
+  #- debug: msg="{{ log.stdout }}"
+  #- debug: msg="{{ log.stderr }}"

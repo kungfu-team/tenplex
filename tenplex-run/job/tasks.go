@@ -38,6 +38,8 @@ func (cluster *ContainerCluster) Run(c Container) P {
 	return cluster.RunCtx(c, context.TODO())
 }
 
+var UseIB = true
+
 func (cluster *ContainerCluster) RunCtx(c Container, ctx context.Context) P {
 	args := []string{`run`}
 	args = append(args, c.MapFlags()...)
@@ -51,15 +53,18 @@ func (cluster *ContainerCluster) RunCtx(c Container, ctx context.Context) P {
 		`--rm`,
 		`--env`, `CUDA_DEVICE_MAX_CONNECTIONS=1`,
 		`--env`, `PYTHONUNBUFFERED=1`,
-		`--env`, `GLOO_SOCKET_IFNAME=ib0`,
 		`--ulimit`, `memlock=-1`,
 		`--shm-size`, `1g`,
 		`--expose`, `6000`,
-		`--device`, `/dev/infiniband`,
-		`-t`, cluster.Image,
 	}...)
+	if UseIB {
+		args = append(args,
+			`--device`, `/dev/infiniband`,
+			`--env`, `GLOO_SOCKET_IFNAME=ib0`,
+		)
+	}
+	args = append(args, `-t`, cluster.Image)
 	args = append(args, c.Cmd...)
-
 	p := Proc{
 		Prog: `docker`,
 		Args: args,

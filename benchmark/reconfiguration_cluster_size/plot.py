@@ -15,6 +15,7 @@ def main():
         width = 0.3
 
         nd = ["4 to 8", "8 to 16", "16 to 32"]
+        print('TODO: extract data from log')
         t_dp = [19.4, 25.7, 31.2]
         t_pp = [11.3, 8.3, 6.6]
         t_mp = [18.4, 10.7, 7.1]
