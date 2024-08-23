@@ -5,7 +5,8 @@ set -e
 
 # The Image type for a Virtual Machine Scale Set may not be changed.
 # image=tenplex-base-image
-image="tenplex-mw"
+# image="tenplex-mw"
+image="tenplex-2024-08"
 image=$(az image show -n $image -g kungfu | jq -r .id)
 
 echo "Using image $image"
