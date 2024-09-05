@@ -45,3 +45,24 @@ func TFSize(nl, hs, ah int) TransformerSize {
 		AttentionHeads: ah,
 	}
 }
+
+type MegatronLMFlags struct {
+	// TODO: move more flags here
+	LogValidationPPLToTensorboard bool
+	DistributedBackend            string
+	DataPath                      string
+}
+
+func (s MegatronLMFlags) ToPyArgs() []string {
+	var args []string
+	if s.LogValidationPPLToTensorboard {
+		args = append(args, `--log-validation-ppl-to-tensorboard`)
+	}
+	if len(s.DistributedBackend) > 0 {
+		args = append(args, `--distributed-backend`, s.DistributedBackend)
+	}
+	if len(s.DataPath) > 0 {
+		args = append(args, `--data-path`, s.DataPath)
+	}
+	return args
+}

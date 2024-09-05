@@ -41,12 +41,12 @@ func GenMegatronLMGPTCmd(c TrainingConfig, rank int, jobID string, host string, 
 		log.Fatalf("Model size not matching %s", jConf.ModelSize)
 	}
 	cmd = append(cmd, gpt_args...)
-	args := []string{
-		`--data-path`, `/data/dataset/gpt-2/my-gpt2_text_document`,
-		// `--DDP-impl`, `local`,
-		`--distributed-backend`, `nccl`,
+	mlm := MegatronLMFlags{
+		DistributedBackend:            `nccl`,
+		LogValidationPPLToTensorboard: true,
+		DataPath:                      `/data/dataset/gpt-2/my-gpt2_text_document`,
 	}
-	cmd = append(cmd, args...)
+	cmd = append(cmd, mlm.ToPyArgs()...)
 	cmd = append(cmd, jConf.LogFlags(c)...)
 	cmd = append(cmd, jConf.TenplexFlags(c, host)...)
 	cmd = append(cmd, jConf.OtherFlags(c)...)

@@ -25,8 +25,6 @@ func GenMegatronLMBERTCmd(c TrainingConfig, rank int, jobID string, host string,
 		`--global-batch-size`, str(jConf.BatchSize), // default: 32
 		`--vocab-file`, `/workspace/Megatron-LM/vocab/bert-large-uncased-vocab.txt`,
 		`--split`, `949,50,1`,
-		`--data-path`, `/data/dataset/bert_text_sentence`,
-		`--distributed-backend`, `nccl`,
 	}
 	if ts, ok := sizes[jConf.ModelSize]; ok {
 		bert_args = append(bert_args, ts.ToPyArgs()...)
@@ -34,6 +32,12 @@ func GenMegatronLMBERTCmd(c TrainingConfig, rank int, jobID string, host string,
 		log.Fatalf("Model size not matching %s", jConf.ModelSize)
 	}
 	cmd = append(cmd, bert_args...)
+	mlm := MegatronLMFlags{
+		DistributedBackend:            `nccl`,
+		LogValidationPPLToTensorboard: true,
+		DataPath:                      `/data/dataset/bert_text_sentence`,
+	}
+	cmd = append(cmd, mlm.ToPyArgs()...)
 	cmd = append(cmd, jConf.LogFlags(c)...)
 	cmd = append(cmd, jConf.TenplexFlags(c, host)...)
 	cmd = append(cmd, jConf.OtherFlags(c)...)
