@@ -38,11 +38,14 @@ with_log_file() {
     echo "logged to $filename $ $@"
 }
 
-. ../common-cloud.sh
+# . ../common-cloud.sh
+. ../common.sh
 . ./config.sh
 
 list_hosts() {
-    az vmss nic list -g kungfu --vmss-name $name --query '[].ipConfigurations[0].privateIPAddress' -o table | sed 1,2d
+    # az vmss nic list -g kungfu --vmss-name $name --query '[].ipConfigurations[0].privateIPAddress' -o table | sed 1,2d
+    echo "10.10.10.1"
+    echo "10.10.10.4"
 }
 
 training_flags() {
@@ -60,7 +63,7 @@ training_flags() {
     echo -gpu-per-host 4
     echo -gpu-per-container 4
     echo -seq-length 1024
-    echo -disable-ib
+    # echo -disable-ib
 }
 
 wait_cluster() {
@@ -75,9 +78,9 @@ run_group() {
     local n=$2
     local para_config_tp=$3
 
-    x ./scale-cluster.sh $cluster_size
-    x wait_cluster
-    x ./upgrade.sh
+    # x ./scale-cluster.sh $cluster_size
+    # x wait_cluster
+    # x ./upgrade.sh
 
     local schedule="schedule_${n}.json"
     local hosts="$(join $(list_hosts))"
@@ -96,14 +99,14 @@ run_group() {
     x with_log_file reconfig_${n}_tp.log tenplex-run $(training_flags) -schedule-file $schedule -para-config $para_config_tp
     mv logs logs_${n}_tp
 
-    x ./scale-cluster.sh 0
+    # x ./scale-cluster.sh 0
 }
 
 run_all() {
-    x ./recreate-vmss.sh
+    # x ./recreate-vmss.sh
     x run_group 2 8 para-config-tp-4to8.json
-    x run_group 4 16 para-config-tp-8to16.json
-    x run_group 8 32 para-config-tp-16to32.json
+    # x run_group 4 16 para-config-tp-8to16.json
+    # x run_group 8 32 para-config-tp-16to32.json
 }
 
 x run_all
