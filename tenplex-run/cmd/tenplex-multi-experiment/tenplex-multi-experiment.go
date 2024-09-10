@@ -1,14 +1,14 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"flag"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"time"
-        "crypto/sha256"
-	"encoding/hex"
 
 	"github.com/kungfu-team/tenplex/mlfs/ds"
 	"github.com/kungfu-team/tenplex/tenplex-run/cluster"
@@ -74,13 +74,13 @@ func genRuns(trains []TrainConfig, scheduleFiles []string, isCentral []bool) []R
 		}
 		for _, t := range trains {
 			for _, central := range isCentral {
-                                id := t.ModelName + `-` + t.ModelSize
-                                if cfg.Redeploy {
-                                        id = id + `-redeploy`
-                                }
-                                if central {
-                                        id = id + `-central`
-                                }
+				id := t.ModelName + `-` + t.ModelSize
+				if cfg.Redeploy {
+					id = id + `-redeploy`
+				}
+				if central {
+					id = id + `-central`
+				}
 				r := Run{
 					TrainConf: t,
 					Schedule:  sch,
@@ -184,7 +184,7 @@ func genRandomStr() string {
 	hash.Write([]byte(str(int(currentTime))))
 	hashInBytes := hash.Sum(nil)
 	hashString := hex.EncodeToString(hashInBytes)
-        return hashString[:8]
+	return hashString[:8]
 }
 
 func runAll(runs []Run) {
@@ -204,6 +204,10 @@ func runAll(runs []Run) {
 				}
 			}()
 			runOne(n, r)
+			err := os.Rename("logs", n)
+			if err != nil {
+				log.Print(err)
+			}
 		}()
 		log.Printf("finished %d/%d, took %s", i+1, len(runs), time.Since(t0))
 	}
@@ -217,8 +221,4 @@ func runOne(n string, r Run) {
 		return
 	}
 	runop.Main(jc, runop.Options{})
-	err := os.Rename("logs", n)
-	if err != nil {
-		log.Panic(err)
-	}
 }
