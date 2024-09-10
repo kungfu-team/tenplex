@@ -204,11 +204,11 @@ func runAll(runs []Run) {
 				}
 			}()
 			runOne(n, r)
-			err := os.Rename("logs", n)
-			if err != nil {
-				log.Print(err)
-			}
 		}()
+		err := os.Rename("logs", n)
+		if err != nil {
+			log.Print(err)
+		}
 		log.Printf("finished %d/%d, took %s", i+1, len(runs), time.Since(t0))
 	}
 }
