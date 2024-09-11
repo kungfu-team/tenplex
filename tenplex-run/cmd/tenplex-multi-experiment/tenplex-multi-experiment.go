@@ -135,20 +135,27 @@ type MultiRunConfig struct {
 	Central  bool `flag:"central"`
 }
 
+func printParaConfig(paraConfigs para_config.ParaConfig) {
+	for i, size := range paraConfigs.Sizes() {
+		log.Printf("ParaConfig[%d/%d]: %s", i+1, len(paraConfigs), paraConfigs[size])
+	}
+}
+
+func printSchedule(schedule para_config.Schedule) {
+	log.Printf("schedule %s", schedule.String())
+
+}
+
 func (j *MultiRunConfig) ParseParaConfig() {
 	var err error
 	j.ParaConfigs, err = para_config.LoadFile(j.ParaConfigFile)
 	if err != nil {
 		log.Panicf("%s: %v", `ParseParaConfig`, err)
 	}
-	for i, size := range j.ParaConfigs.Sizes() {
-		log.Printf("ParaConfig[%d/%d]: %s", i+1, len(j.ParaConfigs), j.ParaConfigs[size])
-	}
+	printParaConfig(j.ParaConfigs)
 }
 
 var cfg MultiRunConfig
-
-// var log = golog.New(os.Stderr, `[multi-run] `, 0)
 
 func init() {
 	log.SetPrefix(`[multi-run] `)
@@ -230,6 +237,8 @@ func runOne(n string, r Run) {
 	} else {
 		log.Printf("failed creating log file: %s", err)
 	}
+	printParaConfig(jc.ParaConfigs)
+	printSchedule(jc.Schedule)
 
 	func() {
 		defer func() {
