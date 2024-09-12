@@ -37,10 +37,11 @@ def parse_log(fname):
     pattern = r"Step: (\d+).*Loss: (\d*\.\d*)"
     for line in lines:
         mat = re.match(pattern, line)
-        step = int(mat.group(1))
-        loss = float(mat.group(2))
-        steps.append(step)
-        losses.append(loss)
+        if mat:
+            step = int(mat.group(1))
+            loss = float(mat.group(2))
+            steps.append(step)
+            losses.append(loss)
 
     return steps, losses
 
