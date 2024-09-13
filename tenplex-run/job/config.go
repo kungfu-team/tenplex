@@ -135,7 +135,6 @@ func (j *JobConfig) OtherFlags(c TrainingConfig) []string {
 	const checkpoint_path = `/data/ckpt`
 	var cmd []string
 	args := []string{
-		`--log-validation-ppl-to-tensorboard`,
 		`--save`, checkpoint_path,
 		`--load`, checkpoint_path,
 		`--tensor-model-parallel-size`, str(c.MDP.MPSize),
