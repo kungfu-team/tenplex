@@ -72,6 +72,10 @@ func (j Job) newWorker(i int, jConf *JobConfig, host string, gpus []string) Cont
 				HostPath:      path.Join(j.HostPath, jConf.ID, str(i), `ckpt`),
 				ContainerPath: `/data/ckpt`,
 			},
+			PathMap{
+				HostPath:      `/mnt/k1d2/megatron-lm`,
+				ContainerPath: `/data/dataset`,
+			},
 		)
 	}
 

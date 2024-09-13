@@ -39,7 +39,7 @@ func createCluster(jobConf *job.JobConfig, paraConf *para_config.MultiDimensiona
 
 		LogInterval:  10,
 		SaveInterval: 5000,
-		EvalInterval: 10000,
+		EvalInterval: 20, // TODO make dynamic
 
 		Precision: jobConf.Precision,
 	}
