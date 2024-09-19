@@ -51,6 +51,8 @@ def get_data(args):
 
 
 def run(args, benchmark_step):
+    np = hvd.size()
+
     log('Running warmup...')
     for _ in range(args.num_warmup_batches):
         benchmark_step()
@@ -59,7 +61,7 @@ def run(args, benchmark_step):
     l = Logger()
     for _ in range(args.batch_number):
         benchmark_step()
-        l.add(args.batch_size)
+        l.add(args.batch_size * np)
     l.report()
 
 

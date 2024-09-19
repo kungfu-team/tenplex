@@ -75,6 +75,7 @@ def run(state, args, train_one_batch):
 def main():
     args = parse_arsg()
     hvd.init()
+    np = hvd.size()
 
     config = tf.ConfigProto()
     if args.cuda:
@@ -106,7 +107,7 @@ def main():
 
         def step(log):
             session.run(train_op)
-            log.add(args.batch_size)
+            log.add(args.batch_size * np)
 
         l = Logger()
         print('running ...')
