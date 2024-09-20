@@ -4,10 +4,12 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"flag"
+	"fmt"
+	"io"
 	"log"
 	"os"
+	"path"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/kungfu-team/tenplex/mlfs/ds"
@@ -52,7 +54,6 @@ func genJobConf(r *Run) *job.JobConfig {
 			GPUsPerContainer: 4,
 			Hosts:            cfg.Hosts,
 		},
-		// SchedulerIP: "10.10.10.10",
 		Schedule:    r.Schedule,
 		MLFSPort:    cfg.MLFSPort,
 		User:        cfg.User,
@@ -60,7 +61,7 @@ func genJobConf(r *Run) *job.JobConfig {
 		Redeploy:    r.Redeploy,
 		ParaConfigs: cfg.ParaConfigs,
 		Seed:        1234,
-		LogDir:      `logs`, // TODO:
+		LogDir:      fmt.Sprintf("logs-%s-%s", genRandomStr(), r.ID),
 	}
 }
 
@@ -135,20 +136,27 @@ type MultiRunConfig struct {
 	Central  bool `flag:"central"`
 }
 
+func printParaConfig(paraConfigs para_config.ParaConfig) {
+	for i, size := range paraConfigs.Sizes() {
+		log.Printf("ParaConfig[%d/%d]: %s", i+1, len(paraConfigs), paraConfigs[size])
+	}
+}
+
+func printSchedule(schedule para_config.Schedule) {
+	log.Printf("schedule %s", schedule.String())
+
+}
+
 func (j *MultiRunConfig) ParseParaConfig() {
 	var err error
 	j.ParaConfigs, err = para_config.LoadFile(j.ParaConfigFile)
 	if err != nil {
 		log.Panicf("%s: %v", `ParseParaConfig`, err)
 	}
-	for i, size := range j.ParaConfigs.Sizes() {
-		log.Printf("ParaConfig[%d/%d]: %s", i+1, len(j.ParaConfigs), j.ParaConfigs[size])
-	}
+	printParaConfig(j.ParaConfigs)
 }
 
 var cfg MultiRunConfig
-
-// var log = golog.New(os.Stderr, `[multi-run] `, 0)
 
 func init() {
 	log.SetPrefix(`[multi-run] `)
@@ -193,33 +201,38 @@ func runAll(runs []Run) {
 	defer func() { log.Printf("Multi experiment took %s", time.Since(t0)) }()
 
 	for i, r := range runs {
-		logParts := []string{"logs", genRandomStr(), r.TrainConf.ModelName, r.TrainConf.ModelSize, cfg.Dataset.Name}
-		if r.Central {
-			logParts = append(logParts, "central")
-		}
-		n := strings.Join(logParts, `-`)
-		func() {
-			defer func() {
-				if err := recover(); err != nil {
-					log.Panicf("recovered %s", n)
-				}
-			}()
-			runOne(n, r)
-		}()
+		log.Printf("start %d/%d", i+1, len(runs))
+		runOne(r)
 		log.Printf("finished %d/%d, took %s", i+1, len(runs), time.Since(t0))
 	}
 }
 
-func runOne(n string, r Run) {
-	log.Printf("%s(%s, ?)", `runOne`, n)
+func runOne(r Run) {
+	log.Printf("%s(%s, ?)", `runOne`, r.ID)
 	jc := genJobConf(&r)
+
 	if cfg.DryRun {
-		log.Printf("would run %s", n)
+		log.Printf("would run %s", r.ID)
 		return
 	}
-	runop.Main(jc, runop.Options{})
-	err := os.Rename("logs", n)
-	if err != nil {
-		log.Panic(err)
+
+	logfile := path.Join(jc.LogDir, `tenplex-run.log`)
+	lf, err := os.Create(logfile)
+	if err == nil {
+		log.SetOutput(io.MultiWriter(lf, os.Stderr))
+		defer lf.Close()
+	} else {
+		log.Printf("failed creating log file: %s", err)
 	}
+	printParaConfig(jc.ParaConfigs)
+	printSchedule(jc.Schedule)
+
+	func() {
+		defer func() {
+			if err := recover(); err != nil {
+				log.Printf("recovered %s", r.ID)
+			}
+		}()
+		runop.Main(jc, runop.Options{})
+	}()
 }

@@ -14,7 +14,10 @@ def extract_time(path: str, pattern: str) -> float:
         mat = re.search(pattern, line)
         if mat:
             return float(mat.group(1))
-    return -1.0
+
+    print(f"extracting time failed for {path}")
+    return 0.0
+
 
 def reconfig_time(log_dir: str) -> float:
     first_stage = "stage-00-worker-00.out.log"
@@ -24,6 +27,9 @@ def reconfig_time(log_dir: str) -> float:
     exit_time = extract_time(os.path.join(log_dir, first_stage), pattern)
     pattern = r"Start training loop at (\d+\.\d+)"
     start_time = extract_time(os.path.join(log_dir, second_stage), pattern)
+
+    if extract_time == 0.0 or start_time == 0.0:
+        return 0.0
 
     return start_time - exit_time
 
@@ -98,6 +104,7 @@ def plot_redeploy(times_tenplex: list, times_central: list):
 
     fig.tight_layout()
     plt.savefig("./redeployment.pdf")
+
 
 def main():
     times, times_central = parse_logs()
