@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"flag"
+	"io"
 	"log"
 	"os"
 	"strconv"
@@ -135,20 +136,27 @@ type MultiRunConfig struct {
 	Central  bool `flag:"central"`
 }
 
+func printParaConfig(paraConfigs para_config.ParaConfig) {
+	for i, size := range paraConfigs.Sizes() {
+		log.Printf("ParaConfig[%d/%d]: %s", i+1, len(paraConfigs), paraConfigs[size])
+	}
+}
+
+func printSchedule(schedule para_config.Schedule) {
+	log.Printf("schedule %s", schedule.String())
+
+}
+
 func (j *MultiRunConfig) ParseParaConfig() {
 	var err error
 	j.ParaConfigs, err = para_config.LoadFile(j.ParaConfigFile)
 	if err != nil {
 		log.Panicf("%s: %v", `ParseParaConfig`, err)
 	}
-	for i, size := range j.ParaConfigs.Sizes() {
-		log.Printf("ParaConfig[%d/%d]: %s", i+1, len(j.ParaConfigs), j.ParaConfigs[size])
-	}
+	printParaConfig(j.ParaConfigs)
 }
 
 var cfg MultiRunConfig
-
-// var log = golog.New(os.Stderr, `[multi-run] `, 0)
 
 func init() {
 	log.SetPrefix(`[multi-run] `)
@@ -193,19 +201,19 @@ func runAll(runs []Run) {
 	defer func() { log.Printf("Multi experiment took %s", time.Since(t0)) }()
 
 	for i, r := range runs {
+		log.Printf("start %d/%d", i+1, len(runs))
 		logParts := []string{"logs", genRandomStr(), r.TrainConf.ModelName, r.TrainConf.ModelSize, cfg.Dataset.Name}
 		if r.Central {
 			logParts = append(logParts, "central")
 		}
 		n := strings.Join(logParts, `-`)
-		func() {
-			defer func() {
-				if err := recover(); err != nil {
-					log.Panicf("recovered %s", n)
-				}
-			}()
-			runOne(n, r)
-		}()
+
+		runOne(n, r)
+		err := os.Rename("logs", n)
+		if err != nil {
+			log.Print(err)
+		}
+
 		log.Printf("finished %d/%d, took %s", i+1, len(runs), time.Since(t0))
 	}
 }
@@ -213,13 +221,32 @@ func runAll(runs []Run) {
 func runOne(n string, r Run) {
 	log.Printf("%s(%s, ?)", `runOne`, n)
 	jc := genJobConf(&r)
+
 	if cfg.DryRun {
 		log.Printf("would run %s", n)
 		return
 	}
-	runop.Main(jc, runop.Options{})
-	err := os.Rename("logs", n)
-	if err != nil {
-		log.Panic(err)
+
+	if err := os.Mkdir(`logs`, os.ModePerm); err != nil {
+		log.Printf("failed creating dir: %s", err)
 	}
+	logfile := `logs/tenplex-run.log`
+	lf, err := os.Create(logfile)
+	if err == nil {
+		log.SetOutput(io.MultiWriter(lf, os.Stderr))
+		defer lf.Close()
+	} else {
+		log.Printf("failed creating log file: %s", err)
+	}
+	printParaConfig(jc.ParaConfigs)
+	printSchedule(jc.Schedule)
+
+	func() {
+		defer func() {
+			if err := recover(); err != nil {
+				log.Printf("recovered %s", n)
+			}
+		}()
+		runop.Main(jc, runop.Options{})
+	}()
 }
