@@ -37,11 +37,11 @@ def parse_value(value_str: str, name: str):
 
 def load_traverse(path: str):
     if os.path.isdir(path):
-        metadata_path = os.path.join(path, 'dir.meta')
+        metadata_path = os.path.join(path, "dir.meta")
         if os.path.exists(metadata_path):
             # dir has metadata
             # dir is list
-            with open(metadata_path, 'r') as meta_fil:
+            with open(metadata_path, "r") as meta_fil:
                 metadata = meta_fil.readlines()
             length = int(metadata[1])
             if length == 0:
@@ -49,14 +49,13 @@ def load_traverse(path: str):
 
             lis = []
             for i in range(length):
-                glob_path = os.path.join(path, f'{i}*')
+                glob_path = os.path.join(path, f"{i}*")
                 file_list = glob.glob(glob_path)
                 file_list.sort()  # needs sorting for ndarray files
                 if len(file_list) == 0:
-                    raise ValueError(
-                        f"ERROR: glob list is empty for {glob_path}")
+                    raise ValueError(f"ERROR: glob list is empty for {glob_path}")
                 file_path = file_list[0]
-                if file_path.endswith('.meta'):
+                if file_path.endswith(".meta"):
                     continue
                 ele = load_traverse(file_path)
                 lis.append(ele)
@@ -65,14 +64,14 @@ def load_traverse(path: str):
 
         ckpt = {}
         for entry in os.scandir(path):
-            if entry.name.endswith('.meta'):
+            if entry.name.endswith(".meta"):
                 continue
 
-            if entry.name.endswith('.numpy.ndarray'):
-                name_split = entry.name.split('.')
-                name = '.'.join(name_split[0:-2])
+            if entry.name.endswith(".numpy.ndarray"):
+                name_split = entry.name.split(".")
+                name = ".".join(name_split[0:-2])
             else:
-                name_split = entry.name.split('.', 1)
+                name_split = entry.name.split(".", 1)
                 name = name_split[0]
 
             try:
@@ -85,12 +84,12 @@ def load_traverse(path: str):
 
     if os.path.isfile(path):
         name = os.path.basename(path)
-        if name == 't0.txt':
+        if name == "t0.txt":
             return None
 
-        if name.endswith('.numpy.ndarray'):
+        if name.endswith(".numpy.ndarray"):
             tensor = read_tensor_file(path)
-            if 'np_rng_state' in path:  # needs to stay numpy array
+            if "np_rng_state" in path:  # needs to stay numpy array
                 return tensor
 
             torch_tensor = torch.from_numpy(tensor)
@@ -121,13 +120,14 @@ def load(device_rank: int, mlfs_path: str):
     print(f"load traverse took {load_trav_dura}")
 
     # Megatron-LM
-    ckpt['rng_state'][0]['random_rng_state'][1] = tuple(
-        ckpt['rng_state'][0]['random_rng_state'][1])
-    ckpt['rng_state'][0]['random_rng_state'] = tuple(
-        ckpt['rng_state'][0]['random_rng_state'])
+    ckpt["rng_state"][0]["random_rng_state"][1] = tuple(
+        ckpt["rng_state"][0]["random_rng_state"][1]
+    )
+    ckpt["rng_state"][0]["random_rng_state"] = tuple(
+        ckpt["rng_state"][0]["random_rng_state"]
+    )
 
-    print(
-        f"loaded checkpoint from {pa} and it took {time.time() - load_start}")
+    print(f"loaded checkpoint from {pa} and it took {time.time() - load_start}")
 
     return ckpt, step
 
@@ -188,12 +188,12 @@ def dicts_to_lists(ckpt, dir_metas):
     for met in dir_metas:
         keys = met.split("/")
         keys = keys_to_int(keys)
-        keys = keys[:len(keys) - 1]
+        keys = keys[: len(keys) - 1]
         try:
             last_key = int(keys[-1])
         except ValueError:
             last_key = keys[-1]
-        parent_val = get_value(ckpt, keys[:len(keys) - 1])
+        parent_val = get_value(ckpt, keys[: len(keys) - 1])
         try:
             parent_val[last_key] = dict_to_list(parent_val[last_key])
         except:
@@ -234,20 +234,20 @@ def load_http(job_id: str, device_rank: int, ip: str, port: int):
         all_keys = rel_path.split("/")
         all_keys = keys_to_int(all_keys)
         file_name = all_keys[-1]
-        keys = all_keys[:len(all_keys) - 1]
+        keys = all_keys[: len(all_keys) - 1]
 
         try:
-            file_name.endswith('.numpy.ndarray')
+            file_name.endswith(".numpy.ndarray")
         except:
             print(f"endswith failed for {ele} and keys {keys}")
 
-        if file_name.endswith('.numpy.ndarray'):
-            name = file_name.removesuffix('.numpy.ndarray')
+        if file_name.endswith(".numpy.ndarray"):
+            name = file_name.removesuffix(".numpy.ndarray")
             name = to_int(name)
             tensor_data, dtype, dims = client.get_tensor(ele)
             typ = tenplex.tensor_file._dtypes[dtype]
             np_tensor = np.frombuffer(tensor_data, dtype=typ).reshape(dims)
-            if 'np_rng_state' in ele:  # needs to stay numpy array
+            if "np_rng_state" in ele:  # needs to stay numpy array
                 ckpt = set_value(ckpt, keys, name, np_tensor)
                 continue
 
@@ -256,7 +256,7 @@ def load_http(job_id: str, device_rank: int, ip: str, port: int):
             continue
 
         if file_name.endswith(".argparse.Namespace"):
-            path_no_ext = file_name.removesuffix('.argparse.Namespace')
+            path_no_ext = ele.removesuffix(".argparse.Namespace")
             fil = client.get_file(path_no_ext)
             obj = pickle.loads(fil)
             ckpt = set_value(ckpt, keys, name, obj)
@@ -275,9 +275,11 @@ def load_http(job_id: str, device_rank: int, ip: str, port: int):
     ckpt = dicts_to_lists(ckpt, dir_meta)
 
     # Megatron-LM
-    ckpt['rng_state'][0]['random_rng_state'][1] = tuple(
-        ckpt['rng_state'][0]['random_rng_state'][1])
-    ckpt['rng_state'][0]['random_rng_state'] = tuple(
-        ckpt['rng_state'][0]['random_rng_state'])
+    ckpt["rng_state"][0]["random_rng_state"][1] = tuple(
+        ckpt["rng_state"][0]["random_rng_state"][1]
+    )
+    ckpt["rng_state"][0]["random_rng_state"] = tuple(
+        ckpt["rng_state"][0]["random_rng_state"]
+    )
 
     return ckpt, step
