@@ -33,6 +33,7 @@ tenplex_flags() {
     echo -jobid dyn-res-tenplex
     echo -para-config "tenplex-para-config.json"
     echo -schedule-file "tenplex-schedule.json"
+    echo -logdir logs-dyn-res-tenplex
 }
 
 tenplex_dp_flags() {
@@ -40,6 +41,7 @@ tenplex_dp_flags() {
     echo -jobid dyn-res-tenplex-dp
     echo -para-config "pytorch-para-config.json"
     echo -schedule-file "pytorch-schedule.json"
+    echo -logdir logs-dyn-res-tenplex-dp
 }
 
 pytorch_flags() {
@@ -48,6 +50,7 @@ pytorch_flags() {
     echo -para-config "pytorch-para-config.json"
     echo -schedule-file "pytorch-schedule.json"
     echo -no-tenplex
+    echo -logdir logs-dyn-res-tde
 }
 
 tenplex-run $(tenplex_flags) 2>&1 | tee dyn-res-tenplex.log
