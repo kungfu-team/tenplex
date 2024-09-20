@@ -11,6 +11,12 @@ from tenplex.mlfs_client import MLFSClient
 from tenplex.tensor_file import read_tensor_file
 
 
+def trim_last_ext(c):
+    # 'a/b/c.x.y.z' => 'a/b/c.x.y'
+    a, _ = os.path.splitext(c)
+    return a
+
+
 def parse_value(value_str: str, name: str):
     file_ext = name.split(".")[-1]
     if file_ext == "none":
@@ -236,8 +242,7 @@ def load_http(job_id: str, device_rank: int, ip: str, port: int):
             print(f"endswith failed for {ele} and keys {keys}")
 
         if file_name.endswith('.numpy.ndarray'):
-            name_split = file_name.split(".")
-            name = '.'.join(name_split[0:-2])
+            name = file_name.removesuffix('.numpy.ndarray')
             name = to_int(name)
             tensor_data, dtype, dims = client.get_tensor(ele)
             typ = tenplex.tensor_file._dtypes[dtype]
@@ -250,8 +255,8 @@ def load_http(job_id: str, device_rank: int, ip: str, port: int):
             ckpt = set_value(ckpt, keys, name, torch_tensor)
             continue
 
-        path_no_ext = ele.split(".")[0]
-        name = file_name.split(".")[0]
+        path_no_ext = trim_last_ext(ele)
+        name = trim_last_ext(file_name)
         name = to_int(name)
 
         if file_name.endswith(".argparse.Namespace"):
