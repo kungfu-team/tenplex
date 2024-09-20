@@ -153,7 +153,7 @@ func repartition(from, to *para_config.MultiDimensionalParallelism, step int, jo
 				`PATH`: `$HOME/go/bin:$PATH`,
 			},
 		}
-		name := fmt.Sprintf("logs/tenplex-state-transformer-%d-%d", round, i)
+		name := path.Join(jobConf.LogDir, fmt.Sprintf("tenplex-state-transformer-%d-%d", round, i))
 		p := proc.Tee2Files(name, ssh(migrate))
 		prefix := fmt.Sprintf("[%s %d] ", host, i)
 		transformPs = append(transformPs, term(prefix, p))
@@ -289,7 +289,7 @@ func ScalingTraining(jobConf *job.JobConfig) {
 	}
 }
 
-func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
+func RunTrainMLMGo(c *job.ContainerCluster, j *job.JobConfig) error {
 	ctx := context.TODO()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -306,7 +306,7 @@ func RunTrainMLMGo(c *job.ContainerCluster, jobConf *job.JobConfig) error {
 	var ps []P
 	for i, w := range workers {
 		p := c.RunCtx(w, ctx)
-		p = job.Tee2Files(fmt.Sprintf("logs/stage-%02d-worker-%02d", stageID, i), p)
+		p = job.Tee2Files(fmt.Sprintf("%s/stage-%02d-worker-%02d", j.LogDir, stageID, i), p)
 		ps = append(ps, p)
 	}
 	var err error = errors.New(`failed`)

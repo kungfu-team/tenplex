@@ -92,13 +92,13 @@ func (cluster *ContainerCluster) SendHostFile(c Container) P {
 	return experimental.Scp(proc.At(``, c.Host), `hostfile.txt`, path.Join(c.GetCkptDir(), `hostfile.txt`))
 }
 
-func (c *ContainerCluster) RunTrain(jConf *JobConfig) P {
-	if jConf.Framework == "megatron-lm" {
-		return c.RunTrainMegatronLM()
-	} else if jConf.Framework == "deepspeed" {
-		return c.RunTrainDeepspeed(jConf)
-	} else if jConf.Framework == "deepspeed-new-repo" {
-		return c.RunTrainMegatronLM()
+func (c *ContainerCluster) RunTrain(j *JobConfig) P {
+	if j.Framework == "megatron-lm" {
+		return c.RunTrainMegatronLM(j)
+	} else if j.Framework == "deepspeed" {
+		return c.RunTrainDeepspeed(j)
+	} else if j.Framework == "deepspeed-new-repo" {
+		return c.RunTrainMegatronLM(j)
 	}
 	return nil
 }
@@ -108,7 +108,7 @@ var (
 	GetStageId = Stage.Next
 )
 
-func (c *ContainerCluster) RunTrainMegatronLM() P {
+func (c *ContainerCluster) RunTrainMegatronLM(j *JobConfig) P {
 	ctx := context.TODO()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -117,7 +117,7 @@ func (c *ContainerCluster) RunTrainMegatronLM() P {
 	var runs []P
 	for i, w := range workers {
 		p := c.RunCtx(w, ctx)
-		p = Tee2Files(fmt.Sprintf("logs/stage-%02d-worker-%02d", stageID, i), p)
+		p = Tee2Files(fmt.Sprintf("%s/stage-%02d-worker-%02d", j.LogDir, stageID, i), p)
 		runs = append(runs, p)
 	}
 	var cmds []P
@@ -135,10 +135,10 @@ func (c *ContainerCluster) MkMountDirs(con Container) P {
 	return MkMountDirs(con, c.User)
 }
 
-func (c *ContainerCluster) RunTrainDeepspeed(jConf *JobConfig) P {
+func (c *ContainerCluster) RunTrainDeepspeed(j *JobConfig) P {
 	c.CreateHostfile()
 	workers := c.Workers
-	cmd := GenDeepspeedCommand(c.trainJob.Config, jConf)
+	cmd := GenDeepspeedCommand(c.trainJob.Config, j)
 	return Seq(
 		Par(Cmap(c.MkMountDirs, workers...)...),
 		Par(Cmap(CopyEnWikiData, workers...)...),
