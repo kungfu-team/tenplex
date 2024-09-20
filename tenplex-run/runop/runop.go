@@ -153,7 +153,7 @@ func repartition(from, to *para_config.MultiDimensionalParallelism, step int, jo
 				`PATH`: `$HOME/go/bin:$PATH`,
 			},
 		}
-		name := fmt.Sprintf("logs/tenplex-state-transformer-%d-%d", round, i)
+		name := path.Join(jobConf.LogDir, fmt.Sprintf("tenplex-state-transformer-%d-%d", round, i))
 		p := proc.Tee2Files(name, ssh(migrate))
 		prefix := fmt.Sprintf("[%s %d] ", host, i)
 		transformPs = append(transformPs, term(prefix, p))
