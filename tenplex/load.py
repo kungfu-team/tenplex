@@ -2,6 +2,7 @@ import glob
 import os
 import pickle
 import time
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -11,19 +12,25 @@ from tenplex.mlfs_client import MLFSClient
 from tenplex.tensor_file import read_tensor_file
 
 
-def parse_value(value_str: str, name: str):
-    file_ext = name.split(".")[-1]
-    if file_ext == "none":
+def trim_last_ext(c):
+    # 'a/b/c.x.y.z' => 'a/b/c.x.y'
+    a, _ = os.path.splitext(c)
+    return a
+
+
+def parse_value(value_str: str, p: str):
+    _, file_ext = os.path.splitext(p)
+    if file_ext == ".none":
         return None
-    if file_ext == "str":
+    if file_ext == ".str":
         if isinstance(value_str, bytes):
             return value_str.decode("utf-8")
         return value_str
-    if file_ext == "int":
+    if file_ext == ".int":
         return int(value_str)
-    if file_ext == "float":
+    if file_ext == ".float":
         return float(value_str)
-    if file_ext == "bool":
+    if file_ext == ".bool":
         return bool(value_str)
 
     raise ValueError(f"ERROR: type {file_ext} not supported in parse value")
@@ -31,11 +38,11 @@ def parse_value(value_str: str, name: str):
 
 def load_traverse(path: str):
     if os.path.isdir(path):
-        metadata_path = os.path.join(path, 'dir.meta')
+        metadata_path = os.path.join(path, "dir.meta")
         if os.path.exists(metadata_path):
             # dir has metadata
             # dir is list
-            with open(metadata_path, 'r') as meta_fil:
+            with open(metadata_path, "r") as meta_fil:
                 metadata = meta_fil.readlines()
             length = int(metadata[1])
             if length == 0:
@@ -43,14 +50,13 @@ def load_traverse(path: str):
 
             lis = []
             for i in range(length):
-                glob_path = os.path.join(path, f'{i}*')
+                glob_path = os.path.join(path, f"{i}*")
                 file_list = glob.glob(glob_path)
                 file_list.sort()  # needs sorting for ndarray files
                 if len(file_list) == 0:
-                    raise ValueError(
-                        f"ERROR: glob list is empty for {glob_path}")
+                    raise ValueError(f"ERROR: glob list is empty for {glob_path}")
                 file_path = file_list[0]
-                if file_path.endswith('.meta'):
+                if file_path.endswith(".meta"):
                     continue
                 ele = load_traverse(file_path)
                 lis.append(ele)
@@ -59,14 +65,14 @@ def load_traverse(path: str):
 
         ckpt = {}
         for entry in os.scandir(path):
-            if entry.name.endswith('.meta'):
+            if entry.name.endswith(".meta"):
                 continue
 
-            if entry.name.endswith('.numpy.ndarray'):
-                name_split = entry.name.split('.')
-                name = '.'.join(name_split[0:-2])
+            if entry.name.endswith(".numpy.ndarray"):
+                name_split = entry.name.split(".")
+                name = ".".join(name_split[0:-2])
             else:
-                name_split = entry.name.split('.', 1)
+                name_split = entry.name.split(".", 1)
                 name = name_split[0]
 
             try:
@@ -79,12 +85,12 @@ def load_traverse(path: str):
 
     if os.path.isfile(path):
         name = os.path.basename(path)
-        if name == 't0.txt':
+        if name == "t0.txt":
             return None
 
-        if name.endswith('.numpy.ndarray'):
+        if name.endswith(".numpy.ndarray"):
             tensor = read_tensor_file(path)
-            if 'np_rng_state' in path:  # needs to stay numpy array
+            if "np_rng_state" in path:  # needs to stay numpy array
                 return tensor
 
             torch_tensor = torch.from_numpy(tensor)
@@ -115,13 +121,14 @@ def load(device_rank: int, mlfs_path: str):
     print(f"load traverse took {load_trav_dura}")
 
     # Megatron-LM
-    ckpt['rng_state'][0]['random_rng_state'][1] = tuple(
-        ckpt['rng_state'][0]['random_rng_state'][1])
-    ckpt['rng_state'][0]['random_rng_state'] = tuple(
-        ckpt['rng_state'][0]['random_rng_state'])
+    ckpt["rng_state"][0]["random_rng_state"][1] = tuple(
+        ckpt["rng_state"][0]["random_rng_state"][1]
+    )
+    ckpt["rng_state"][0]["random_rng_state"] = tuple(
+        ckpt["rng_state"][0]["random_rng_state"]
+    )
 
-    print(
-        f"loaded checkpoint from {pa} and it took {time.time() - load_start}")
+    print(f"loaded checkpoint from {pa} and it took {time.time() - load_start}")
 
     return ckpt, step
 
@@ -182,12 +189,12 @@ def dicts_to_lists(ckpt, dir_metas):
     for met in dir_metas:
         keys = met.split("/")
         keys = keys_to_int(keys)
-        keys = keys[:len(keys) - 1]
+        keys = keys[: len(keys) - 1]
         try:
             last_key = int(keys[-1])
         except ValueError:
             last_key = keys[-1]
-        parent_val = get_value(ckpt, keys[:len(keys) - 1])
+        parent_val = get_value(ckpt, keys[: len(keys) - 1])
         try:
             parent_val[last_key] = dict_to_list(parent_val[last_key])
         except:
@@ -227,22 +234,14 @@ def load_http(job_id: str, device_rank: int, ip: str, port: int):
         rel_path = os.path.relpath(ele, base_path)
         all_keys = rel_path.split("/")
         all_keys = keys_to_int(all_keys)
-        file_name = all_keys[-1]
-        keys = all_keys[:len(all_keys) - 1]
+        keys = all_keys[: len(all_keys) - 1]
+        name = to_int(Path(ele).stem.removesuffix(".numpy"))
 
-        try:
-            file_name.endswith('.numpy.ndarray')
-        except:
-            print(f"endswith failed for {ele} and keys {keys}")
-
-        if file_name.endswith('.numpy.ndarray'):
-            name_split = file_name.split(".")
-            name = '.'.join(name_split[0:-2])
-            name = to_int(name)
+        if ele.endswith(".numpy.ndarray"):
             tensor_data, dtype, dims = client.get_tensor(ele)
             typ = tenplex.tensor_file._dtypes[dtype]
             np_tensor = np.frombuffer(tensor_data, dtype=typ).reshape(dims)
-            if 'np_rng_state' in ele:  # needs to stay numpy array
+            if "np_rng_state" in ele:  # needs to stay numpy array
                 ckpt = set_value(ckpt, keys, name, np_tensor)
                 continue
 
@@ -250,18 +249,14 @@ def load_http(job_id: str, device_rank: int, ip: str, port: int):
             ckpt = set_value(ckpt, keys, name, torch_tensor)
             continue
 
-        path_no_ext = ele.split(".")[0]
-        name = file_name.split(".")[0]
-        name = to_int(name)
-
-        if file_name.endswith(".argparse.Namespace"):
-            fil = client.get_file(path_no_ext)
+        if ele.endswith(".argparse.Namespace"):
+            fil = client.get_file(ele.removesuffix(".argparse.Namespace"))
             obj = pickle.loads(fil)
             ckpt = set_value(ckpt, keys, name, obj)
             continue
 
-        fil = client.get_file(path_no_ext)
-        val = parse_value(fil, file_name)
+        fil = client.get_file(trim_last_ext(ele))
+        val = parse_value(fil, ele)
         ckpt = set_value(ckpt, keys, name, val)
 
     dir_meta = [os.path.relpath(x, base_path) for x in dir_meta]
@@ -269,9 +264,11 @@ def load_http(job_id: str, device_rank: int, ip: str, port: int):
     ckpt = dicts_to_lists(ckpt, dir_meta)
 
     # Megatron-LM
-    ckpt['rng_state'][0]['random_rng_state'][1] = tuple(
-        ckpt['rng_state'][0]['random_rng_state'][1])
-    ckpt['rng_state'][0]['random_rng_state'] = tuple(
-        ckpt['rng_state'][0]['random_rng_state'])
+    ckpt["rng_state"][0]["random_rng_state"][1] = tuple(
+        ckpt["rng_state"][0]["random_rng_state"][1]
+    )
+    ckpt["rng_state"][0]["random_rng_state"] = tuple(
+        ckpt["rng_state"][0]["random_rng_state"]
+    )
 
     return ckpt, step
