@@ -255,15 +255,16 @@ def load_http(job_id: str, device_rank: int, ip: str, port: int):
             ckpt = set_value(ckpt, keys, name, torch_tensor)
             continue
 
-        path_no_ext = trim_last_ext(ele)
-        name = trim_last_ext(file_name)
-        name = to_int(name)
-
         if file_name.endswith(".argparse.Namespace"):
+            path_no_ext = file_name.removesuffix('.argparse.Namespace')
             fil = client.get_file(path_no_ext)
             obj = pickle.loads(fil)
             ckpt = set_value(ckpt, keys, name, obj)
             continue
+
+        path_no_ext = trim_last_ext(ele)
+        name = trim_last_ext(file_name)
+        name = to_int(name)
 
         fil = client.get_file(path_no_ext)
         val = parse_value(fil, file_name)
