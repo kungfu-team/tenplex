@@ -217,6 +217,7 @@ func runOne(r Run) {
 	}
 
 	logfile := path.Join(jc.LogDir, `tenplex-run.log`)
+
 	lf, err := os.Create(logfile)
 	if err == nil {
 		log.SetOutput(io.MultiWriter(lf, os.Stderr))
