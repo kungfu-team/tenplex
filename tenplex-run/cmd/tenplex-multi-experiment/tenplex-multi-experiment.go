@@ -216,9 +216,6 @@ func runOne(r Run) {
 		return
 	}
 
-	// if err := os.Mkdir(`logs`, os.ModePerm); err != nil {
-	// 	log.Printf("failed creating dir: %s", err)
-	// }
 	logfile := path.Join(jc.LogDir, `tenplex-run.log`)
 	lf, err := os.Create(logfile)
 	if err == nil {
