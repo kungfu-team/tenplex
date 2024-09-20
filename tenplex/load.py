@@ -2,6 +2,7 @@ import glob
 import os
 import pickle
 import time
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -17,19 +18,19 @@ def trim_last_ext(c):
     return a
 
 
-def parse_value(value_str: str, name: str):
-    file_ext = name.split(".")[-1]
-    if file_ext == "none":
+def parse_value(value_str: str, p: str):
+    _, file_ext = os.path.splitext(p)
+    if file_ext == ".none":
         return None
-    if file_ext == "str":
+    if file_ext == ".str":
         if isinstance(value_str, bytes):
             return value_str.decode("utf-8")
         return value_str
-    if file_ext == "int":
+    if file_ext == ".int":
         return int(value_str)
-    if file_ext == "float":
+    if file_ext == ".float":
         return float(value_str)
-    if file_ext == "bool":
+    if file_ext == ".bool":
         return bool(value_str)
 
     raise ValueError(f"ERROR: type {file_ext} not supported in parse value")
@@ -233,17 +234,10 @@ def load_http(job_id: str, device_rank: int, ip: str, port: int):
         rel_path = os.path.relpath(ele, base_path)
         all_keys = rel_path.split("/")
         all_keys = keys_to_int(all_keys)
-        file_name = all_keys[-1]
         keys = all_keys[: len(all_keys) - 1]
+        name = to_int(Path(ele).stem.removesuffix(".numpy"))
 
-        try:
-            file_name.endswith(".numpy.ndarray")
-        except:
-            print(f"endswith failed for {ele} and keys {keys}")
-
-        if file_name.endswith(".numpy.ndarray"):
-            name = file_name.removesuffix(".numpy.ndarray")
-            name = to_int(name)
+        if ele.endswith(".numpy.ndarray"):
             tensor_data, dtype, dims = client.get_tensor(ele)
             typ = tenplex.tensor_file._dtypes[dtype]
             np_tensor = np.frombuffer(tensor_data, dtype=typ).reshape(dims)
@@ -255,20 +249,14 @@ def load_http(job_id: str, device_rank: int, ip: str, port: int):
             ckpt = set_value(ckpt, keys, name, torch_tensor)
             continue
 
-        name = trim_last_ext(file_name)
-        name = to_int(name)
-
-        if file_name.endswith(".argparse.Namespace"):
-            path_no_ext = ele.removesuffix(".argparse.Namespace")
-            fil = client.get_file(path_no_ext)
+        if ele.endswith(".argparse.Namespace"):
+            fil = client.get_file(ele.removesuffix(".argparse.Namespace"))
             obj = pickle.loads(fil)
             ckpt = set_value(ckpt, keys, name, obj)
             continue
 
-        path_no_ext = trim_last_ext(ele)
-
-        fil = client.get_file(path_no_ext)
-        val = parse_value(fil, file_name)
+        fil = client.get_file(trim_last_ext(ele))
+        val = parse_value(fil, ele)
         ckpt = set_value(ckpt, keys, name, val)
 
     dir_meta = [os.path.relpath(x, base_path) for x in dir_meta]
