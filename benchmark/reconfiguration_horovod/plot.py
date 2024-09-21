@@ -56,7 +56,7 @@ def plot():
             str(value),
             ha="center",
             c="tab:blue",
-            fontsize=labelsize,
+            fontsize=fontsize,
         )
 
     ax.set_xlabel("System", fontsize=fontsize)
