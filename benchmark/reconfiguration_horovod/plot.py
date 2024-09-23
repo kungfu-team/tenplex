@@ -17,7 +17,7 @@ def parse_logs(output="throughput.csv"):
     rows = [
         ("name", "throughput"),
         ("Horovod", a),
-        ("Elastic", b),
+        ("Horovod Elastic", b),
         ("Tenplex", c),
     ]
     with open(output, "w") as f:
