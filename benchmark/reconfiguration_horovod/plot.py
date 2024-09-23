@@ -7,7 +7,7 @@ def parse_log(filename):
     lines = [l.strip() for l in open(filename) if "Img/sec" in l]
     s = lines[0]
     parts = s.split(" ")
-    return float(parts[2])
+    return int(float(parts[2]))
 
 
 def parse_logs(output="throughput.csv"):
@@ -17,7 +17,7 @@ def parse_logs(output="throughput.csv"):
     rows = [
         ("name", "throughput"),
         ("Horovod", a),
-        ("Elastic", b),
+        ("Horovod Elastic", b),
         ("Tenplex", c),
     ]
     with open(output, "w") as f:
