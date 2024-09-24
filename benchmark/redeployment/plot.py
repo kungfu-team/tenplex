@@ -77,7 +77,7 @@ def plot_redeploy(times_tenplex: list, times_central: list):
         x + 1.1 * width,
         times_central,
         width=width,
-        label=f"{sys} (central)",
+        label=f"{sys}-Central",
         hatch="--",
         fill=False,
         edgecolor="tab:orange",
