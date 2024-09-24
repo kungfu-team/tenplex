@@ -20,18 +20,10 @@ def extract_time(path: str, pattern: str) -> float:
 
 
 def reconfig_time(log_dir: str) -> float:
-    first_stage = "stage-00-worker-00.out.log"
-    second_stage = "stage-01-worker-00.out.log"
+    file_name = "tenplex-state-transformer-0-0.err.log"
+    pattern = r"State transformation took (\d+\.\d+)s"
 
-    pattern = r"Exit training loop at (\d+\.\d+)"
-    exit_time = extract_time(os.path.join(log_dir, first_stage), pattern)
-    pattern = r"Start training loop at (\d+\.\d+)"
-    start_time = extract_time(os.path.join(log_dir, second_stage), pattern)
-
-    if extract_time == 0.0 or start_time == 0.0:
-        return 0.0
-
-    return start_time - exit_time
+    return extract_time(os.path.join(log_dir, file_name), pattern)
 
 
 def parse_logs():
@@ -85,7 +77,7 @@ def plot_redeploy(times_tenplex: list, times_central: list):
         x + 1.1 * width,
         times_central,
         width=width,
-        label=f"{sys} (central)",
+        label=f"{sys}-Central",
         hatch="--",
         fill=False,
         edgecolor="tab:orange",
