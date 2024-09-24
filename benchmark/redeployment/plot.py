@@ -28,7 +28,7 @@ def reconfig_time(log_dir: str) -> float:
     pattern = r"Start training loop at (\d+\.\d+)"
     start_time = extract_time(os.path.join(log_dir, second_stage), pattern)
 
-    if extract_time == 0.0 or start_time == 0.0:
+    if exit_time == 0.0 or start_time == 0.0:
         return 0.0
 
     return start_time - exit_time
