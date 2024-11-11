@@ -5,8 +5,9 @@ import pandas as pd
 
 
 def fmt_key(k):
-    m, d, p = k
-    return "%d\n%d\n%d" % (m, p, d)
+    p, t, d = k
+    # return f"T{t}\nP{p}\nD{d}"
+    return f"P{p}\nT{t}\nD{d}"
 
 
 def filter_none(data: dict):
@@ -30,13 +31,21 @@ def to_dict(df):
     return dic
 
 
-def plot_throughput():
-    bert_df = pd.read_csv("bert.csv", index_col=False)
-    bert = to_dict(bert_df)
-    gpt_df = pd.read_csv("gpt.csv")
-    gpt = to_dict(gpt_df)
-    models = ["BERT-large", "GPT-3 2.7B"]
+def to_str_keys(data):
+    keys = []
+    for d in data:
+        k = [str(e) for e in d[:3]]
+        keys.append(fmt_key(k))
+    return keys
 
+
+def to_throughput(data, batch_size):
+    for i, d in enumerate(data):
+        data[i][3] = batch_size / d[3]
+    return data
+
+
+def plot_throughput():
     plt.rcParams["hatch.linewidth"] = 3
     width = 0.4  # the width of the bars
     plt.rc("figure", figsize=[10, 4.5])
@@ -44,54 +53,71 @@ def plot_throughput():
     edgecolor = ["tab:blue", "tab:orange"]
     fontsize = 18
     labelsize = 16
+    ylim = 45
+
+    # P,T,D
+    data_8 = [
+        [1, 4, 2, 13.9],
+        [1, 8, 1, 34, 7],
+        [2, 4, 1, 14],
+        [4, 2, 1, 5.8],
+    ]
+    data_16 = [
+        [1, 4, 4, 9],
+        [1, 8, 2, 21.7],
+        [1, 16, 1, 40.5],
+        [2, 8, 1, 23],
+        [4, 2, 2, 3.6],
+        [4, 4, 1, 9.1],
+        [8, 2, 1, 3.9],
+    ]
+    batch_size = 128
+    data_8 = to_throughput(data_8, batch_size)
+    data_16 = to_throughput(data_16, batch_size)
 
     fig, ax = plt.subplots(1, 2)
 
-    bert = filter_none(bert)
-    keys = bert.keys()
-    vals = bert.values()
+    # 8 GPUs
+    keys = to_str_keys(data_8)
+    vals = [x[3] for x in data_8]
     x = np.arange(len(keys))
-    rects = ax[0].bar(
+    ax[0].bar(
         x,
         vals,
         width,
-        label=models[0],
+        label="8 GPUs",
         hatch=hatch[0],
         fill=False,
         edgecolor=edgecolor[0],
     )
 
-    key_labels = [fmt_key(k) for k in keys]
     ax[0].grid(axis="y")
     ax[0].set_axisbelow(True)
     ax[0].tick_params(labelsize=labelsize)
-    ax[0].set_ylabel("Throughput (samples/s)", fontsize=fontsize)
-    ax[0].set_xticks(x, key_labels)
+    # ax[0].set_ylabel("Throughput (samples/s)", fontsize=fontsize)
+    ax[0].set_xticks(x, keys)
     ax[0].legend(loc="upper right", fontsize=labelsize)
-    # ax[0].set_ylim(0, 190)
+    ax[0].set_ylim(0, ylim)
 
-    gpt = filter_none(gpt)
-    keys = gpt.keys()
-    vals = gpt.values()
+    keys = to_str_keys(data_16)
+    vals = [x[3] for x in data_16]
     x = np.arange(len(keys))
-    rects = ax[1].bar(
+    ax[1].bar(
         x,
         vals,
         width,
-        label=models[1],
+        label="16 GPUs",
         hatch=hatch[1],
         fill=False,
         edgecolor=edgecolor[1],
     )
-    # ax.bar_label(rects, padding=3)
 
-    key_labels = [fmt_key(k) for k in keys]
     ax[1].grid(axis="y")
     ax[1].set_axisbelow(True)
     ax[1].tick_params(labelsize=labelsize)
-    ax[1].set_xticks(x, key_labels)
+    ax[1].set_xticks(x, keys)
     ax[1].legend(loc="upper right", fontsize=labelsize)
-    ax[1].set_ylim(0, 45)
+    ax[1].set_ylim(0, ylim)
 
     fig.supxlabel("Parallelization configuration", fontsize=fontsize)
 
